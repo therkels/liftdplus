@@ -1,0 +1,1 @@
+vercel_api_token = "WCo4PO0EH8OCcYYAX1Hicd6Q"
