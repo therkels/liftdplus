@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     vercel = {
-      source = "vercel/vercel"
+      source  = "vercel/vercel"
       version = "~> 0.3"
     }
   }
@@ -13,11 +13,12 @@ provider "vercel" {
 
 variable "vercel_api_token" {
   description = "Vercel API Token"
-  type = string
-  sensitive = true
+  type        = string
+  sensitive   = true
 }
-resource "vercel_project" "web_dev" {
-  name      = "terraform-test-project"
+
+resource "vercel_project" "liftdplus_web" {
+  name      = "liftdplus-web"
   framework = "nextjs"
   git_repository = {
     type = "github"
@@ -25,13 +26,6 @@ resource "vercel_project" "web_dev" {
   }
 }
 
-data "vercel_project_directory" "example" {
-  path = "../liftdplus-web"
-}
-
-resource "vercel_deployment" "example" {
-  project_id  = vercel_project.example.id
-  files       = data.vercel_project_directory.example.files
-  path_prefix = "../liftdplus-web"
-  production  = false
+output "project_id" {
+  value = vercel_project.liftdplus_web.id
 }
