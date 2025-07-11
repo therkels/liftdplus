@@ -5,14 +5,24 @@ services:
     build:
       context: .  # Use the current directory for context
       dockerfile: Dockerfile.dev  # Assuming you have a separate Dockerfile for development
-    volumes:
-      - .:/app  # Bind mount the current directory to the /app directory in the container
-      - /app/node_modules  # Ensure node_modules from the container don't overwrite host node_modules
+    # volumes:
+    #   - .:/app  # Bind mount the current directory to the /app directory in the container
+    #   - /app/node_modules  # Ensure node_modules from the container don't overwrite host node_modules
     ports:
       - "3000:3000"  # Map port 3000 inside the container to port 3000 on the host
     environment:
       NODE_ENV: development
       NEXT_TELEMETRY_DISABLED: 1
+      CHOKIDAR_USEPOLLING: "true"
     stdin_open: true  # Keep the stdin open to help with debugging
     tty: true  # Allocate a pseudo-TTY, useful for debugging
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
     command: "npx next dev -H 0.0.0.0"  # Run Next.js in development mode listening on all interfaces
