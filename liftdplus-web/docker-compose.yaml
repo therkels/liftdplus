@@ -1,7 +1,6 @@
-version: "3.9"  # or latest version you are comfortable with
-
 services:
   web:
+    env_file: ".env"
     build:
       context: .  # Use the current directory for context
       dockerfile: Dockerfile.dev  # Assuming you have a separate Dockerfile for development

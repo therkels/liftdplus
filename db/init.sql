@@ -1,10 +1,24 @@
+
+DROP TABLE IF EXISTS Likes CASCADE;
+DROP TABLE IF EXISTS Preferences CASCADE;
+DROP TABLE IF EXISTS PostTag CASCADE;
+DROP TABLE IF EXISTS Tag CASCADE;
+DROP TABLE IF EXISTS Category CASCADE;
+DROP TABLE IF EXISTS PostType CASCADE;
+DROP TABLE IF EXISTS Post CASCADE;
+DROP TABLE IF EXISTS PostTemplate CASCADE;
+DROP TABLE IF EXISTS Users CASCADE;
+DROP TABLE IF EXISTS UserType CASCADE;
+
+
+
 -- USERS AND USER TYPES
 CREATE TABLE UserType (
     type_id VARCHAR PRIMARY KEY,
     descr   TEXT
 );
 
-CREATE TABLE "User" (
+CREATE TABLE Users (
     UUID VARCHAR PRIMARY KEY,
     username VARCHAR NOT NULL,
     email VARCHAR NOT NULL UNIQUE,
@@ -25,11 +39,17 @@ CREATE TABLE Post (
     UUID VARCHAR PRIMARY KEY,
     post_template_id VARCHAR NOT NULL,
     author VARCHAR NOT NULL,
+    contributor_name VARCHAR NOT NULL,
+    source VARCHAR NOT NULL,
+    post_status VARCHAR NOT NULL DEFAULT 'draft' CHECK (
+        post_status IN ('draft', 'published', 'scheduled', 'archived', 'deleted', 'pending_review')
+    ),
     markup TEXT,
     config JSONB,
-    published TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    published_at TIMESTAMP,
     FOREIGN KEY (post_template_id) REFERENCES PostTemplate(id),
-    FOREIGN KEY (author) REFERENCES "User"(UUID)
+    FOREIGN KEY (author) REFERENCES Users(UUID)
 );
 
 -- POST TYPES CAN USE MULTIPLE TEMPLATES (COMPOSITE PK!)
@@ -69,7 +89,7 @@ CREATE TABLE Preferences (
     user_uuid VARCHAR,
     tag_id VARCHAR,
     PRIMARY KEY (user_uuid, tag_id),
-    FOREIGN KEY (user_uuid) REFERENCES "User"(UUID) ON DELETE CASCADE,
+    FOREIGN KEY (user_uuid) REFERENCES Users(UUID) ON DELETE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES Tag(ID) ON DELETE CASCADE
 );
 
@@ -78,6 +98,6 @@ CREATE TABLE Likes (
     user_uuid VARCHAR,
     post_uuid VARCHAR,
     PRIMARY KEY (user_uuid, post_uuid),
-    FOREIGN KEY (user_uuid) REFERENCES "User"(UUID) ON DELETE CASCADE,
+    FOREIGN KEY (user_uuid) REFERENCES Users(UUID) ON DELETE CASCADE,
     FOREIGN KEY (post_uuid) REFERENCES Post(UUID) ON DELETE CASCADE
 );
