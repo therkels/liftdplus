@@ -10,9 +10,9 @@ const NavBar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-gray-800 text-white px-6 py-4 w-full">
+    <nav className="bg-gray-800 text-white">
       {/* Mobile*/}
-      <div className="flex items-center justify-between md:hidden">
+      <div className="flex items-center justify-between px-6 py-4 md:hidden">
         <button
           onClick={toggleMenu}
           className="text-white focus:outline-none"
@@ -51,7 +51,7 @@ const NavBar: React.FC = () => {
       </div>
 
       {/* Desktop */}
-      <div className="hidden md:flex items-center justify-between">
+      <div className="hidden md:flex items-center justify-between px-6 py-4">
         <div className="font-bold text-xl">LFTD+</div>
         <ul className="flex space-x-6">
           <li>
@@ -75,8 +75,6 @@ const NavBar: React.FC = () => {
             </a>
           </li>
         </ul>
-
-        {/* Profile Icon for Desktop */}
         <button className="text-white focus:outline-none" aria-label="Profile">
           <svg
             className="w-6 h-6"
@@ -94,39 +92,33 @@ const NavBar: React.FC = () => {
         </button>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Dropdown Menu */}
       {isMenuOpen && (
-        <div className="md:hidden mt-4">
-          <ul className="flex flex-col space-y-2">
+        <div className="absolute top-[59px] left-0 right-0 bg-gray-800 shadow-lg md:hidden z-50">
+          <ul className="flex flex-col">
             <li>
-              <a href="/" className="block py-2 px-4 rounded">
+              <a href="/" className="block px-6 py-2 hover:bg-gray-700">
                 Home
               </a>
             </li>
-            <li className="border-b-2 border-gray-600" />
+            <li className="border-b-2 border-gray-700" />
             <li>
-              <a
-                href="/about"
-                className="block py-2 px-4 rounded"
-              >
+              <a href="/about" className="block px-6 py-2 hover:bg-gray-700">
                 About
               </a>
             </li>
-            <li className="border-b-2 border-gray-600" />
+            <li className="border-b-2 border-gray-700" />
             <li>
               <a
                 href="/dashboard"
-                className="block py-2 px-4 rounded"
+                className="block px-6 py-2 hover:bg-gray-700"
               >
                 Dashboard
               </a>
             </li>
-            <li className="border-b-2 border-gray-600" />
+            <li className="border-b-2 border-gray-700" />
             <li>
-              <a
-                href="/contact"
-                className="block py-2 px-4 rounded"
-              >
+              <a href="/contact" className="block px-6 py-2 hover:bg-gray-700">
                 Contact
               </a>
             </li>
