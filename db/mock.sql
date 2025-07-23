@@ -1,107 +1,92 @@
--- User Types
+-- USER TYPES
 INSERT INTO private.user_type (type_id, descr) VALUES
-('admin', 'Internal Team Administrator'),
-('regular', 'Regular User');
+    ('admin', 'Internal team/admin user'),
+    ('user', 'General user');
 
--- Users (Admin only for MVP)
-INSERT INTO private.users (uuid, username, email, user_type_id) VALUES
-('u1', 'kenyaa', 'kenya.a@example.com', 'admin'),
-('u2', 'liftdplus', 'team@liftdplus.com', 'admin');
+-- USERS (Admin and Regular user)
+INSERT INTO private.users (id, username, email, user_type_id, user_role)
+VALUES
+    ('admin_1', 'liftd+', 'liftd+@umich.edu', 'admin', 'admin'),
+    ('user_1', 'jdoe', 'jdoe@umich.edu', 'user', 'user');
 
+-- POST TEMPLATES
 INSERT INTO private.post_template (id, descr, has_html, has_json) VALUES
-('mixed_content', 'Mixed Content Block for Micro Stories, Quick Tips', TRUE, FALSE),
-('carousel_block',  'Carousel Block for visual explainers', TRUE, TRUE),
-('card_grid', 'Card Grid Block for mood boards, collections', TRUE, TRUE),
-('longform_reader', 'Long-form Reader Block for essays/guides', TRUE, FALSE);
+    ('mixed_content', 'Mixed Content Block', TRUE, FALSE),
+    ('carousel_block', 'Carousel Block', TRUE, FALSE),
+    ('card_grid_block', 'Card Grid Block', TRUE, FALSE),
+    ('longform_reader', 'Long-form Reader Block', TRUE, FALSE);
 
-INSERT INTO private.post_type (post_type_id, template_id, descr) VALUES
-('micro_story', 'mixed_content', 'Micro-stories or personal reflections'),
-('blog_post', 'longform_reader', 'Blog-style informative guides'),
-('image_carousel', 'carousel_block', 'Visual storytelling carousel format'),
-('grid_content', 'card_grid', 'Mood boards/themed visual collections');
+-- TAGS (Categories/Topics)
+INSERT INTO private.tag (id, display_name, descr, category) VALUES
+    ('sleep_rest',  'Sleep & Rest', 'Tips and advice on rest', 'topic'),
+    ('stress_anx',  'Stress & Anxiety', 'Managing stress levels', 'topic'),
+    ('intimacy',    'Intimacy', 'Improving relationships', 'topic');
 
--- Categories (wellness-related themes)
-INSERT INTO private.category (id, short_desc) VALUES
-('sleep', 'Sleep & Rest'),
-('anxiety', 'Stress & Anxiety'),
-('intimacy', 'Intimacy');
+-- TAGS (Content Types/Formats)
+INSERT INTO private.tag (id, display_name, descr, category) VALUES
+    ('micro_story',  'Micro Story', 'Short reflections', 'format'),
+    ('blog',         'Blog Post', 'Long-form content', 'format'),
+    ('carousel',     'Image Carousel', 'Horizontally-scrollable visual', 'format'),
+    ('moodboard',    'Moodboard', 'Visual mood collections', 'format');
 
--- Tags: Each tag links to a category + additional tag for Content Type, Audience
-INSERT INTO private.tag (id, label_id, display_name, descr) VALUES
-('t1', 'sleep', 'Sleep & Rest', 'Content about improving sleep and restfulness'),
-('t2', 'anxiety', 'Stress & Anxiety', 'Managing daily stress and anxiety'),
-('t3', 'intimacy', 'Intimacy', 'Supporting intimate relationships'),
+-- TAGS (Audience)
+INSERT INTO private.tag (id, display_name, descr, category) VALUES
+    ('first_time', 'First-Time', 'For new or first-time audiences', 'audience'),
+    ('parents',    'Parents',    'For caregivers and parents', 'audience'),
+    ('women',      'Women',      'Focusing on women''s wellness', 'audience'),
+    ('bipoc',      'BIPOC',      'Black, Indigenous, People of Color', 'audience'),
+    ('fifty_plus', '50+',        'For older adults', 'audience');
 
--- Content Type Tags
-('ct_micro_story', 'sleep', 'Micro Story', 'Short personal reflection format'),
-('ct_guide', 'anxiety', 'Guide', 'Blog-style or narrative guide format'),
-('ct_moodboard', 'intimacy', 'Moodboard', 'Collection or moodboard layout'),
+-- POSTS
+INSERT INTO private.post (
+    id, title, secondary_title, cover_image_url, post_template_id, author, 
+    contributor_name, source, post_status, markdown, config, created_at, published_at
+) VALUES
+    ('post001', '3 Tips for Better Sleep', 'Sleep Journal #1', 'https://example.com/img/sleep.jpg', 'mixed_content', 'admin_1', 'LIFTD+', 'LIFTD+', 'published', '### Try these quick ideas...', NULL, '2024-06-01 10:00:00', '2024-06-01 10:05:00'),
+    ('post002', 'What First-Timers Should Know', 'For Newcomers', 'https://example.com/img/newcomers.jpg', 'longform_reader', 'admin_1', 'Kenya A.', 'Expert', 'published', '## Welcome to your first steps!', NULL, '2024-06-03 09:00:00', '2024-06-03 10:15:00'),
+    ('post003', 'Stress-Busters: A Moodboard', 'Coping through visuals', 'https://example.com/img/stress.jpg', 'card_grid_block', 'admin_1', 'LIFTD+', 'UGC', 'published', 'Visual approach to stress-relief.', NULL, '2024-06-05 14:20:00', '2024-06-05 17:00:00'),
+    ('post004', 'Calm Nights, Visual Steps', 'Visual wind down', 'https://example.com/img/calm.jpg', 'carousel_block', 'admin_1', 'LIFTD+', 'LIFTD+', 'published', 'Slideshow for a restful night.', NULL, '2024-06-07 20:00:00', '2024-06-07 22:45:00');
 
--- Audience Tags
-('aud_parents', 'sleep', 'Parents', 'Content for parents'),
-('aud_first_time', 'anxiety', 'First-Time', 'For first-time users'),
-('aud_women', 'intimacy', 'Women', 'Content intended for women');
+-- POST_TAGS (Assigning Category, Content Type, and Audience tags)
+INSERT INTO private.post_tag (post_id, tag_id) VALUES
+    -- Post001: Sleep & Rest, Micro Story, First-Time
+    ('post001', 'sleep_rest'),
+    ('post001', 'micro_story'),
+    ('post001', 'first_time'),
+    -- Post002: Topic & audience for newcomers, micro_story content type
+    ('post002', 'micro_story'),
+    ('post002', 'first_time'),
+    -- Post003: Stress, Moodboard, Parents
+    ('post003', 'stress_anx'),
+    ('post003', 'moodboard'),
+    ('post003', 'parents'),
+    -- Post004: Sleep & Rest, Carousel, 50+
+    ('post004', 'sleep_rest'),
+    ('post004', 'carousel'),
+    ('post004', 'fifty_plus');
 
--- Micro Story
-INSERT INTO private.post (uuid, post_template_id, author, contributor_name, source, post_status, markup, config)
-VALUES (
-  'p1', 'mixed_content', 'u1', 'Kenya A.', 'LIFTD+', 'published',
-  'Title: “My Nighttime Routine”<br>Body: “Here’s how I wind down for restful sleep…”', NULL
-);
+-- LIKES (user_1 liked three posts)
+INSERT INTO private.likes (user_id, post_id) VALUES
+    ('user_1', 'post001'),
+    ('user_1', 'post002'),
+    ('user_1', 'post003');
 
--- Blog-style post
-INSERT INTO private.post (uuid, post_template_id, author, contributor_name, source, post_status, markup, config)
-VALUES (
-  'p2', 'longform_reader', 'u2', 'LIFTD+', 'LIFTD+', 'published',
-  'Title: “Understanding Stress Triggers”<br>Body: “Stress hits at the worst times. Here’s a guide to coping...”', NULL
-);
+-- ARCHIVES (user_1 saved two posts)
+INSERT INTO private.archives (post_id, user_id) VALUES
+    ('post001', 'user_1'),
+    ('post002', 'user_1');
 
--- Image Carousel
-INSERT INTO private.post (uuid, post_template_id, author, contributor_name, source, post_status, markup, config)
-VALUES (
-  'p3', 'carousel_block', 'u1', 'Kenya A.', 'Expert Contributor', 'published',
-  'Title: “Bedtime Products to Try”<br>(Carousel images go here)', '{"images": [{"url": "img1.jpg","caption": "Tealight Candles"},{"url": "img2.jpg","caption": "Aromatherapy Spray"}]}'
-);
 
--- Grid-style Moodboard
-INSERT INTO private.post (uuid, post_template_id, author, contributor_name, source, post_status, markup, config)
-VALUES (
-  'p4', 'card_grid', 'u2', 'LIFTD+', 'LIFTD+', 'published',
-  'Moodboard: “Winding Down”<br>Tiles: relaxing scenes', '{"tiles": [{"label": "Herbal Tea"},{"label": "Soft Music"}]}'
-);
-
--- p1: Micro Story (Sleep, Micro Story, Parents)
-INSERT INTO private.post_tag (post_uuid, tag_id) VALUES
-('p1', 't1'),
-('p1', 'ct_micro_story'),
-('p1', 'aud_parents');
-
--- p2: Blog (Anxiety category, Guide, First-Time)
-INSERT INTO private.post_tag (post_uuid, tag_id) VALUES
-('p2', 't2'),
-('p2', 'ct_guide'),
-('p2', 'aud_first_time');
-
--- p3: Image Carousel (Sleep, Moodboard, Women)
-INSERT INTO private.post_tag (post_uuid, tag_id) VALUES
-('p3', 't1'),
-('p3', 'ct_moodboard'),
-('p3', 'aud_women');
-
--- p4: Grid/Moodboard (Intimacy, Moodboard, Parents)
-INSERT INTO private.post_tag (post_uuid, tag_id) VALUES
-('p4', 't3'),
-('p4', 'ct_moodboard'),
-('p4', 'aud_parents');
-
--- Kenya liked her own post and LIFTD+'s grid
-INSERT INTO private.likes (user_uuid, post_uuid) VALUES
-('u1', 'p1'),
-('u1', 'p4');
-
--- LIFTD+ team likes all posts (as placeholder)
-INSERT INTO private.likes (user_uuid, post_uuid) VALUES
-('u2', 'p1'),
-('u2', 'p2'),
-('u2', 'p3'),
-('u2', 'p4');
+INSERT INTO private.preferences (user_id, tag_id) VALUES
+    ('user_1', 'sleep_rest'),
+    ('user_1', 'stress_anx'),
+    ('user_1', 'intimacy'),
+    ('user_1', 'micro_story'),
+    ('user_1', 'moodboard'),
+    ('user_1', 'carousel'),
+    ('user_1', 'blog'),
+    ('user_1', 'first_time'),
+    ('user_1', 'parents'),
+    ('user_1', 'women'),
+    ('user_1', 'bipoc'),
+    ('user_1', 'fifty_plus');

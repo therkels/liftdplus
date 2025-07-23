@@ -1,0 +1,3 @@
+CREATE OR REPLACE FUNCTION get_personal_post_feed(tag_ids VARCHAR[])
+RETURNS JSONB
+LA
