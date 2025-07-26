@@ -1,0 +1,41 @@
+parameters: [User.preferences]
+    for each User.preference:
+    [
+    interface CardProps {
+        image: string;
+        title: string;
+        secondaryTitle: string;
+        authorName: string;
+        authorPhoto?: string;
+        likes: number;
+        tags: string[];
+    },
+    ]
+
+parameter: User.id
+[
+    {
+        feed_name:"trending",
+        "posts":[
+            {...CardProps_1},
+            {...CardProps_2},
+        ],
+    },
+    {
+        "feed_name":"recently_added",
+        "posts":[
+            {...CardProps_1},
+            {...CardProps_2},
+        ]
+    },
+    ...
+]
+
+//Get paginated feed for a particular scroll
+parameter: primary_tag, next_amt
+{
+  "posts":[
+            {...CardProps_1},
+            {...CardProps_2},
+        ]
+    }
