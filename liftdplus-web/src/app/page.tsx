@@ -64,7 +64,12 @@ export default function Home() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl font-bold text-gray-800">Hello, Jay</h1>
+          <h1
+            className="text-4xl font-bold"
+            style={{ color: "var(--foreground)" }}
+          >
+            Hello, Jay
+          </h1>
           <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center">
             <HiOutlineUser className="w-6 h-6 text-gray-600" />
           </div>
@@ -79,7 +84,12 @@ export default function Home() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-4xl font-bold text-gray-800">Hello, Jay</h1>
+        <h1
+          className="text-4xl font-bold"
+          style={{ color: "var(--foreground)" }}
+        >
+          Hello, Jay
+        </h1>
         <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center">
           <HiOutlineUser className="w-6 h-6 text-gray-600" />
         </div>

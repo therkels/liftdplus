@@ -27,7 +27,10 @@ const NavBar: React.FC = () => {
   return (
     <>
       {/* Desktop Navigation - Top */}
-      <nav className="hidden md:block bg-slate-700 text-white">
+      <nav
+        className="hidden md:block text-white"
+        style={{ backgroundColor: "var(--foreground)" }}
+      >
         <div className="flex items-center justify-between px-6 py-4">
           <div className="font-bold text-xl">LFTD+</div>
           <div className="flex space-x-4 flex-1 justify-center">
@@ -37,9 +40,14 @@ const NavBar: React.FC = () => {
                 href={item.href}
                 className={`flex flex-col items-center px-4 py-2 rounded-full transition-colors min-w-[80px] ${
                   activeTab === item.id
-                    ? "bg-lime-400 text-slate-900 font-medium"
+                    ? "text-slate-900 font-medium"
                     : "hover:text-lime-400"
                 }`}
+                style={
+                  activeTab === item.id
+                    ? { backgroundColor: "var(--accent)" }
+                    : {}
+                }
                 onClick={() => setActiveTab(item.id)}
               >
                 <item.icon className="w-6 h-6 mb-1" />
@@ -52,7 +60,7 @@ const NavBar: React.FC = () => {
 
       {/* Mobile Navigation - Bottom */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        <div className="bg-slate-700">
+        <div style={{ backgroundColor: "var(--foreground)" }}>
           <div className="flex">
             {navItems.map((item) => (
               <div key={item.id} className="w-1/4 flex justify-center py-3">
@@ -60,9 +68,14 @@ const NavBar: React.FC = () => {
                   href={item.href}
                   className={`flex flex-col items-center justify-center px-5 py-1 transition-colors ${
                     activeTab === item.id
-                      ? "bg-lime-400 text-slate-900 rounded-full"
+                      ? "text-slate-900 rounded-full"
                       : "text-white"
                   }`}
+                  style={
+                    activeTab === item.id
+                      ? { backgroundColor: "var(--accent)" }
+                      : {}
+                  }
                   onClick={() => setActiveTab(item.id)}
                 >
                   <item.icon className="w-8 h-8" />

@@ -39,7 +39,8 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #2e3a45;
+  --accent: #ccff33;
 }
 
 @theme inline {
