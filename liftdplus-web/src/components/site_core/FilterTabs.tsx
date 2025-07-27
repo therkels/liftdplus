@@ -50,14 +50,9 @@ const FilterTabs: React.FC<FilterTabsProps> = ({ className = "" }) => {
             onClick={() => handleFilterClick(filter)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
               activeFilters.has(filter)
-                ? "text-slate-900"
+                ? "text-slate-900 bg-accent"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
-            style={
-              activeFilters.has(filter)
-                ? { backgroundColor: "var(--accent)" }
-                : {}
-            }
           >
             {filter}
           </button>

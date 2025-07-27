@@ -6,7 +6,20 @@ module.exports = {
     "./src/app/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        accentLight: "var(--accent-light)",
+        accent: {
+          DEFAULT: "var(--accent)",
+          dark: "var(--accent-dark)",
+        },
+        onboarding: {
+          header: "var(--onboarding-header)",
+        },
+      },
+    },
   },
   plugins: [],
 };

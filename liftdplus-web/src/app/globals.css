@@ -41,6 +41,9 @@
   --background: #ffffff;
   --foreground: #2e3a45;
   --accent: #ccff33;
+  --accent-dark: #4c5a58;
+  --accent-light: #5b8f8d;
+  --onboarding-header: #b6c4af;
 }
 
 @theme inline {
