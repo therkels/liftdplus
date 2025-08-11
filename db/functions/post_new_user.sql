@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS private.create_user(VARCHAR);
-DROP FUNCTION IF EXISTS public.create_user(VARCHAR);
+DROP FUNCTION IF EXISTS private.create_user(uuid, varchar);
+DROP FUNCTION IF EXISTS public.create_user(uuid, varchar);
 CREATE OR REPLACE FUNCTION private.create_user(user_id uuid, username varchar)
   RETURNS void
   language sql
@@ -20,6 +20,6 @@ CREATE OR REPLACE FUNCTION public.create_user(user_id uuid, username varchar)
   RETURNS void
   as $$
 BEGIN
-  SELECT private.create_user(user_id, username);
+  PERFORM private.create_user(user_id, username);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
