@@ -3,6 +3,16 @@ import { createClient } from "@/utils/supabase/server"
 
 export async function GET(request: NextRequest) {
     const supabase = await createClient();
+    const {
+        data: {user}
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return new Response(JSON.stringify({error:"Not authenticated."}),{
+            status:401,
+            headers: {'Content-Type':"application/json"}
+        })
+    }
     const { data, error } = await supabase.rpc('get_user_feed', { user_id: "153ac42d-e0f7-4cfd-aaa6-14302482e7fb" });
     if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
