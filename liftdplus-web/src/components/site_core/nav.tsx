@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   HiOutlineBookOpen,
   HiOutlineSearch,
@@ -10,11 +11,25 @@ import {
 } from "react-icons/hi";
 
 const NavBar: React.FC = () => {
+  const pathname = usePathname();
   const [activeTab, setActiveTab] = useState("explore");
+
+  // Set active tab based on current pathname
+  useEffect(() => {
+    if (pathname === "/") {
+      setActiveTab("explore");
+    } else if (pathname === "/search") {
+      setActiveTab("discover");
+    } else if (pathname === "/favorites") {
+      setActiveTab("favorites");
+    } else if (pathname === "/profile") {
+      setActiveTab("profile");
+    }
+  }, [pathname]);
 
   const navItems = [
     { id: "explore", label: "Explore", icon: HiOutlineBookOpen, href: "/" },
-    { id: "search", label: "Search", icon: HiOutlineSearch, href: "/search" },
+    { id: "discover", label: "Discover", icon: HiOutlineSearch, href: "/search" },
     {
       id: "favorites",
       label: "Favorites",
