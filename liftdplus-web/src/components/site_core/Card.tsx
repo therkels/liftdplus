@@ -38,9 +38,9 @@ const Card: React.FC<CardProps> = ({
         className="w-full bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
         onClick={onClick}
       >
-        <div className="flex">
+        <div className="flex h-32">
           {/* Left side - Image */}
-          <div className="relative w-24 h-24 flex-shrink-0">
+          <div className="relative w-32 h-32 flex-shrink-0">
             <Image
               src={image}
               alt={title}
@@ -50,31 +50,23 @@ const Card: React.FC<CardProps> = ({
           </div>
 
           {/* Right side - Content */}
-          <div className="flex-1 p-3 flex flex-col justify-between">
-            {/* Top section with read time */}
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex-1">
-                {/* Title */}
-                <h3
-                  className="text-sm font-bold leading-tight mb-1 line-clamp-2"
-                  style={{ color: "#5b8f8d" }}
-                >
-                  {title}
-                </h3>
-              </div>
-              {/* Read time */}
+          <div className="flex-1 p-4 flex flex-col justify-between">
+            <div className="flex flex-col mb-2">
               {readTime && (
-                <span className="text-xs text-gray-400 ml-2 flex-shrink-0">
-                  {readTime}
-                </span>
+                <span className="text-xs text-gray-400 mb-1">{readTime}</span>
               )}
+              <h3
+                className="text-sm font-bold leading-tight line-clamp-2"
+                style={{ color: "#5b8f8d" }}
+              >
+                {title}
+              </h3>
             </div>
 
             {/* Bottom section with author and actions */}
             <div className="flex items-center justify-between">
-              {/* Author info */}
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 border border-gray-700">
                   {authorPhoto ? (
                     <Image
                       src={authorPhoto}
@@ -110,7 +102,7 @@ const Card: React.FC<CardProps> = ({
                 >
                   <svg
                     className="w-5 h-5"
-                    style={{ color: isLiked ? "#ef4444" : "#9ca3af" }}
+                    style={{ color: "var(--accent-light)" }}
                     fill={isLiked ? "currentColor" : "none"}
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -134,7 +126,7 @@ const Card: React.FC<CardProps> = ({
                 >
                   <svg
                     className="w-5 h-5"
-                    style={{ color: isBookmarked ? "#3b82f6" : "#9ca3af" }}
+                    style={{ color: "var(--accent-light)" }}
                     fill={isBookmarked ? "currentColor" : "none"}
                     stroke="currentColor"
                     viewBox="0 0 24 24"

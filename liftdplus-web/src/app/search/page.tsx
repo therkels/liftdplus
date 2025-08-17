@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Card from "@/components/site_core/Card";
 import PostModal from "@/components/site_core/PostModal";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
@@ -13,6 +14,7 @@ import {
 } from "@/utils/postTransformers";
 
 export default function Search() {
+  const router = useRouter();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
@@ -139,7 +141,6 @@ export default function Search() {
       <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="flex items-center justify-between">
           <h1
-            className="text-gray-800"
             style={{
               width: "262px",
               height: "34px",
@@ -150,6 +151,7 @@ export default function Search() {
               letterSpacing: "0.3%",
               verticalAlign: "middle",
               textTransform: "capitalize",
+              color: "var(--foreground)",
             }}
           >
             Discover
@@ -167,19 +169,51 @@ export default function Search() {
       {/* Filter Section */}
       <div className="bg-white px-4 py-6">
         <div className="text-center">
-          <h2 className="text-lg font-bold text-gray-800 mb-2">
+          <p
+            className="text-3xl font-bold mb-2"
+            style={{ color: "var(--foreground)" }}
+          >
             Explore More Topics
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
+          </p>
+          <p className="text-sm mb-4" style={{ color: "var(--subtext)" }}>
             Use the filter options to narrow your search.
           </p>
           <button
-            onClick={() => setIsFilterModalOpen(true)}
-            className="inline-flex items-center justify-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-full transition-colors border border-gray-300"
-            style={{ width: "283px", height: "42px" }}
+            onClick={() => router.push("/profile")}
+            className="inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-full transition-colors mb-3"
+            style={{
+              backgroundColor: "var(--background-light)",
+              color: "var(--foreground)",
+              width: "283px",
+              height: "42px",
+            }}
           >
-            <HiOutlineAdjustments className="w-5 h-5" />
-            <span>Filter & Sort By</span>
+            <span className="text-sm">Edit Interests</span>
+          </button>
+          <button
+            onClick={() => setIsFilterModalOpen(true)}
+            className="inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-full transition-colors"
+            style={{
+              backgroundColor: "var(--background-light)",
+              color: "var(--4c5a58)",
+              width: "283px",
+              height: "42px",
+            }}
+          >
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="6" y1="12" x2="18" y2="12"></line>
+              <line x1="9" y1="18" x2="15" y2="18"></line>
+            </svg>
+            <span className="text-sm">Filter & Sort By</span>
           </button>
         </div>
       </div>
@@ -190,10 +224,13 @@ export default function Search() {
         currentFilters.category.length > 0 ||
         currentFilters.format.length > 0) && (
         <div className="bg-white px-4 py-4">
-          <h3 className="text-sm font-medium text-gray-800 mb-3">
+          <h3
+            className="text-sm font-medium mb-3"
+            style={{ color: "var(--foreground)" }}
+          >
             Current Filters
           </h3>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 justify-center">
             {/* Sort By Filter */}
             {currentFilters.sortBy && (
               <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900">
@@ -235,8 +272,11 @@ export default function Search() {
       )}
 
       {/* Results Count */}
-      <div className="bg-white px-4 py-3 border-t border-gray-100">
-        <h3 className="text-sm font-medium text-gray-800">
+      <div className="bg-white px-4 py-3">
+        <h3
+          className="text-sm font-medium"
+          style={{ color: "var(--foreground)" }}
+        >
           {discoverContent.length} Results
         </h3>
       </div>
