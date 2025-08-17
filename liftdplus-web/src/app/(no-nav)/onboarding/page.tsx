@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { HiOutlineArrowRight } from "react-icons/hi";
 
@@ -32,23 +33,22 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-
       {/* Main content */}
       <div className="flex-1 flex flex-col pt-12">
-        <div className="flex-1 rounded-3xl p-8 text-center text-white relative bg-accent-dark">
+        <div className="flex-1 rounded-3xl p-8 text-center text-white relative bg-foreground">
           {/* Icon */}
-          <div className="mb-8">
-            <div className="w-12 h-12 mx-auto">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="w-4 h-4 rounded-full bg-accent"></div>
-                <div className="w-4 h-4 rounded-full bg-accent"></div>
-                <div className="w-4 h-4 rounded-full bg-accent"></div>
-                <div className="w-4 h-4 rounded-full bg-accent"></div>
-              </div>
+          <div>
+            <div className="w-20 h-20 mx-auto flex items-center justify-center">
+              <Image
+                src="/lftd-icon.svg"
+                alt="LFTD Icon"
+                width={80}
+                height={80}
+              />
             </div>
           </div>
 
-          <h2 className="text-2xl font-[560] mb-4 text-onboarding-header">
+          <h2 className="text-3xl font-[560] mb-4 text-white">
             What are you curious
             <br />
             about right now?

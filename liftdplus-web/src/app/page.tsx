@@ -2,16 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { HiOutlineCog } from "react-icons/hi";
 import Card from "@/components/site_core/Card";
-import CardScroller from "@/components/site_core/CardScroller";
-import FilterTabs from "@/components/site_core/FilterTabs";
+import InterestTags from "@/components/site_core/InterestTags";
+import InterestTagsSkeleton from "@/components/site_core/InterestTagsSkeleton";
 import PostModal from "@/components/site_core/PostModal";
+import CardScroller from "@/components/site_core/CardScroller";
+import CardScrollerSkeleton from "@/components/site_core/CardScrollerSkeleton";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
 import {
   Post,
   transformPost,
   transformPostForModal,
 } from "@/utils/postTransformers";
+import { InterestsSchema, mockInterestsData } from "@/types/interests";
 
 interface Topic {
   topic_id: string;
@@ -20,10 +25,15 @@ interface Topic {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [feedData, setFeedData] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [interestsLoading, setInterestsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [interestsData, setInterestsData] = useState<InterestsSchema>({
+    interests: [],
+  });
 
   useEffect(() => {
     // const fetchFeedData = async () => {
@@ -49,7 +59,7 @@ export default function Home() {
           {
             post_id: "1",
             cover_image_url: "/dandelion.jpg",
-            title: "Base Post Example",
+            title: "3 Reasons You Should Slow Down Today",
             secondary_title: "A simple post with markdown content",
             author_name: "Maya Johnson",
             author_photo: null,
@@ -210,11 +220,17 @@ Stay consistent and be patient with yourself.`,
       },
     ];
 
-    // Simulate loading delay
+    // Simulate loading delay for both feed and interests
     setTimeout(() => {
       setFeedData(mockData);
       setLoading(false);
     }, 1000);
+
+    // Simulate interests loading (could be a separate API call)
+    setTimeout(() => {
+      setInterestsData(mockInterestsData);
+      setInterestsLoading(false);
+    }, 1500);
   }, []);
 
   const handleCardClick = (post: Post) => {
@@ -229,32 +245,52 @@ Stay consistent and be patient with yourself.`,
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl font-bold text-foreground">Hello, Jay</h1>
-          <div
-            className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
-            style={{ borderColor: "var(--accent-light)" }}
-          >
-            <Image
-              src="/man.jpg"
-              alt="User"
-              width={48}
-              height={48}
-              className="rounded-full object-cover"
-            />
+      <div>
+        <div className="container mx-auto px-4 pt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-4xl font-bold text-foreground">Hello, Jay</h1>
+            <div
+              className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
+              style={{ borderColor: "var(--accent-light)" }}
+            >
+              <Image
+                src="/man.jpg"
+                alt="User"
+                width={48}
+                height={48}
+                className="rounded-full object-cover"
+              />
+            </div>
           </div>
+
+          {interestsLoading ? (
+            <InterestTagsSkeleton className="mb-2" />
+          ) : (
+            <InterestTags
+              interests={interestsData.interests}
+              className="mb-2"
+            />
+          )}
+
+          <button
+            onClick={() => router.push("/profile")}
+            className="flex items-center text-xs text-subtext mb-6 hover:text-gray-600 transition-colors"
+          >
+            <HiOutlineCog className="w-3 h-3 mr-1" />
+            Edit Interests
+          </button>
         </div>
 
-        <FilterTabs className="mb-6" />
-        <div className="text-center">Loading feed...</div>
+        {/* Loading skeletons for feed */}
+        <CardScrollerSkeleton title="Trending Posts" cardCount={4} />
+        <CardScrollerSkeleton title="Recently Added" cardCount={3} />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pt-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-4xl font-bold text-foreground">Hello, Jay</h1>
           <div
@@ -271,7 +307,20 @@ Stay consistent and be patient with yourself.`,
           </div>
         </div>
 
-        <FilterTabs className="mb-6" />
+        {interestsLoading ? (
+          <InterestTagsSkeleton className="mb-2" />
+        ) : (
+          <InterestTags interests={interestsData.interests} className="mb-2" />
+        )}
+
+        {/* Edit Interests Button */}
+        <button
+          onClick={() => router.push("/profile")}
+          className="flex items-center text-xs text-subtext mb-6 hover:text-gray-600 transition-colors"
+        >
+          <HiOutlineCog className="w-3 h-3 mr-1" />
+          Edit Interests
+        </button>
       </div>
 
       {feedData.map((topic) => (
@@ -281,6 +330,7 @@ Stay consistent and be patient with yourself.`,
               key={post.post_id}
               {...transformPost(post)}
               onClick={() => handleCardClick(post)}
+              compact={true}
             />
           ))}
         </CardScroller>

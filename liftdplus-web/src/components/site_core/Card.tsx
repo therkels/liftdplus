@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { FaUserCircle } from "react-icons/fa";
 import { useState } from "react";
 
 interface CardProps {
@@ -13,7 +12,7 @@ interface CardProps {
   onClick?: () => void;
   compact?: boolean;
   readTime?: string;
-  layout?: 'vertical' | 'horizontal';
+  layout?: "vertical" | "horizontal";
 }
 
 const Card: React.FC<CardProps> = ({
@@ -27,13 +26,13 @@ const Card: React.FC<CardProps> = ({
   onClick,
   compact = false,
   readTime,
-  layout = 'vertical',
+  layout = "vertical",
 }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   // Horizontal layout for Discover page
-  if (layout === 'horizontal') {
+  if (layout === "horizontal") {
     return (
       <div
         className="w-full bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
@@ -42,21 +41,24 @@ const Card: React.FC<CardProps> = ({
         <div className="flex">
           {/* Left side - Image */}
           <div className="relative w-24 h-24 flex-shrink-0">
-            <Image 
-              src={image} 
-              alt={title} 
-              fill 
-              className="object-cover rounded-l-lg" 
+            <Image
+              src={image}
+              alt={title}
+              fill
+              className="object-cover rounded-l-lg"
             />
           </div>
-          
+
           {/* Right side - Content */}
           <div className="flex-1 p-3 flex flex-col justify-between">
             {/* Top section with read time */}
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
                 {/* Title */}
-                <h3 className="text-sm font-bold text-teal-700 leading-tight mb-1 line-clamp-2">
+                <h3
+                  className="text-sm font-bold leading-tight mb-1 line-clamp-2"
+                  style={{ color: "#5b8f8d" }}
+                >
                   {title}
                 </h3>
               </div>
@@ -67,7 +69,7 @@ const Card: React.FC<CardProps> = ({
                 </span>
               )}
             </div>
-            
+
             {/* Bottom section with author and actions */}
             <div className="flex items-center justify-between">
               {/* Author info */}
@@ -95,7 +97,7 @@ const Card: React.FC<CardProps> = ({
                   {authorName}
                 </span>
               </div>
-              
+
               {/* Action buttons */}
               <div className="flex items-center space-x-3">
                 {/* Like button */}
@@ -108,7 +110,7 @@ const Card: React.FC<CardProps> = ({
                 >
                   <svg
                     className="w-5 h-5"
-                    style={{ color: isLiked ? '#ef4444' : '#9ca3af' }}
+                    style={{ color: isLiked ? "#ef4444" : "#9ca3af" }}
                     fill={isLiked ? "currentColor" : "none"}
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -121,7 +123,7 @@ const Card: React.FC<CardProps> = ({
                     />
                   </svg>
                 </button>
-                
+
                 {/* Bookmark button */}
                 <button
                   className="p-1 rounded-full hover:bg-gray-100 transition-colors"
@@ -132,7 +134,7 @@ const Card: React.FC<CardProps> = ({
                 >
                   <svg
                     className="w-5 h-5"
-                    style={{ color: isBookmarked ? '#3b82f6' : '#9ca3af' }}
+                    style={{ color: isBookmarked ? "#3b82f6" : "#9ca3af" }}
                     fill={isBookmarked ? "currentColor" : "none"}
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -147,23 +149,6 @@ const Card: React.FC<CardProps> = ({
                 </button>
               </div>
             </div>
-            
-            {/* Tags */}
-            {tags.length > 0 && (
-              <div className="flex items-center space-x-1 mt-2">
-                {tags.map((tag, index) => (
-                  <div
-                    key={index}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                    style={{
-                      backgroundColor: index === 0 ? '#8B5CF6' : '#EC4899'
-                    }}
-                  >
-                    {tag.charAt(0).toUpperCase()}
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -174,7 +159,7 @@ const Card: React.FC<CardProps> = ({
   return (
     <div
       className={`flex-shrink-0 ${
-        compact ? "w-full" : "w-72"
+        compact ? "w-44" : "w-72"
       } bg-white rounded-lg shadow-lg overflow-hidden ${
         compact ? "m-0" : "m-2"
       } cursor-pointer md:transition-transform md:duration-200 md:hover:scale-105 md:hover:shadow-xl`}
@@ -183,24 +168,36 @@ const Card: React.FC<CardProps> = ({
       <div className={`relative ${compact ? "h-32" : "h-48"} w-full`}>
         <Image src={image} alt={title} fill className="object-cover" />
       </div>
-      <div className={compact ? "p-3" : "p-4"}>
-        <h2
-          className={`${
-            compact ? "text-lg" : "text-xl"
-          } font-bold text-gray-800 mb-1`}
-        >
-          {title}
-        </h2>
-        {secondaryTitle && (
-          <p className={`text-sm text-gray-600 ${compact ? "mb-2" : "mb-3"}`}>
-            {secondaryTitle}
-          </p>
-        )}
-        <div
-          className={`flex items-center justify-between ${
-            compact ? "mb-2" : "mb-3"
-          }`}
-        >
+      {/* Read time under image for vertical layout */}
+      <div className="px-3 pt-3 text-xs text-subtext">
+        {readTime ?? "5 minute read"}
+      </div>
+      <div
+        className={
+          compact
+            ? "px-3 py-1 flex flex-col justify-between min-h-[7rem]"
+            : "p-4 flex flex-col justify-between min-h-[8rem]"
+        }
+      >
+        <div>
+          <h2
+            className={`${
+              compact ? "text-sm leading-tight" : "text-xl leading-tight"
+            } font-bold line-clamp-2`}
+            style={{ color: "#5b8f8d" }}
+          >
+            {title}
+          </h2>
+          {secondaryTitle && (
+            <div className={`mt-1 flex items-center gap-1`}>
+              <span className="text-xs text-gray-600 flex-1 truncate">
+                {secondaryTitle}
+              </span>
+              <span className="text-xs text-subtext flex-shrink-0">More</span>
+            </div>
+          )}
+        </div>
+        <div className={`flex items-center justify-between pt-2`}>
           <div className="flex items-center space-x-2">
             <div
               className="w-8 h-8 border-2 rounded-full overflow-hidden flex-shrink-0"
@@ -226,8 +223,8 @@ const Card: React.FC<CardProps> = ({
             </div>
             <span
               className={`${
-                compact ? "text-xs" : "text-sm"
-              } font-medium text-gray-700`}
+                compact ? "text-[10px]" : "text-xs"
+              } font-medium text-gray-700 leading-tight`}
             >
               {authorName}
             </span>
@@ -247,7 +244,7 @@ const Card: React.FC<CardProps> = ({
               }}
             >
               <svg
-                className="w-7 h-7 md:w-6 md:h-6"
+                className="w-5 h-5 md:w-4 md:h-4"
                 style={{ color: "var(--accent-light)" }}
                 fill={isLiked ? "currentColor" : "none"}
                 stroke="currentColor"
@@ -271,7 +268,7 @@ const Card: React.FC<CardProps> = ({
               }}
             >
               <svg
-                className="w-7 h-7 md:w-6 md:h-6"
+                className="w-5 h-5 md:w-4 md:h-4"
                 style={{ color: "var(--accent-light)" }}
                 fill={isBookmarked ? "currentColor" : "none"}
                 stroke="currentColor"
@@ -286,16 +283,6 @@ const Card: React.FC<CardProps> = ({
               </svg>
             </button>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag, index) => (
-            <span
-              key={index}
-              className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full"
-            >
-              {tag}
-            </span>
-          ))}
         </div>
       </div>
     </div>

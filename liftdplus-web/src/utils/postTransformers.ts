@@ -15,6 +15,7 @@ export interface Post {
   content_type?: "text" | "image";
   content?: string;
   images?: string[];
+  read_time_minutes?: number;
 }
 
 export interface CardProps {
@@ -25,6 +26,7 @@ export interface CardProps {
   authorPhoto?: string;
   likes: number;
   tags: string[];
+  readTime?: string;
 }
 
 export const transformPost = (post: Post): CardProps => {
@@ -38,6 +40,7 @@ export const transformPost = (post: Post): CardProps => {
     tags: [post.topic_tags, post.format_tags, post.audience_tags].filter(
       Boolean
     ),
+    readTime: `${post.read_time_minutes ?? 5} minute read`,
   };
 };
 
