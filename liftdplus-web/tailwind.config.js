@@ -9,11 +9,14 @@ module.exports = {
     extend: {
       colors: {
         background: "var(--background)",
+        backgroundLight: "var(--background-light)",
+        subtext: "var(--subtext)",
         foreground: "var(--foreground)",
         accentLight: "var(--accent-light)",
         accent: {
           DEFAULT: "var(--accent)",
           dark: "var(--accent-dark)",
+          light: "var(--accent-light)",
         },
         onboarding: {
           header: "var(--onboarding-header)",

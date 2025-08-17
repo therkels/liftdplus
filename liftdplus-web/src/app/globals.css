@@ -40,6 +40,7 @@
 :root {
   --background: #ffffff;
   --background-light: #ececec;
+  --subtext: #868585;
   --foreground: #2e3a45;
   --accent: #ccff33;
   --accent-dark: #4c5a58;
