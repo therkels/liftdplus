@@ -19,7 +19,10 @@ interface FilterState {
   format: string[];
 }
 
-const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFiltersUpdate }) => {
+const FilterContent: React.FC<FilterContentProps> = ({
+  currentFilters,
+  onFiltersUpdate,
+}) => {
   const [filters, setFilters] = useState<FilterState>(currentFilters);
 
   // Sync filters when currentFilters prop changes
@@ -37,8 +40,8 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
     const newFilters = {
       ...filters,
       audience: filters.audience.includes(value)
-        ? filters.audience.filter(item => item !== value)
-        : [...filters.audience, value]
+        ? filters.audience.filter((item) => item !== value)
+        : [...filters.audience, value],
     };
     setFilters(newFilters);
     onFiltersUpdate(newFilters);
@@ -48,8 +51,8 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
     const newFilters = {
       ...filters,
       category: filters.category.includes(value)
-        ? filters.category.filter(item => item !== value)
-        : [...filters.category, value]
+        ? filters.category.filter((item) => item !== value)
+        : [...filters.category, value],
     };
     setFilters(newFilters);
     onFiltersUpdate(newFilters);
@@ -59,8 +62,8 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
     const newFilters = {
       ...filters,
       format: filters.format.includes(value)
-        ? filters.format.filter(item => item !== value)
-        : [...filters.format, value]
+        ? filters.format.filter((item) => item !== value)
+        : [...filters.format, value],
     };
     setFilters(newFilters);
     onFiltersUpdate(newFilters);
@@ -70,12 +73,12 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
     <div className="h-full bg-white">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-        <h2 
+        <h2
           className="text-gray-800"
           style={{
             fontWeight: 700,
-            fontSize: '32px',
-            lineHeight: '38px'
+            fontSize: "32px",
+            lineHeight: "38px",
           }}
         >
           Filters
@@ -83,27 +86,30 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
       </div>
 
       {/* Content */}
-      <div className="px-6 py-4 overflow-y-auto max-h-[calc(100vh-120px)]">
+      <div className="px-6 py-4 overflow-y-auto max-h">
         {/* Sort By */}
         <div className="pb-6">
-          <h3 
+          <h3
             className="text-gray-800 mb-4"
             style={{
               fontWeight: 600,
-              fontSize: '20px',
-              lineHeight: '24px'
+              fontSize: "20px",
+              lineHeight: "24px",
             }}
           >
             Sort By
           </h3>
           <div className="space-y-3">
             {["Most Popular", "Most Recent", "Oldest"].map((option) => (
-              <label key={option} className="flex items-center justify-between cursor-pointer">
-                <span 
+              <label
+                key={option}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <span
                   className="text-gray-700"
                   style={{
-                    fontSize: '16px',
-                    lineHeight: '20px'
+                    fontSize: "16px",
+                    lineHeight: "20px",
                   }}
                 >
                   {option}
@@ -114,7 +120,8 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
                   value={option}
                   checked={filters.sortBy === option}
                   onChange={(e) => handleSortByChange(e.target.value)}
-                  className="w-4 h-4 text-gray-700 border-gray-400 focus:ring-gray-500"
+                  className="w-4 h-4 border-gray-400 focus:ring-gray-500"
+                  style={{ accentColor: "var(--foreground)" }}
                 />
               </label>
             ))}
@@ -126,24 +133,27 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
 
         {/* Audience */}
         <div className="pb-6">
-          <h3 
+          <h3
             className="text-gray-800 mb-4"
             style={{
               fontWeight: 600,
-              fontSize: '20px',
-              lineHeight: '24px'
+              fontSize: "20px",
+              lineHeight: "24px",
             }}
           >
             Audience
           </h3>
           <div className="space-y-3">
             {["Women", "BIPOC", "Men", "Mother"].map((option) => (
-              <label key={option} className="flex items-center justify-between cursor-pointer">
-                <span 
+              <label
+                key={option}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <span
                   className="text-gray-700"
                   style={{
-                    fontSize: '16px',
-                    lineHeight: '20px'
+                    fontSize: "16px",
+                    lineHeight: "20px",
                   }}
                 >
                   {option}
@@ -152,7 +162,8 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
                   type="checkbox"
                   checked={filters.audience.includes(option)}
                   onChange={() => handleAudienceChange(option)}
-                  className="w-4 h-4 text-gray-700 border-gray-400 rounded focus:ring-gray-500"
+                  className="w-4 h-4 border-gray-400 rounded focus:ring-gray-500"
+                  style={{ accentColor: "var(--foreground)" }}
                 />
               </label>
             ))}
@@ -164,12 +175,12 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
 
         {/* Category */}
         <div className="pb-6">
-          <h3 
+          <h3
             className="text-gray-800 mb-4"
             style={{
               fontWeight: 600,
-              fontSize: '20px',
-              lineHeight: '24px'
+              fontSize: "20px",
+              lineHeight: "24px",
             }}
           >
             Category
@@ -181,14 +192,17 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
               "Intimacy & Libido",
               "Hormonal Changes",
               "Pain Relief",
-              "Focus & Creativity"
+              "Focus & Creativity",
             ].map((option) => (
-              <label key={option} className="flex items-center justify-between cursor-pointer">
-                <span 
+              <label
+                key={option}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <span
                   className="text-gray-700"
                   style={{
-                    fontSize: '16px',
-                    lineHeight: '20px'
+                    fontSize: "16px",
+                    lineHeight: "20px",
                   }}
                 >
                   {option}
@@ -197,7 +211,8 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
                   type="checkbox"
                   checked={filters.category.includes(option)}
                   onChange={() => handleCategoryChange(option)}
-                  className="w-4 h-4 text-gray-700 border-gray-400 rounded focus:ring-gray-500"
+                  className="w-4 h-4 border-gray-400 rounded focus:ring-gray-500"
+                  style={{ accentColor: "var(--foreground)" }}
                 />
               </label>
             ))}
@@ -209,36 +224,42 @@ const FilterContent: React.FC<FilterContentProps> = ({ currentFilters, onFilters
 
         {/* Format */}
         <div className="pb-6">
-          <h3 
+          <h3
             className="text-gray-800 mb-4"
             style={{
               fontWeight: 600,
-              fontSize: '20px',
-              lineHeight: '24px'
+              fontSize: "20px",
+              lineHeight: "24px",
             }}
           >
             Format
           </h3>
           <div className="space-y-3">
-            {["Long Form Blog", "Short Form Blog", "Quick Reads"].map((option) => (
-              <label key={option} className="flex items-center justify-between cursor-pointer">
-                <span 
-                  className="text-gray-700"
-                  style={{
-                    fontSize: '16px',
-                    lineHeight: '20px'
-                  }}
+            {["Long Form Blog", "Short Form Blog", "Quick Reads"].map(
+              (option) => (
+                <label
+                  key={option}
+                  className="flex items-center justify-between cursor-pointer"
                 >
-                  {option}
-                </span>
-                <input
-                  type="checkbox"
-                  checked={filters.format.includes(option)}
-                  onChange={() => handleFormatChange(option)}
-                  className="w-4 h-4 text-gray-700 border-gray-400 rounded focus:ring-gray-500"
-                />
-              </label>
-            ))}
+                  <span
+                    className="text-gray-700"
+                    style={{
+                      fontSize: "16px",
+                      lineHeight: "20px",
+                    }}
+                  >
+                    {option}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={filters.format.includes(option)}
+                    onChange={() => handleFormatChange(option)}
+                    className="w-4 h-4 border-gray-400 rounded focus:ring-gray-500"
+                    style={{ accentColor: "var(--foreground)" }}
+                  />
+                </label>
+              )
+            )}
           </div>
         </div>
       </div>
