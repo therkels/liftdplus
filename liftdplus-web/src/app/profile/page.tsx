@@ -11,6 +11,11 @@ import {
   HiOutlineTrash,
   HiOutlineUser,
 } from "react-icons/hi";
+import UpdateEmailModal from "@/components/site_core/UpdateEmailModal";
+import UpdatePasswordModal from "@/components/site_core/UpdatePasswordModal";
+import DeleteAccountModal from "@/components/site_core/DeleteAccountModal";
+import EditInterestsModal from "@/components/site_core/EditInterestsModal";
+import LogoutModal from "@/components/site_core/LogoutModal";
 
 export default function Profile() {
   const [user] = useState({
@@ -19,6 +24,27 @@ export default function Profile() {
     memberSince: "June 2025",
     profileImage: "/man.jpg",
   });
+
+  const [isUpdateEmailOpen, setIsUpdateEmailOpen] = useState(false);
+  const [isUpdatePasswordOpen, setIsUpdatePasswordOpen] = useState(false);
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+  const [isEditInterestsOpen, setIsEditInterestsOpen] = useState(false);
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+
+  const allInterests = [
+    "Sleep & Rest",
+    "Stress & Anxiety",
+    "Intimacy & Libido",
+    "Hormonal Changes",
+    "Pain Relief",
+    "Focus & Creativity",
+    "I'm Not Sure Yet",
+  ];
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([
+    "Sleep & Rest",
+    "Stress & Anxiety",
+    "Pain Relief",
+  ]);
 
   const menuItems = [
     {
@@ -31,31 +57,31 @@ export default function Profile() {
       id: "update-email",
       label: "Update Email",
       icon: HiOutlineMail,
-      action: () => console.log("Update Email"),
+      action: () => setIsUpdateEmailOpen(true),
     },
     {
       id: "change-password",
       label: "Change Password",
       icon: HiOutlineKey,
-      action: () => console.log("Change Password"),
+      action: () => setIsUpdatePasswordOpen(true),
     },
     {
       id: "edit-interests",
       label: "Edit Interests",
       icon: HiOutlineHeart,
-      action: () => console.log("Edit Interests"),
+      action: () => setIsEditInterestsOpen(true),
     },
     {
       id: "log-out",
       label: "Log Out",
       icon: HiOutlineLogout,
-      action: () => console.log("Log Out"),
+      action: () => setIsLogoutOpen(true),
     },
     {
       id: "delete-account",
       label: "Delete Account",
       icon: HiOutlineTrash,
-      action: () => console.log("Delete Account"),
+      action: () => setIsDeleteAccountOpen(true),
     },
   ];
 
@@ -126,6 +152,35 @@ export default function Profile() {
           </button>
         ))}
       </div>
+
+      {/* Modals */}
+      <UpdateEmailModal
+        isOpen={isUpdateEmailOpen}
+        onClose={() => setIsUpdateEmailOpen(false)}
+        onSubmit={async () => {}}
+      />
+      <UpdatePasswordModal
+        isOpen={isUpdatePasswordOpen}
+        onClose={() => setIsUpdatePasswordOpen(false)}
+        onSubmit={async () => {}}
+      />
+      <DeleteAccountModal
+        isOpen={isDeleteAccountOpen}
+        onClose={() => setIsDeleteAccountOpen(false)}
+        onConfirm={async () => {}}
+      />
+      <EditInterestsModal
+        isOpen={isEditInterestsOpen}
+        onClose={() => setIsEditInterestsOpen(false)}
+        availableInterests={allInterests}
+        selected={selectedInterests}
+        onSubmit={(sel) => setSelectedInterests(sel)}
+      />
+      <LogoutModal
+        isOpen={isLogoutOpen}
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={async () => {}}
+      />
     </div>
   );
 }
