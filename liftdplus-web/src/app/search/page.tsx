@@ -3,16 +3,24 @@
 import { useState } from "react";
 import Card from "@/components/site_core/Card";
 import PostModal from "@/components/site_core/PostModal";
+import PostContent, { PostData } from "@/components/site_core/PostContent";
 import FilterContent from "@/components/site_core/FilterContent";
-import { HiOutlineAdjustments, HiOutlineX } from "react-icons/hi";
+import { HiOutlineAdjustments } from "react-icons/hi";
+import {
+  Post,
+  transformPost,
+  transformPostForModal,
+} from "@/utils/postTransformers";
 
 export default function Search() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [currentFilters, setCurrentFilters] = useState({
     sortBy: "",
     audience: ["BIPOC"],
     category: ["Stress & Anxiety", "Sleep & Rest"],
-    format: []
+    format: [],
   });
 
   // Mock data for the content cards
@@ -21,60 +29,108 @@ export default function Search() {
   };
 
   const removeFilter = (type: string, value: string) => {
-    setCurrentFilters(prev => ({
+    setCurrentFilters((prev) => ({
       ...prev,
-      [type]: Array.isArray(prev[type as keyof typeof prev]) 
-        ? (prev[type as keyof typeof prev] as string[]).filter(item => item !== value)
-        : prev[type as keyof typeof prev]
+      [type]: Array.isArray(prev[type as keyof typeof prev])
+        ? (prev[type as keyof typeof prev] as string[]).filter(
+            (item) => item !== value
+          )
+        : prev[type as keyof typeof prev],
     }));
   };
 
-  const discoverContent = [
+  const handlePostClick = (post: Post) => {
+    const transformed = transformPostForModal(post);
+    setSelectedPost(transformed);
+    setIsPostModalOpen(true);
+  };
+
+  const closePostModal = () => {
+    setIsPostModalOpen(false);
+    setSelectedPost(null);
+  };
+
+  const discoverContent: Post[] = [
     {
-      id: 1,
-      image: "/dandelion.jpg",
+      post_id: "1",
+      cover_image_url: "/dandelion.jpg",
       title: "3 Reasons You Should Slow Down Today",
-      readTime: "5 minute read",
-      authorName: "Maya Johnson",
-      authorPhoto: "/woman.jpg",
-      tags: ["D", "E"]
+      secondary_title: "5 minute read",
+      author_name: "Maya Johnson",
+      author_photo: "/woman.jpg",
+      like_count: 42,
+      topic_tag_ids: ["1", "2"],
+      topic_tags: "Wellness",
+      format_tags: "Article",
+      audience_tags: "BIPOC",
+      content_type: "text",
+      content:
+        "# 3 Reasons You Should Slow Down Today\n\nIn our fast-paced world, taking time to slow down is more important than ever...",
     },
     {
-      id: 2,
-      image: "/dino.jpg",
+      post_id: "2",
+      cover_image_url: "/dino.jpg",
       title: "Staying Soft in the Chaos: A Cannamom's Birthday Story",
-      readTime: "5 minute read",
-      authorName: "Maya Johnson",
-      authorPhoto: "/woman.jpg",
-      tags: []
+      secondary_title: "5 minute read",
+      author_name: "Maya Johnson",
+      author_photo: "/woman.jpg",
+      like_count: 28,
+      topic_tag_ids: ["3"],
+      topic_tags: "Personal Stories",
+      format_tags: "Story",
+      audience_tags: "Parents",
+      content_type: "text",
+      content:
+        "# Staying Soft in the Chaos\n\nBeing a parent means finding moments of peace in the beautiful chaos...",
     },
     {
-      id: 3,
-      image: "/man.jpg",
+      post_id: "3",
+      cover_image_url: "/man.jpg",
       title: "Cannamom Approved: City Park Limeade",
-      readTime: "2 minute read",
-      authorName: "Maya Johnson",
-      authorPhoto: "/woman.jpg",
-      tags: []
+      secondary_title: "2 minute read",
+      author_name: "Maya Johnson",
+      author_photo: "/woman.jpg",
+      like_count: 15,
+      topic_tag_ids: ["4"],
+      topic_tags: "Recipes",
+      format_tags: "Recipe",
+      audience_tags: "All",
+      content_type: "text",
+      content:
+        "# City Park Limeade Recipe\n\nThis refreshing limeade is perfect for those summer days...",
     },
     {
-      id: 4,
-      image: "/woman.jpg",
+      post_id: "4",
+      cover_image_url: "/woman.jpg",
       title: "Finding Peace in the Everyday Moments",
-      readTime: "4 minute read",
-      authorName: "Maya Johnson",
-      authorPhoto: "/woman.jpg",
-      tags: ["W", "L"]
+      secondary_title: "4 minute read",
+      author_name: "Maya Johnson",
+      author_photo: "/woman.jpg",
+      like_count: 67,
+      topic_tag_ids: ["5", "6"],
+      topic_tags: "Mindfulness",
+      format_tags: "Guide",
+      audience_tags: "All",
+      content_type: "text",
+      content:
+        "# Finding Peace in the Everyday Moments\n\nMindfulness doesn't require a meditation cushion...",
     },
     {
-      id: 5,
-      image: "/dandelion.jpg",
+      post_id: "5",
+      cover_image_url: "/dandelion.jpg",
       title: "The Art of Mindful Living",
-      readTime: "6 minute read",
-      authorName: "Maya Johnson",
-      authorPhoto: "/woman.jpg",
-      tags: ["A", "M"]
-    }
+      secondary_title: "6 minute read",
+      author_name: "Maya Johnson",
+      author_photo: "/woman.jpg",
+      like_count: 89,
+      topic_tag_ids: ["7", "8"],
+      topic_tags: "Mindfulness",
+      format_tags: "Article",
+      audience_tags: "All",
+      content_type: "text",
+      content:
+        "# The Art of Mindful Living\n\nMindful living is about being present in each moment...",
+    },
   ];
 
   return (
@@ -82,18 +138,18 @@ export default function Search() {
       {/* Header Section */}
       <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="flex items-center justify-between">
-          <h1 
+          <h1
             className="text-gray-800"
-            style={{ 
-              width: '262px', 
-              height: '34px',
+            style={{
+              width: "262px",
+              height: "34px",
               fontWeight: 700,
-              fontStyle: 'normal',
-              fontSize: '40px',
-              lineHeight: '46px',
-              letterSpacing: '0.3%',
-              verticalAlign: 'middle',
-              textTransform: 'capitalize'
+              fontStyle: "normal",
+              fontSize: "40px",
+              lineHeight: "46px",
+              letterSpacing: "0.3%",
+              verticalAlign: "middle",
+              textTransform: "capitalize",
             }}
           >
             Discover
@@ -117,10 +173,10 @@ export default function Search() {
           <p className="text-sm text-gray-500 mb-4">
             Use the filter options to narrow your search.
           </p>
-          <button 
+          <button
             onClick={() => setIsFilterModalOpen(true)}
             className="inline-flex items-center justify-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-full transition-colors border border-gray-300"
-            style={{ width: '283px', height: '42px' }}
+            style={{ width: "283px", height: "42px" }}
           >
             <HiOutlineAdjustments className="w-5 h-5" />
             <span>Filter & Sort By</span>
@@ -129,9 +185,14 @@ export default function Search() {
       </div>
 
       {/* Current Filters Section */}
-      {(currentFilters.sortBy || currentFilters.audience.length > 0 || currentFilters.category.length > 0 || currentFilters.format.length > 0) && (
+      {(currentFilters.sortBy ||
+        currentFilters.audience.length > 0 ||
+        currentFilters.category.length > 0 ||
+        currentFilters.format.length > 0) && (
         <div className="bg-white px-4 py-4">
-          <h3 className="text-sm font-medium text-gray-800 mb-3">Current Filters</h3>
+          <h3 className="text-sm font-medium text-gray-800 mb-3">
+            Current Filters
+          </h3>
           <div className="flex flex-wrap gap-2">
             {/* Sort By Filter */}
             {currentFilters.sortBy && (
@@ -139,24 +200,33 @@ export default function Search() {
                 {currentFilters.sortBy}
               </span>
             )}
-            
+
             {/* Audience Filters */}
             {currentFilters.audience.map((filter) => (
-              <span key={`audience-${filter}`} className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900">
+              <span
+                key={`audience-${filter}`}
+                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900"
+              >
                 {filter}
               </span>
             ))}
-            
+
             {/* Category Filters */}
             {currentFilters.category.map((filter) => (
-              <span key={`category-${filter}`} className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900">
+              <span
+                key={`category-${filter}`}
+                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900"
+              >
                 {filter}
               </span>
             ))}
-            
+
             {/* Format Filters */}
             {currentFilters.format.map((filter) => (
-              <span key={`format-${filter}`} className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900">
+              <span
+                key={`format-${filter}`}
+                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900"
+              >
                 {filter}
               </span>
             ))}
@@ -166,28 +236,26 @@ export default function Search() {
 
       {/* Results Count */}
       <div className="bg-white px-4 py-3 border-t border-gray-100">
-        <h3 className="text-sm font-medium text-gray-800">{discoverContent.length} Results</h3>
+        <h3 className="text-sm font-medium text-gray-800">
+          {discoverContent.length} Results
+        </h3>
       </div>
 
       {/* Content Cards */}
       <div className="px-4 py-4 space-y-3">
         {discoverContent.map((content) => (
           <Card
-            key={content.id}
-            image={content.image}
-            title={content.title}
-            authorName={content.authorName}
-            authorPhoto={content.authorPhoto}
-            tags={content.tags}
-            readTime={content.readTime}
+            key={content.post_id}
+            {...transformPost(content)}
+            readTime={content.secondary_title}
             layout="horizontal"
-            onClick={() => console.log(`Clicked on: ${content.title}`)}
+            onClick={() => handlePostClick(content)}
           />
         ))}
       </div>
 
       {/* Filter Modal */}
-      <PostModal 
+      <PostModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
       >
@@ -195,6 +263,10 @@ export default function Search() {
           currentFilters={currentFilters}
           onFiltersUpdate={handleFiltersUpdate}
         />
+      </PostModal>
+
+      <PostModal isOpen={isPostModalOpen} onClose={closePostModal}>
+        {selectedPost && <PostContent post={selectedPost} />}
       </PostModal>
     </div>
   );
