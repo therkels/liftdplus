@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
             headers: {'Content-Type':"application/json"}
         })
     }
-    const { data, error } = await supabase.rpc('get_user_feed', { user_id: "153ac42d-e0f7-4cfd-aaa6-14302482e7fb" });
+    const { data, error } = await supabase.rpc('get_user_feed', { user_id: user.id });
     if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
