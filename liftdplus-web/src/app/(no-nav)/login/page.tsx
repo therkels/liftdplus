@@ -14,14 +14,14 @@ export default function LoginPage() {
       {/* Header */}
       <div className="text-center">
         <div className="flex justify-center my-8">
-          <img src="/lftd-text.png" alt="LIFTD" className="h-auto w-[60vw]" />
+          <img src="/lftd-text.svg" alt="LIFTD" className="h-auto w-[60vw]" />
         </div>
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-        <div className="flex-1 rounded-t-3xl text-center text-white flex flex-col justify-start py-16 bg-accent-dark">
-          <h2 className="text-5xl font-[560] mb-4 text-onboarding-header">
+        <div className="flex-1 rounded-t-3xl text-center text-white flex flex-col justify-start py-16 bg-foreground">
+          <h2 className="text-5xl font-[560] mb-4 text-accent-light">
             Explore
             <br />
             Your Way
