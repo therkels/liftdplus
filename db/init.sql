@@ -12,43 +12,43 @@ DROP TABLE IF EXISTS private.post CASCADE;
 DROP TABLE IF EXISTS private.posttemplate CASCADE;
 DROP TABLE IF EXISTS private.users CASCADE;
 DROP TABLE IF EXISTS private.usertype CASCADE;
+DROP TABLE IF EXISTS private.user_type CASCADE;
 DROP TABLE IF EXISTS private.post_template CASCADE;
 DROP TABLE IF EXISTS private.archives CASCADE;
-
-
-CREATE TABLE private.users (
-    id VARCHAR PRIMARY KEY,
-    username VARCHAR NOT NULL,
-    email VARCHAR NOT NULL UNIQUE,
-    user_type_id VARCHAR NOT NULL,
-    profile_icon_url VARCHAR,
-    user_role VARCHAR NOT NULL DEFAULT 'user' CHECK (
-        user_role IN ('user','admin')
-    ),
-    FOREIGN KEY (user_type_id) REFERENCES private.user_type(type_id)
-);
 
 CREATE TABLE private.user_type (
     type_id VARCHAR PRIMARY KEY,
     descr VARCHAR NOT NULL
 );
 
+CREATE TABLE private.users (
+    id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    username VARCHAR NOT NULL,
+    user_type_id VARCHAR NOT NULL,
+    profile_icon_url VARCHAR,
+    user_role VARCHAR NOT NULL DEFAULT 'user' CHECK (
+        user_role IN ('user','admin')
+    ),
+    primary key (id),
+    FOREIGN KEY (user_type_id) REFERENCES private.user_type(type_id)
+);
+
 -- POST TEMPLATES
 CREATE TABLE private.post_template (
-    id VARCHAR PRIMARY KEY, -- Human Readable ID
+    id varchar PRIMARY KEY, -- Human Readable ID
     descr TEXT,
-    has_html BOOLEAN,
+    has_markdown BOOLEAN,
     has_json BOOLEAN
 );
 
 -- POSTS WITH REFERENCE TO AUTHOR AND TEMPLATE
 CREATE TABLE private.post (
-    id VARCHAR PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     title VARCHAR NOT NULL,
     secondary_title VARCHAR NOT NULL,
     cover_image_url VARCHAR,
     post_template_id VARCHAR NOT NULL,
-    author VARCHAR NOT NULL,
+    author uuid NOT NULL,
     contributor_name VARCHAR NOT NULL,
     source VARCHAR NOT NULL,
     post_status VARCHAR NOT NULL DEFAULT 'draft' CHECK (
@@ -63,8 +63,9 @@ CREATE TABLE private.post (
 );
 
 CREATE TABLE private.archives (
-    post_id VARCHAR,
-    user_id VARCHAR,
+    post_id int,
+    user_id uuid,
+    category varchar not null,
     PRIMARY KEY (post_id, user_id),
     FOREIGN KEY (user_id) REFERENCES private.users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES private.post(id) ON DELETE CASCADE
@@ -82,8 +83,8 @@ CREATE TABLE private.tag (
 
 -- JOIN TABLE FOR POST <-> TAG (MANY-TO-MANY)
 CREATE TABLE private.post_tag (
-    post_id VARCHAR,
-    tag_id VARCHAR,
+    post_id int,
+    tag_id varchar,
     PRIMARY KEY (post_id, tag_id),
     FOREIGN KEY (post_id) REFERENCES private.post(id) ON DELETE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES private.tag(id) ON DELETE CASCADE
@@ -91,8 +92,8 @@ CREATE TABLE private.post_tag (
 
 -- PREFERENCES: USER <-> TAG (MANY-TO-MANY)
 CREATE TABLE private.preferences (
-    user_id VARCHAR,
-    tag_id VARCHAR,
+    user_id uuid,
+    tag_id varchar,
     PRIMARY KEY (user_id, tag_id),
     FOREIGN KEY (user_id) REFERENCES private.users(id) ON DELETE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES private.tag(id) ON DELETE CASCADE
@@ -100,8 +101,8 @@ CREATE TABLE private.preferences (
 
 -- USERS CAN LIKE MANY POSTS
 CREATE TABLE private.likes (
-    user_id VARCHAR,
-    post_id VARCHAR,
+    user_id uuid,
+    post_id int,
     PRIMARY KEY (user_id, post_id),
     FOREIGN KEY (user_id) REFERENCES private.users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES private.post(id) ON DELETE CASCADE

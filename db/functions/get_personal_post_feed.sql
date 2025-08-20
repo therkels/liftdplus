@@ -1,6 +1,6 @@
 DROP FUNCTION IF EXISTS private.get_user_feed(VARCHAR);
 DROP FUNCTION IF EXISTS public.get_user_feed(VARCHAR);
-CREATE OR REPLACE FUNCTION private.get_user_feed(user_id VARCHAR)
+CREATE OR REPLACE FUNCTION private.get_user_feed(user_id uuid)
   RETURNS TABLE (
     topic_id varchar,
     topic_display varchar,
@@ -62,7 +62,7 @@ GROUP BY t.tag_id, t.display_name;
 $$;
 
 
-CREATE OR REPLACE FUNCTION public.get_user_feed(user_id text)
+CREATE OR REPLACE FUNCTION public.get_user_feed(user_id uuid)
   RETURNS TABLE (
     topic_id varchar,
     topic_display varchar,
