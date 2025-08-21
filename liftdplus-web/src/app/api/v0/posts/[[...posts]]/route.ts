@@ -22,6 +22,10 @@ export async function GET(
             headers: { "Content-Type": "application/json" }
         })
     }
+    //get by post 
+    else if (param_list.length === 1) {
+
+    }
 
     return new Response(JSON.stringify({message: params}), {
         status: 200,
