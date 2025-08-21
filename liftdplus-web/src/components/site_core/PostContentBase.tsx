@@ -1,0 +1,109 @@
+import Image from "next/image";
+import ReactMarkdownOrig from "react-markdown";
+import type { Options as ReactMarkdownOptions } from "react-markdown";
+import PostMetadata from "./PostMetadata";
+
+const ReactMarkdown =
+  ReactMarkdownOrig as unknown as React.FC<ReactMarkdownOptions>;
+
+interface PostContentBaseProps {
+  post: {
+    post_id: string;
+    cover_image_url: string;
+    title: string;
+    secondary_title: string;
+    author_name: string;
+    author_photo?: string;
+    like_count: number;
+    tags: string[];
+    content?: string; // Markdown content
+  };
+}
+
+const PostContentBase: React.FC<PostContentBaseProps> = ({ post }) => {
+  return (
+    <div className="w-full">
+      <PostMetadata post={post} />
+
+      <div className="relative w-full h-64 md:h-80">
+        <Image
+          src={post.cover_image_url}
+          alt={post.title}
+          fill
+          className="object-cover"
+        />
+      </div>
+
+      <div className="p-6 md:p-8">
+        {post.content && (
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown
+              components={{
+                h1: ({ children }: any) => (
+                  <h1 className="text-2xl font-bold text-gray-800 mb-4 mt-6">
+                    {children}
+                  </h1>
+                ),
+                h2: ({ children }: any) => (
+                  <h2 className="text-xl font-bold text-gray-800 mb-3 mt-5">
+                    {children}
+                  </h2>
+                ),
+                h3: ({ children }: any) => (
+                  <h3 className="text-lg font-bold text-gray-800 mb-2 mt-4">
+                    {children}
+                  </h3>
+                ),
+                p: ({ children }: any) => (
+                  <p className="text-gray-700 mb-4 leading-relaxed">
+                    {children}
+                  </p>
+                ),
+                img: ({ src, alt }: any) => (
+                  <div className="my-6">
+                    <Image
+                      src={src || ""}
+                      alt={alt || ""}
+                      width={800}
+                      height={600}
+                      className="rounded-lg object-cover w-full"
+                    />
+                  </div>
+                ),
+                ul: ({ children }: any) => (
+                  <ul className="list-disc pl-6 mb-4 text-gray-700">
+                    {children}
+                  </ul>
+                ),
+                ol: ({ children }: any) => (
+                  <ol className="list-decimal pl-6 mb-4 text-gray-700">
+                    {children}
+                  </ol>
+                ),
+                blockquote: ({ children }: any) => (
+                  <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4">
+                    {children}
+                  </blockquote>
+                ),
+                code: ({ children }: any) => (
+                  <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
+                    {children}
+                  </code>
+                ),
+                pre: ({ children }: any) => (
+                  <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+                    {children}
+                  </pre>
+                ),
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PostContentBase;

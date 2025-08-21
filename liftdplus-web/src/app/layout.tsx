@@ -12,6 +12,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "LFTD+ App",
   description: "LFTD+ Application",
+  icons: {
+    icon: "/lftd-icon.svg",
+    shortcut: "/lftd-icon.svg",
+    apple: "/lftd-icon.svg",
+  },
 };
 
 export default function RootLayout({
