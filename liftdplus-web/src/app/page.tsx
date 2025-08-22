@@ -331,7 +331,6 @@ Stay consistent and be patient with yourself.`,
     <div>
       <div className="container mx-auto px-4 pt-8">
         <div className="flex items-center justify-between mb-6">
-          <InstallPrompt />
           <h1 className="text-4xl font-bold text-foreground">Hello, Jay</h1>
           <div
             className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
@@ -362,7 +361,7 @@ Stay consistent and be patient with yourself.`,
           Edit Interests
         </button>
       </div>
-
+      <InstallPrompt />
       {feedData.map((topic) => (
         <CardScroller key={topic.topic_id} title={topic.topic_display}>
           {topic.posts.map((post) => (
