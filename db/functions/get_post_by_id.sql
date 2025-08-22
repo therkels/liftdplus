@@ -60,7 +60,7 @@ GROUP BY
 $$;
 
 
-CREATE OR REPLACE FUNCTION public.get_posts(post_id text, user_id text)
+CREATE OR REPLACE FUNCTION public.get_post(post_id text, user_id text)
   RETURNS TABLE (
     id int4,
     title varchar,
