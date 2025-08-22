@@ -24,6 +24,45 @@ interface Topic {
   posts: Post[];
 }
 
+function InstallPrompt() {
+  const [isIOS, setIsIOS] = useState(false)
+  const [isStandalone, setIsStandalone] = useState(false)
+ 
+  useEffect(() => {
+    setIsIOS(
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+    )
+ 
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
+  }, [])
+ 
+  if (isStandalone) {
+    return null // Don't show install button if already installed
+  }
+ 
+  return (
+    <div>
+      <h3>Install App</h3>
+      <button>Add to Home Screen</button>
+      {isIOS && (
+        <p>
+          To install this app on your iOS device, tap the share button
+          <span role="img" aria-label="share icon">
+            {' '}
+            ⎋{' '}
+          </span>
+          and then "Add to Home Screen"
+          <span role="img" aria-label="plus icon">
+            {' '}
+            ➕{' '}
+          </span>
+          .
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function Home() {
   const router = useRouter();
   const [feedData, setFeedData] = useState<Topic[]>([]);
@@ -292,6 +331,7 @@ Stay consistent and be patient with yourself.`,
     <div>
       <div className="container mx-auto px-4 pt-8">
         <div className="flex items-center justify-between mb-6">
+          <InstallPrompt />
           <h1 className="text-4xl font-bold text-foreground">Hello, Jay</h1>
           <div
             className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
