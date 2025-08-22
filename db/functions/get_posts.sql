@@ -1,9 +1,7 @@
-DROP FUNCTION IF EXISTS private.get_user_feed(VARCHAR);
-DROP FUNCTION IF EXISTS public.get_user_feed(VARCHAR);
-CREATE OR REPLACE FUNCTION private.get_user_feed(user_id uuid)
+DROP FUNCTION IF EXISTS private.get_posts(text, text[], text[], text[], text);
+DROP FUNCTION IF EXISTS public.get_posts(text, text[], text[], text[], text);
+CREATE OR REPLACE FUNCTION private.get_posts(user_id text, audience_filter text[] DEFAULT NULL, category_filter text[] DEFAULT NULL, format_filter text[] DEFAULT NULL, sort_by text default null)
   RETURNS TABLE (
-    topic_id varchar,
-    topic_display varchar,
     posts json
   )
   language sql
@@ -16,19 +14,21 @@ CREATE OR REPLACE FUNCTION private.get_user_feed(user_id uuid)
       tag.category
     FROM private.post_tag as ptag
     LEFT JOIN private.tag as tag ON ptag.tag_id = tag.id
-  ),
-  post_info AS (
+  ), post_info AS(
     SELECT
       post.id as post_id,
       post.cover_image_url,
       post.title,
       post.secondary_title,
+      post.published_at,
       users.username as author_name,
       users.profile_icon_url as author_photo,
       COUNT(distinct likes.user_id) as like_count,
       (COUNT(distinct likes.user_id) filter (where likes.user_id = $1::uuid)>0) as user_liked,
       (COUNT(distinct archives.user_id) filter (where archives.user_id = $1::uuid)>0) as user_archived,
       ARRAY_AGG(DISTINCT CASE WHEN tinfo.category = 'topic' THEN tinfo.tag_id END) FILTER (WHERE tinfo.category = 'topic') AS topic_tag_ids,
+      ARRAY_AGG(DISTINCT CASE WHEN tinfo.category = 'format' THEN tinfo.tag_id END) FILTER (WHERE tinfo.category = 'format') AS format_tag_ids,
+      ARRAY_AGG(DISTINCT CASE WHEN tinfo.category = 'audience' THEN tinfo.tag_id END) FILTER (WHERE tinfo.category = 'audience') AS audience_tag_ids,
       STRING_AGG(DISTINCT CASE WHEN tinfo.category = 'topic' THEN tinfo.display_name END, ', ') AS topic_tags,
       STRING_AGG(DISTINCT CASE WHEN tinfo.category = 'format' THEN tinfo.display_name END, ', ') AS format_tags,
       STRING_AGG(DISTINCT CASE WHEN tinfo.category = 'audience' THEN tinfo.display_name END, ', ') AS audience_tags
@@ -40,38 +40,40 @@ CREATE OR REPLACE FUNCTION private.get_user_feed(user_id uuid)
       LEFT JOIN private.archives as archives on archives.post_id = post.id
     GROUP BY
       post.id, post.cover_image_url, post.title, post.secondary_title, users.username, users.profile_icon_url
-  ),
-  user_preferred_topics AS (
-    SELECT tag_id, tag.display_name
-    FROM private.preferences
-    JOIN private.tag ON preferences.tag_id = tag.id
-    WHERE tag.category = 'topic' and preferences.user_id = $1
-  ),
-  returned_posts as (
-    SELECT p.*
-    FROM post_info as p
-    left join user_preferred_topics upt on upt.tag_id = ANY(p.topic_tag_ids)
+  ), filtered_posts AS (
+    SELECT *
+    FROM post_info pi
+    WHERE 
+      (
+        $2 is NOT null AND
+        pi.audience_tag_ids::text[] && $2
+      )
+      or
+      (
+        $3 is NOT null AND
+        pi.topic_tag_ids::text[] && $3
+      )
+      or
+      (
+        $4 is NOT null AND
+        pi.format_tag_ids::text[] && $4
+      )
+    ORDER BY
+      CASE WHEN $5 = 'popular' THEN pi.like_count END DESC,
+      CASE WHEN $5 = 'recent' THEN pi.published_at END DESC,
+      CASE WHEN $5 = 'oldest' THEN pi.published_at END ASC
   )
-
 SELECT
-  t.tag_id AS topic_id,
-  t.display_name as display_name,
-  COALESCE(json_agg(row_to_json(p)), '[]') AS posts
-FROM user_preferred_topics t
-LEFT JOIN returned_posts p ON t.tag_id = ANY(p.topic_tag_ids)
-where
-  t.tag_id = ANY(p.topic_tag_ids)
-GROUP BY t.tag_id, t.display_name;
+  COALESCE(json_agg(row_to_json(fp)), '[]') AS posts
+FROM filtered_posts fp
 $$;
 
 
-CREATE OR REPLACE FUNCTION public.get_user_feed(user_id uuid)
+CREATE OR REPLACE FUNCTION public.get_posts(user_id text, audience_filter text[] DEFAULT NULL, category_filter text[] DEFAULT NULL, format_filter text[] DEFAULT NULL, sort_by text default null)
   RETURNS TABLE (
-    topic_id varchar,
-    topic_display varchar,
     posts json
   ) as $$
 BEGIN
-  RETURN QUERY SELECT * FROM private.get_user_feed(user_id);
+  RETURN QUERY SELECT * FROM private.get_posts(user_id, audience_filter, category_filter, format_filter, sort_by);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
