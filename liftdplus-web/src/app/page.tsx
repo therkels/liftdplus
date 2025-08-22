@@ -1,5 +1,9 @@
 "use client";
 
+//JAKOBS BAD IMPORTS
+import { useCallback } from "react";
+import { createClient } from "@/utils/supabase/client";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -24,6 +28,45 @@ interface Topic {
   posts: Post[];
 }
 
+function InstallPrompt() {
+  const [isIOS, setIsIOS] = useState(false)
+  const [isStandalone, setIsStandalone] = useState(false)
+ 
+  useEffect(() => {
+    setIsIOS(
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+    )
+ 
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
+  }, [])
+ 
+  if (isStandalone) {
+    return null // Don't show install button if already installed
+  }
+ 
+  return (
+    <div>
+      <h3>Install App</h3>
+      <button>Add to Home Screen</button>
+      {isIOS && (
+        <p>
+          To install this app on your iOS device, tap the share button
+          <span role="img" aria-label="share icon">
+            {' '}
+            ⎋{' '}
+          </span>
+          and then "Add to Home Screen"
+          <span role="img" aria-label="plus icon">
+            {' '}
+            ➕{' '}
+          </span>
+          .
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function Home() {
   const router = useRouter();
   const [feedData, setFeedData] = useState<Topic[]>([]);
@@ -34,6 +77,21 @@ export default function Home() {
   const [interestsData, setInterestsData] = useState<InterestsSchema>({
     interests: [],
   });
+  const handleGoogleSignIn = useCallback(async () => {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: 'https://liftdplus-git-feat-addpwasupport-liftdplus.vercel.app/api/v0/auth/callback',
+        //redirectTo: 'http://localhost:3000/api/v0/auth/callback',
+      },
+    });
+    if (data?.url) {
+      window.location.href = data.url;
+    } else if (error) {
+      alert("Google sign-in failed: " + error.message);
+    }
+  }, []);
 
   useEffect(() => {
     // const fetchFeedData = async () => {
@@ -322,7 +380,13 @@ Stay consistent and be patient with yourself.`,
           Edit Interests
         </button>
       </div>
-
+      <InstallPrompt />
+            <button
+        style={{ padding: "12px 24px", fontSize: "1.2rem", cursor: "pointer", marginTop: 24 }}
+        onClick={handleGoogleSignIn}
+      >
+        Sign in with Google
+      </button>
       {feedData.map((topic) => (
         <CardScroller key={topic.topic_id} title={topic.topic_display}>
           {topic.posts.map((post) => (
