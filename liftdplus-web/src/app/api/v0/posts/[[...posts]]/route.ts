@@ -10,10 +10,7 @@ export async function GET(
     const {data: {user}} = await supabase.auth.getUser();
 
     if (!user) {
-        return new Response(JSON.stringify({error:"Not authenticated."}),{
-            status:401,
-            headers: {'Content-Type':"application/json"}
-        })
+        return jsonResponse({error:'not Authenticated'}, 400);
     }
 
     const param_list = params.posts || [];
@@ -27,11 +24,6 @@ export async function GET(
     else if (param_list.length === 1) {
         return getPostByID(supabase,param_list[0], user.id)
     }
-    else if (param_list.length == 2) {
-        if (param_list[2] === "archive") {
-
-        }
-    }
 }
 
 export async function PUT(request: NextRequest, { params }: {params: {posts:string}}) {
@@ -39,18 +31,23 @@ export async function PUT(request: NextRequest, { params }: {params: {posts:stri
     const {data: {user}} = await supabase.auth.getUser();
 
     if (!user) {
-        return new Response(JSON.stringify({error:"Not authenticated."}),{
-            status:401,
-            headers: {'Content-Type':"application/json"}
-        })
+        return jsonResponse({error:'not Authenticated'}, 400);
     }
 
     const param_list = params.posts || [];
     const url = new URL(request.url);
 
+    if (param_list.length === 2) {
+        if (param_list[1] == 'archive'){
+            const category = url.searchParams.get('category')
+            if (!category) {
+                return jsonResponse({error:'a category is required for archives'})
+            }
+            return putArchivedPost(supabase, param_list[0], user.id, url.searchParams.get('category')||'')
+        }
+    }
 
 
-    
 }
 
 export async function DELETE(request: NextRequest, { params }: {params: {posts:string}}) {
@@ -66,10 +63,12 @@ export async function DELETE(request: NextRequest, { params }: {params: {posts:s
 
     const param_list = params.posts || [];
     const url = new URL(request.url);
-
-    
-
-    
+    if (param_list.length === 2) {
+        if (param_list[1] == 'archive'){
+            const category = url.searchParams.get('category')
+            return deleteArchivedPost(supabase, param_list[0], user.id)
+        }
+    }
 }
 
 async function getAllPosts(supabase: any, user_id:string, url: URL) {
@@ -88,10 +87,23 @@ async function getPostByID(supabase: any, post_id: string, user_id: string) {
         post_id:post_id,
         user_id:user_id,
     });
-    return new Response(JSON.stringify({message: data}), {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
+    return jsonResponse(data);
+}
+
+async function putArchivedPost(supabase: any, post_id: string, user_id: string, category: string) {
+    const {data, error } = await supabase.rpc('archive_post', {
+        post_id: post_id,
+        user_id: user_id,
+        category: category
     })
+    return jsonResponse(data);
+}
+async function deleteArchivedPost(supabase: any, post_id: string, user_id: string) {
+    const {data, error } = await supabase.rpc('remove_post_archive', {
+        post_id: post_id,
+        user_id: user_id,
+    })
+    return jsonResponse(data);
 }
 
 function jsonResponse(body: unknown, status = 200) {
