@@ -16,14 +16,7 @@ export async function GET(
     const param_list = params.posts || [];
     const url = new URL(request.url);
 
-    //case 1: Get all posts
-    if (param_list.length === 0) {
-      return getAllPosts(supabase, user.id,url);
-    }
-    //get by post 
-    else if (param_list.length === 1) {
-        return getPostByID(supabase,param_list[0], user.id)
-    }
+    return jsonResponse({message:'archive route'})
 }
 
 export async function PUT(request: NextRequest, { params }: {params: {posts:string}}) {
@@ -87,45 +80,7 @@ async function getAllPosts(supabase: any, user_id:string, url: URL) {
     console.log(error)
     return jsonResponse(data)
 }
-async function getPostByID(supabase: any, post_id: string, user_id: string) {
-    const { data, error } = await supabase.rpc('get_post', {
-        post_id:post_id,
-        user_id:user_id,
-    });
-    return jsonResponse(data);
-}
 
-async function putArchivedPost(supabase: any, post_id: string, user_id: string, category: string) {
-    const {data, error } = await supabase.rpc('archive_post', {
-        post_id: post_id,
-        user_id: user_id,
-        category: category
-    })
-    return jsonResponse(data);
-}
-async function putLikePost(supabase: any, post_id: string, user_id: string) {
-    const {data, error } = await supabase.rpc('like_post', {
-        post_id: post_id,
-        user_id: user_id,
-    })
-    return jsonResponse(data);
-}
-
-async function deleteArchivedPost(supabase: any, post_id: string, user_id: string) {
-    const {data, error } = await supabase.rpc('remove_post_archive', {
-        post_id: post_id,
-        user_id: user_id,
-    })
-    return jsonResponse(data);
-}
-
-async function deleteLikePost(supabase: any, post_id: string, user_id: string) {
-    const {data, error } = await supabase.rpc('remove_post_like', {
-        post_id: post_id,
-        user_id: user_id,
-    })
-    return jsonResponse(data);
-}
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
