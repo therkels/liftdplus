@@ -16,6 +16,8 @@ export async function GET(
     const param_list = params.posts || [];
     const url = new URL(request.url);
 
+    console.log('fffuuc')
+    console.log(param_list)
     //case 1: Get all posts
     if (param_list.length === 0) {
       return getAllPosts(supabase, user.id,url);

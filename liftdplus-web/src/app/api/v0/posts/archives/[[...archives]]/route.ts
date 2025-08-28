@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server"
 
 export async function GET(
     request: NextRequest, 
-    { params }: {params: {posts:string}}
+    { params }: {params: {archives:string}}
     ) {
     const supabase = await createClient();
     const {data: {user}} = await supabase.auth.getUser();
@@ -13,8 +13,14 @@ export async function GET(
         return jsonResponse({error:'not Authenticated'}, 400);
     }
 
-    const param_list = params.posts || [];
+    const param_list = params.archives || [];
     const url = new URL(request.url);
+    if (param_list.length === 0){
+        return getArchiveInfo(supabase, user.id);
+    }
+    else if (param_list.length === 1){
+        return getArchivedPosts(supabase, user.id, param_list[0])
+    }
 
     return jsonResponse({message:'archive route'})
 }
@@ -30,18 +36,6 @@ export async function PUT(request: NextRequest, { params }: {params: {posts:stri
     const param_list = params.posts || [];
     const url = new URL(request.url);
 
-    if (param_list.length === 2) {
-        if (param_list[1] == 'archive'){
-            const category = url.searchParams.get('category')
-            if (!category) {
-                return jsonResponse({error:'a category is required for archives'})
-            }
-            return putArchivedPost(supabase, param_list[0], user.id, url.searchParams.get('category')||'')
-        }
-        else if (param_list[1] == 'like'){
-            return putLikePost(supabase, param_list[0], user.id)
-        }
-    }
 
 
 }
@@ -59,28 +53,23 @@ export async function DELETE(request: NextRequest, { params }: {params: {posts:s
 
     const param_list = params.posts || [];
     const url = new URL(request.url);
-    if (param_list.length === 2) {
-        if (param_list[1] == 'archive'){
-            return deleteArchivedPost(supabase, param_list[0], user.id)
-        }
-        else if (param_list[1] == 'like'){
-            return deleteLikePost(supabase, param_list[0], user.id)
-        }
-    }
 }
 
-async function getAllPosts(supabase: any, user_id:string, url: URL) {
-    const { data, error } = await supabase.rpc('get_posts', {
+async function getArchiveInfo(supabase: any, user_id:string) {
+    const { data, error } = await supabase.rpc('get_archive_info', {
         user_id: user_id,
-        category_filter:url.searchParams.getAll('category'),
-        audience_filter:url.searchParams.getAll('audience'),
-        format_filter:url.searchParams.getAll('format'),
-        sort_by: url.searchParams.get('sort_by') || 'popular'
     })
     console.log(error)
     return jsonResponse(data)
 }
-
+async function getArchivedPosts(supabase: any, user_id:string, category_display: string) {
+    const { data, error } = await supabase.rpc('get_posts_by_archive', {
+        user_id: user_id,
+        category_display: category_display
+    })
+    console.log(error)
+    return jsonResponse(data)
+}
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
