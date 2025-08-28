@@ -29,21 +29,21 @@ interface Topic {
 }
 
 function InstallPrompt() {
-  const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
-
+  const [isIOS, setIsIOS] = useState(false)
+  const [isStandalone, setIsStandalone] = useState(false)
+ 
   useEffect(() => {
     setIsIOS(
       /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
-    );
-
-    setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
-  }, []);
-
+    )
+ 
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
+  }, [])
+ 
   if (isStandalone) {
-    return null; // Don't show install button if already installed
+    return null // Don't show install button if already installed
   }
-
+ 
   return (
     <div>
       <h3>Install App</h3>
@@ -52,19 +52,19 @@ function InstallPrompt() {
         <p>
           To install this app on your iOS device, tap the share button
           <span role="img" aria-label="share icon">
-            {" "}
-            ⎋{" "}
+            {' '}
+            ⎋{' '}
           </span>
           and then "Add to Home Screen"
           <span role="img" aria-label="plus icon">
-            {" "}
-            ➕{" "}
+            {' '}
+            ➕{' '}
           </span>
           .
         </p>
       )}
     </div>
-  );
+  )
 }
 
 export default function Home() {
@@ -77,14 +77,12 @@ export default function Home() {
   const [interestsData, setInterestsData] = useState<InterestsSchema>({
     interests: [],
   });
-  const [loadingPost, setLoadingPost] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const handleGoogleSignIn = useCallback(async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "https://liftdplus.vercel.app/api/v0/auth/callback",
+        redirectTo: 'https://liftdplus.vercel.app/api/v0/auth/callback',
         //redirectTo: 'http://localhost:3000/api/v0/auth/callback',
       },
     });
@@ -96,47 +94,195 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const fetchFeedData = async () => {
-      try {
-        const response = await fetch("/api/v0/feed");
+    // const fetchFeedData = async () => {
+    //   try {
+    //     const response = await fetch("http://localhost:3000/api/v0/feed");
+    //     const data = await response.json();
+    //     setFeedData(data);
+    //   } catch (error) {
+    //     console.error("Error fetching feed data:", error);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+    // fetchFeedData();
 
-        const data = await response.json();
+    // Mock data for testing different post types
+    const mockData: Topic[] = [
+      {
+        topic_id: "1",
+        topic_display: "Trending Posts",
+        posts: [
+          {
+            post_id: "1",
+            cover_image_url: "/dandelion.jpg",
+            title: "3 Reasons You Should Slow Down Today",
+            secondary_title: "A simple post with markdown content",
+            author_name: "Maya Johnson",
+            author_photo: null,
+            like_count: 42,
+            topic_tag_ids: ["fitness"],
+            topic_tags: "Fitness",
+            format_tags: "Tutorial",
+            audience_tags: "Beginner",
+            content_type: "text",
+            content: `# Welcome to this Base Post
 
-        // Check if the response contains an error
-        if (data.error) {
-          throw new Error(data.error);
-        }
+This is a **base post** with markdown content. Here are some features:
 
-        // Transform the API response to match our expected Topic[] structure
-        if (Array.isArray(data)) {
-          const transformedData: Topic[] = data.map((item: any) => ({
-            topic_id: item.topic_id,
-            topic_display: item.topic_display,
-            posts: Array.isArray(item.posts) ? item.posts : [],
-          }));
-          setFeedData(transformedData);
-        } else {
-          // If data is not an array, set empty array
-          console.warn("API response is not an array:", data);
-          setFeedData([]);
-        }
-      } catch (error) {
-        console.error("Error fetching feed data:", error);
-        setError(
-          error instanceof Error ? error.message : "Failed to load feed"
-        );
-        // Fallback to empty array on error
-        setFeedData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+- Bold and *italic* text
+- Lists and bullet points
+- Code snippets like \`const example = true\`
 
-    fetchFeedData();
+## Subheading
+
+You can include multiple paragraphs and even images within the markdown content.
+
+> This is a blockquote for emphasis
+
+The base post type is perfect for simple content with text and formatting.`,
+          },
+          {
+            post_id: "2",
+            cover_image_url: "/dandelion.jpg",
+            title: "Long Form Article",
+            secondary_title: "Extended content with embedded images",
+            author_name: "Alex Chen",
+            author_photo: null,
+            like_count: 89,
+            topic_tag_ids: ["nutrition"],
+            topic_tags: "Nutrition",
+            format_tags: "Article",
+            audience_tags: "Intermediate",
+            content_type: "text",
+            content: `# The Complete Guide to Nutrition
+
+This is a **long-form post** that can include extensive markdown content with embedded images.
+
+## Introduction
+
+Long-form posts are perfect for detailed articles, tutorials, and comprehensive guides.
+
+### Key Benefits
+1. **Detailed explanations** with multiple sections
+2. **Rich formatting** including headers, lists, and emphasis
+3. **Embedded images** from external URLs
+4. **Code examples** and blockquotes
+
+## Advanced Content
+
+Here's an example of how you might include an image in your content:
+
+![Example Image](/dino.jpg)
+
+> Long-form content allows for more comprehensive coverage of topics
+
+### Technical Details
+
+You can include code blocks:
+
+\`\`\`javascript
+const nutrition = {
+  protein: 25,
+  carbs: 45,
+  fats: 30
+};
+\`\`\`
+
+And much more detailed information that wouldn't fit in a simple post format.
+
+## Conclusion
+
+Long-form posts provide the flexibility to create comprehensive, educational content.`,
+          },
+          {
+            post_id: "3",
+            cover_image_url: "/dandelion.jpg",
+            title: "Image Carousel",
+            secondary_title: "Multiple images in a slideshow",
+            author_name: "Sarah Wilson",
+            author_photo: null,
+            like_count: 156,
+            topic_tag_ids: ["workout"],
+            topic_tags: "Workout",
+            format_tags: "Gallery",
+            audience_tags: "All Levels",
+            content_type: "image",
+            images: ["/dino.jpg", "/dino.jpg", "/dino.jpg", "/dino.jpg"],
+          },
+          {
+            post_id: "4",
+            cover_image_url: "/dandelion.jpg",
+            title: "Single Image Focus",
+            secondary_title: "Showcase one main image",
+            author_name: "David Martinez",
+            author_photo: null,
+            like_count: 73,
+            topic_tag_ids: ["motivation"],
+            topic_tags: "Motivation",
+            format_tags: "Photo",
+            audience_tags: "Everyone",
+            content_type: "image",
+            images: [], // Single image uses just the cover image
+          },
+        ],
+      },
+      {
+        topic_id: "2",
+        topic_display: "Recently Added",
+        posts: [
+          {
+            post_id: "5",
+            cover_image_url: "/dandelion.jpg",
+            title: "Another Base Post",
+            secondary_title: "More markdown content examples",
+            author_name: "Emma Thompson",
+            author_photo: null,
+            like_count: 28,
+            topic_tag_ids: ["wellness"],
+            topic_tags: "Wellness",
+            format_tags: "Tips",
+            audience_tags: "Beginner",
+            content_type: "text",
+            content: `# Quick Wellness Tips
+
+Here are some **quick tips** for better wellness:
+
+## Daily Habits
+- Drink more water 💧
+- Take short walks
+- Practice deep breathing
+
+### Remember
+> Small changes lead to big improvements over time!
+
+Stay consistent and be patient with yourself.`,
+          },
+          {
+            post_id: "6",
+            cover_image_url: "/dandelion.jpg",
+            title: "Multi-Image Tutorial",
+            secondary_title: "Step by step with images",
+            author_name: "Michael Brown",
+            author_photo: null,
+            like_count: 94,
+            topic_tag_ids: ["technique"],
+            topic_tags: "Technique",
+            format_tags: "Tutorial",
+            audience_tags: "Advanced",
+            content_type: "image",
+            images: ["/dino.jpg", "/dino.jpg", "/dino.jpg"],
+          },
+        ],
+      },
+    ];
+
+    // Simulate loading delay for both feed and interests
+    setTimeout(() => {
+      setFeedData(mockData);
+      setLoading(false);
+    }, 1000);
 
     // Simulate interests loading (could be a separate API call)
     setTimeout(() => {
@@ -145,71 +291,9 @@ export default function Home() {
     }, 1500);
   }, []);
 
-  const handleCardClick = async (post: Post) => {
-    try {
-      setLoadingPost(true);
-      setIsModalOpen(true);
-
-      const loadingPostData: Post = {
-        ...post,
-        author_name: "Loading...",
-        content: "Loading content...",
-      };
-
-      setSelectedPost(transformPostForModal(loadingPostData));
-
-      // Fetch the full post data
-      const response = await fetch(`/api/v0/posts/${post.post_id}`);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch post: ${response.status}`);
-      }
-
-      const fullPostData = await response.json();
-
-      if (fullPostData.error) {
-        throw new Error(fullPostData.error);
-      }
-
-      // Transform the database response to Post format
-      const fullPost: Post = {
-        post_id: fullPostData.id?.toString() || post.post_id,
-        cover_image_url: fullPostData.cover_image_url || post.cover_image_url,
-        title: fullPostData.title || post.title,
-        secondary_title: fullPostData.secondary_title || post.secondary_title,
-        author_name: fullPostData.author_name || "Unknown Author",
-        author_photo: fullPostData.author_photo,
-        like_count: fullPostData.like_count || 0,
-        topic_tag_ids: fullPostData.topic_tags || [],
-        topic_tags: Array.isArray(fullPostData.topic_tags)
-          ? fullPostData.topic_tags.join(", ")
-          : "",
-        format_tags: Array.isArray(fullPostData.format_tags)
-          ? fullPostData.format_tags.join(", ")
-          : "",
-        audience_tags: Array.isArray(fullPostData.audience_tags)
-          ? fullPostData.audience_tags.join(", ")
-          : "",
-        content_type: "text",
-        content: fullPostData.markdown || "No content available",
-      };
-
-      setSelectedPost(transformPostForModal(fullPost));
-    } catch (error) {
-      console.error("Error fetching post:", error);
-
-      const errorPost: Post = {
-        ...post,
-        author_name: "Error",
-        content: `# Error Loading Post\n\nSorry, we couldn't load this post content. Please try again later.\n\n**Error:** ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
-      };
-
-      setSelectedPost(transformPostForModal(errorPost));
-    } finally {
-      setLoadingPost(false);
-    }
+  const handleCardClick = (post: Post) => {
+    setSelectedPost(transformPostForModal(post));
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -318,12 +402,6 @@ export default function Home() {
 
       <PostModal isOpen={isModalOpen} onClose={handleCloseModal}>
         {selectedPost && <PostContent post={selectedPost} />}
-        {loadingPost && (
-          <div className="flex items-center justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <span className="ml-2">Loading post content...</span>
-          </div>
-        )}
       </PostModal>
     </div>
   );
