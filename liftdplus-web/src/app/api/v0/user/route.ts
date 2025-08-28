@@ -28,16 +28,16 @@ export async function GET(request: NextRequest) {
             userId = user.id;
         }
         
-        const { data, error } = await supabase.rpc('get_user_feed', { user_id: userId });
-        
+        const { data, error } = await supabase.rpc('get_user', { user_id: userId });
+
         if (error) {
             return new Response(JSON.stringify({ error: error.message }), {
                 status: 500,
                 headers: { "Content-Type": "application/json" }
             });
         }
-        
-        return new Response(JSON.stringify(data), {
+
+        return new Response(JSON.stringify(data[0] || {}), {
             status: 200,
             headers: { "Content-Type": "application/json" }
         });

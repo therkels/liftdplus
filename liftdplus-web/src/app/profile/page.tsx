@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   HiOutlineCog,
@@ -17,13 +17,18 @@ import DeleteAccountModal from "@/components/site_core/DeleteAccountModal";
 import EditInterestsModal from "@/components/site_core/EditInterestsModal";
 import LogoutModal from "@/components/site_core/LogoutModal";
 
+interface User {
+  id: string;
+  username: string;
+  user_type_id: string;
+  profile_icon_url?: string;
+  user_role: string;
+}
+
 export default function Profile() {
-  const [user] = useState({
-    name: "Jay Johnson",
-    email: "jay@example.com",
-    memberSince: "June 2025",
-    profileImage: "/man.jpg",
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [isUpdateEmailOpen, setIsUpdateEmailOpen] = useState(false);
   const [isUpdatePasswordOpen, setIsUpdatePasswordOpen] = useState(false);
@@ -45,6 +50,36 @@ export default function Profile() {
     "Stress & Anxiety",
     "Pain Relief",
   ]);
+
+  // Fetch user data from API
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("/api/v0/user");
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to load user data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const menuItems = [
     {
@@ -89,6 +124,62 @@ export default function Profile() {
     console.log("Edit profile image");
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
+        <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse"></div>
+          <div className="flex-1">
+            <div className="h-8 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="h-6 bg-gray-200 rounded animate-pulse"
+            ></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
+        <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
+        <div className="text-center py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+            <h3 className="text-red-800 font-semibold mb-2">
+              Unable to load profile
+            </h3>
+            <p className="text-red-600 text-sm mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
+        <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
+        <div className="text-center py-8">
+          <p className="text-gray-600">No user data available</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
       <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
@@ -101,10 +192,10 @@ export default function Profile() {
               className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
               style={{ borderColor: "var(--accent-light)" }}
             >
-              {user.profileImage ? (
+              {user.profile_icon_url ? (
                 <Image
-                  src={user.profileImage}
-                  alt={user.name}
+                  src={user.profile_icon_url}
+                  alt={user.username}
                   width={96}
                   height={96}
                   className="w-full h-full rounded-full object-cover"
@@ -117,9 +208,12 @@ export default function Profile() {
 
           {/* User Info */}
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {user.username}
+            </h2>
             <p className="text-[12px] text-gray-600">
-              Member since {user.memberSince}
+              {user.user_type_id === "admin" ? "Admin User" : "Member"}
+              {user.user_role === "admin" && " • Administrator"}
             </p>
             <button
               onClick={handleProfileImageEdit}
