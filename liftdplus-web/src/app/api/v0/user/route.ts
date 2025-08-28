@@ -2,7 +2,8 @@ import type { NextRequest } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 
 // Toggle this via environment variable to switch between dev mode (hardcoded user) and production (real auth)
-const USE_DEV_MODE = process.env.API_DEV_MODE === 'true';
+// const USE_DEV_MODE = process.env.API_DEV_MODE === 'true';
+const USE_DEV_MODE = true;
 const DEV_USER_ID = process.env.DEV_USER_ID || "153ac42d-e0f7-4cfd-aaa6-14302482e7fb";
 
 export async function GET(request: NextRequest) {
