@@ -1,6 +1,5 @@
 "use client";
 
-//JAKOBS BAD IMPORTS
 import { useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -20,7 +19,6 @@ import {
   transformPost,
   transformPostForModal,
 } from "@/utils/postTransformers";
-import { InterestsSchema, mockInterestsData } from "@/types/interests";
 
 interface Topic {
   topic_id: string;
@@ -28,22 +26,28 @@ interface Topic {
   posts: Post[];
 }
 
+interface Interest {
+  id: string;
+  displayName: string;
+  isActive: boolean;
+}
+
 function InstallPrompt() {
-  const [isIOS, setIsIOS] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
- 
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
   useEffect(() => {
     setIsIOS(
       /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
-    )
- 
-    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
-  }, [])
- 
+    );
+
+    setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
+  }, []);
+
   if (isStandalone) {
-    return null // Don't show install button if already installed
+    return null; // Don't show install button if already installed
   }
- 
+
   return (
     <div>
       <h3>Install App</h3>
@@ -52,19 +56,19 @@ function InstallPrompt() {
         <p>
           To install this app on your iOS device, tap the share button
           <span role="img" aria-label="share icon">
-            {' '}
-            ⎋{' '}
+            {" "}
+            ⎋{" "}
           </span>
           and then "Add to Home Screen"
           <span role="img" aria-label="plus icon">
-            {' '}
-            ➕{' '}
+            {" "}
+            ➕{" "}
           </span>
           .
         </p>
       )}
     </div>
-  )
+  );
 }
 
 export default function Home() {
@@ -74,15 +78,16 @@ export default function Home() {
   const [interestsLoading, setInterestsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [interestsData, setInterestsData] = useState<InterestsSchema>({
-    interests: [],
-  });
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [interestsData, setInterestsData] = useState<Interest[]>([]);
+
   const handleGoogleSignIn = useCallback(async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: 'https://liftdplus.vercel.app/api/v0/auth/callback',
+        redirectTo: "https://liftdplus.vercel.app/api/v0/auth/callback",
         //redirectTo: 'http://localhost:3000/api/v0/auth/callback',
       },
     });
@@ -93,203 +98,131 @@ export default function Home() {
     }
   }, []);
 
+  // Check authentication status
   useEffect(() => {
-    // const fetchFeedData = async () => {
-    //   try {
-    //     const response = await fetch("http://localhost:3000/api/v0/feed");
-    //     const data = await response.json();
-    //     setFeedData(data);
-    //   } catch (error) {
-    //     console.error("Error fetching feed data:", error);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
+    const checkAuth = async () => {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
 
-    // fetchFeedData();
-
-    // Mock data for testing different post types
-    const mockData: Topic[] = [
-      {
-        topic_id: "1",
-        topic_display: "Trending Posts",
-        posts: [
-          {
-            post_id: "1",
-            cover_image_url: "/dandelion.jpg",
-            title: "3 Reasons You Should Slow Down Today",
-            secondary_title: "A simple post with markdown content",
-            author_name: "Maya Johnson",
-            author_photo: null,
-            like_count: 42,
-            topic_tag_ids: ["fitness"],
-            topic_tags: "Fitness",
-            format_tags: "Tutorial",
-            audience_tags: "Beginner",
-            content_type: "text",
-            content: `# Welcome to this Base Post
-
-This is a **base post** with markdown content. Here are some features:
-
-- Bold and *italic* text
-- Lists and bullet points
-- Code snippets like \`const example = true\`
-
-## Subheading
-
-You can include multiple paragraphs and even images within the markdown content.
-
-> This is a blockquote for emphasis
-
-The base post type is perfect for simple content with text and formatting.`,
-          },
-          {
-            post_id: "2",
-            cover_image_url: "/dandelion.jpg",
-            title: "Long Form Article",
-            secondary_title: "Extended content with embedded images",
-            author_name: "Alex Chen",
-            author_photo: null,
-            like_count: 89,
-            topic_tag_ids: ["nutrition"],
-            topic_tags: "Nutrition",
-            format_tags: "Article",
-            audience_tags: "Intermediate",
-            content_type: "text",
-            content: `# The Complete Guide to Nutrition
-
-This is a **long-form post** that can include extensive markdown content with embedded images.
-
-## Introduction
-
-Long-form posts are perfect for detailed articles, tutorials, and comprehensive guides.
-
-### Key Benefits
-1. **Detailed explanations** with multiple sections
-2. **Rich formatting** including headers, lists, and emphasis
-3. **Embedded images** from external URLs
-4. **Code examples** and blockquotes
-
-## Advanced Content
-
-Here's an example of how you might include an image in your content:
-
-![Example Image](/dino.jpg)
-
-> Long-form content allows for more comprehensive coverage of topics
-
-### Technical Details
-
-You can include code blocks:
-
-\`\`\`javascript
-const nutrition = {
-  protein: 25,
-  carbs: 45,
-  fats: 30
-};
-\`\`\`
-
-And much more detailed information that wouldn't fit in a simple post format.
-
-## Conclusion
-
-Long-form posts provide the flexibility to create comprehensive, educational content.`,
-          },
-          {
-            post_id: "3",
-            cover_image_url: "/dandelion.jpg",
-            title: "Image Carousel",
-            secondary_title: "Multiple images in a slideshow",
-            author_name: "Sarah Wilson",
-            author_photo: null,
-            like_count: 156,
-            topic_tag_ids: ["workout"],
-            topic_tags: "Workout",
-            format_tags: "Gallery",
-            audience_tags: "All Levels",
-            content_type: "image",
-            images: ["/dino.jpg", "/dino.jpg", "/dino.jpg", "/dino.jpg"],
-          },
-          {
-            post_id: "4",
-            cover_image_url: "/dandelion.jpg",
-            title: "Single Image Focus",
-            secondary_title: "Showcase one main image",
-            author_name: "David Martinez",
-            author_photo: null,
-            like_count: 73,
-            topic_tag_ids: ["motivation"],
-            topic_tags: "Motivation",
-            format_tags: "Photo",
-            audience_tags: "Everyone",
-            content_type: "image",
-            images: [], // Single image uses just the cover image
-          },
-        ],
-      },
-      {
-        topic_id: "2",
-        topic_display: "Recently Added",
-        posts: [
-          {
-            post_id: "5",
-            cover_image_url: "/dandelion.jpg",
-            title: "Another Base Post",
-            secondary_title: "More markdown content examples",
-            author_name: "Emma Thompson",
-            author_photo: null,
-            like_count: 28,
-            topic_tag_ids: ["wellness"],
-            topic_tags: "Wellness",
-            format_tags: "Tips",
-            audience_tags: "Beginner",
-            content_type: "text",
-            content: `# Quick Wellness Tips
-
-Here are some **quick tips** for better wellness:
-
-## Daily Habits
-- Drink more water 💧
-- Take short walks
-- Practice deep breathing
-
-### Remember
-> Small changes lead to big improvements over time!
-
-Stay consistent and be patient with yourself.`,
-          },
-          {
-            post_id: "6",
-            cover_image_url: "/dandelion.jpg",
-            title: "Multi-Image Tutorial",
-            secondary_title: "Step by step with images",
-            author_name: "Michael Brown",
-            author_photo: null,
-            like_count: 94,
-            topic_tag_ids: ["technique"],
-            topic_tags: "Technique",
-            format_tags: "Tutorial",
-            audience_tags: "Advanced",
-            content_type: "image",
-            images: ["/dino.jpg", "/dino.jpg", "/dino.jpg"],
-          },
-        ],
-      },
-    ];
-
-    // Simulate loading delay for both feed and interests
-    setTimeout(() => {
-      setFeedData(mockData);
-      setLoading(false);
-    }, 1000);
-
-    // Simulate interests loading (could be a separate API call)
-    setTimeout(() => {
-      setInterestsData(mockInterestsData);
-      setInterestsLoading(false);
-    }, 1500);
+    checkAuth();
   }, []);
+
+  // Load user interests from API
+  useEffect(() => {
+    const loadInterests = async () => {
+      if (!user) {
+        setInterestsData([]);
+        setInterestsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/v0/preferences");
+        if (response.ok) {
+          const { preferences } = await response.json();
+          const interests: Interest[] = preferences
+            .filter((p: any) => p.tag?.category === "topic")
+            .map((p: any) => ({
+              id: p.tag_id,
+              displayName: p.tag?.display_name || "",
+              isActive: true,
+            }));
+          setInterestsData(interests);
+        } else {
+          setInterestsData([]);
+        }
+      } catch (error) {
+        console.error("Error loading interests:", error);
+        setInterestsData([]);
+      } finally {
+        setInterestsLoading(false);
+      }
+    };
+
+    loadInterests();
+  }, [user]);
+
+  // Load feed data from API
+  useEffect(() => {
+    const fetchFeedData = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch personalized feed
+        const response = await fetch("/api/v0/feed", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("Please sign in to view personalized content");
+          }
+          throw new Error(`Failed to fetch feed: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        // Transform API response to match expected format
+        let feedTopics: Topic[] = [];
+
+        if (result.topics && Array.isArray(result.topics)) {
+          feedTopics = result.topics.map((topic: any) => ({
+            topic_id: topic.topic_id,
+            topic_display: topic.topic_display,
+            posts: Array.isArray(topic.posts) ? topic.posts : [],
+          }));
+        }
+
+        // If no personalized feed, fetch general posts
+        if (feedTopics.length === 0) {
+          const postsResponse = await fetch("/api/v0/posts?sort_by=popular", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (postsResponse.ok) {
+            const postsResult = await postsResponse.json();
+            const posts = postsResult.posts || [];
+
+            feedTopics = [
+              {
+                topic_id: "general",
+                topic_display: "Discover Posts",
+                posts: Array.isArray(posts) ? posts : [],
+              },
+            ];
+          }
+        }
+
+        setFeedData(feedTopics);
+      } catch (error) {
+        console.error("Error fetching feed data:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to load content"
+        );
+        setFeedData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeedData();
+  }, [user]);
 
   const handleCardClick = (post: Post) => {
     setSelectedPost(transformPostForModal(post));
@@ -301,18 +234,21 @@ Stay consistent and be patient with yourself.`,
     setSelectedPost(null);
   };
 
-  if (loading) {
+  // Show loading state
+  if (loading && user) {
     return (
       <div>
         <div className="container mx-auto px-4 pt-8">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-4xl font-bold text-foreground">Hello, Jay</h1>
+            <h1 className="text-4xl font-bold text-foreground">
+              Hello, {user?.user_metadata?.name || "User"}
+            </h1>
             <div
               className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
               style={{ borderColor: "var(--accent-light)" }}
             >
               <Image
-                src="/man.jpg"
+                src={user?.user_metadata?.avatar_url || "/man.jpg"}
                 alt="User"
                 width={48}
                 height={48}
@@ -324,10 +260,7 @@ Stay consistent and be patient with yourself.`,
           {interestsLoading ? (
             <InterestTagsSkeleton className="mb-2" />
           ) : (
-            <InterestTags
-              interests={interestsData.interests}
-              className="mb-2"
-            />
+            <InterestTags interests={interestsData} className="mb-2" />
           )}
 
           <button
@@ -340,8 +273,39 @@ Stay consistent and be patient with yourself.`,
         </div>
 
         {/* Loading skeletons for feed */}
-        <CardScrollerSkeleton title="Trending Posts" cardCount={4} />
-        <CardScrollerSkeleton title="Recently Added" cardCount={3} />
+        <CardScrollerSkeleton title="Loading..." cardCount={4} />
+        <CardScrollerSkeleton title="Loading..." cardCount={3} />
+      </div>
+    );
+  }
+
+  // Show sign in prompt for unauthenticated users
+  if (!user) {
+    return (
+      <div>
+        <div className="container mx-auto px-4 pt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-4xl font-bold text-foreground">
+              Welcome to Liftd+
+            </h1>
+          </div>
+          <div className="text-center py-8">
+            <p className="text-gray-600 mb-4">
+              Sign in to see personalized content based on your interests.
+            </p>
+            <button
+              style={{
+                padding: "12px 24px",
+                fontSize: "1.2rem",
+                cursor: "pointer",
+                marginTop: 24,
+              }}
+              onClick={handleGoogleSignIn}
+            >
+              Sign in with Google
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -350,13 +314,15 @@ Stay consistent and be patient with yourself.`,
     <div>
       <div className="container mx-auto px-4 pt-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl font-bold text-foreground">Hello, Jay</h1>
+          <h1 className="text-4xl font-bold text-foreground">
+            Hello, {user?.user_metadata?.name || "User"}
+          </h1>
           <div
             className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
             style={{ borderColor: "var(--accent-light)" }}
           >
             <Image
-              src="/man.jpg"
+              src={user?.user_metadata?.avatar_url || "/man.jpg"}
               alt="User"
               width={48}
               height={48}
@@ -368,7 +334,7 @@ Stay consistent and be patient with yourself.`,
         {interestsLoading ? (
           <InterestTagsSkeleton className="mb-2" />
         ) : (
-          <InterestTags interests={interestsData.interests} className="mb-2" />
+          <InterestTags interests={interestsData} className="mb-2" />
         )}
 
         {/* Edit Interests Button */}
@@ -380,25 +346,47 @@ Stay consistent and be patient with yourself.`,
           Edit Interests
         </button>
       </div>
+
       <InstallPrompt />
+
+      {/* Show error message if there's an error with feed data */}
+      {error && (
+        <div className="container mx-auto px-4 py-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p>{error}</p>
             <button
-        style={{ padding: "12px 24px", fontSize: "1.2rem", cursor: "pointer", marginTop: 24 }}
-        onClick={handleGoogleSignIn}
-      >
-        Sign in with Google
-      </button>
-      {feedData.map((topic) => (
-        <CardScroller key={topic.topic_id} title={topic.topic_display}>
-          {topic.posts.map((post) => (
-            <Card
-              key={post.post_id}
-              {...transformPost(post)}
-              onClick={() => handleCardClick(post)}
-              compact={true}
-            />
-          ))}
-        </CardScroller>
-      ))}
+              onClick={() => window.location.reload()}
+              className="mt-2 text-sm underline"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Render feed data */}
+      {feedData.length > 0
+        ? feedData.map((topic) => (
+            <CardScroller key={topic.topic_id} title={topic.topic_display}>
+              {topic.posts.map((post) => (
+                <Card
+                  key={post.post_id}
+                  {...transformPost(post)}
+                  onClick={() => handleCardClick(post)}
+                  compact={true}
+                />
+              ))}
+            </CardScroller>
+          ))
+        : !loading && (
+            <div className="container mx-auto px-4 py-8 text-center">
+              <p className="text-gray-600">No posts available at the moment.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Try updating your interests in your profile to see personalized
+                content.
+              </p>
+            </div>
+          )}
 
       <PostModal isOpen={isModalOpen} onClose={handleCloseModal}>
         {selectedPost && <PostContent post={selectedPost} />}

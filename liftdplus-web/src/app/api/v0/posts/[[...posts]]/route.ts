@@ -22,14 +22,21 @@ export async function GET(
     if (param_list.length === 0) {
         //get each filter requirement, if exists
         const { data, error } = await supabase.rpc('get_posts', {
-            user_id: user.id,
-            category_filter:url.searchParams.getAll('category'),
-            audience_filter:url.searchParams.getAll('audience'),
-            format_filter:url.searchParams.getAll('format'),
+            category_filter: url.searchParams.getAll('category'),
+            audience_filter: url.searchParams.getAll('audience'),
+            format_filter: url.searchParams.getAll('format'),
             sort_by: url.searchParams.get('sort_by') || 'popular'
         });
-        console.log(error)
-        return new Response(JSON.stringify({message: data}), {
+        
+        if (error) {
+            console.error("Error fetching posts:", error);
+            return new Response(JSON.stringify({ error: error.message }), {
+                status: 500,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+        
+        return new Response(JSON.stringify({ posts: data?.[0]?.posts || [] }), {
             status: 200,
             headers: { "Content-Type": "application/json" }
         })
@@ -37,12 +44,27 @@ export async function GET(
     //get by post 
     else if (param_list.length === 1) {
         const { data, error } = await supabase.rpc('get_post', {
-            post_id:param_list[0],
-            user_id:user.id,
+            post_id: param_list[0],
+            user_id: user.id,
         });
-        return new Response(JSON.stringify({message: data}), {
+        
+        if (error) {
+            console.error("Error fetching post:", error);
+            return new Response(JSON.stringify({ error: error.message }), {
+                status: 500,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+        
+        return new Response(JSON.stringify({ post: data?.[0] || null }), {
             status: 200,
             headers: { "Content-Type": "application/json" }
         })
     }
+    
+    // Invalid number of parameters
+    return new Response(JSON.stringify({error: "Invalid number of parameters"}), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+    })
 }

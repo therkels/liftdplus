@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   HiOutlineCog,
@@ -11,6 +11,7 @@ import {
   HiOutlineTrash,
   HiOutlineUser,
 } from "react-icons/hi";
+import { createClient } from "@/utils/supabase/client";
 import UpdateEmailModal from "@/components/site_core/UpdateEmailModal";
 import UpdatePasswordModal from "@/components/site_core/UpdatePasswordModal";
 import DeleteAccountModal from "@/components/site_core/DeleteAccountModal";
@@ -18,18 +19,13 @@ import EditInterestsModal from "@/components/site_core/EditInterestsModal";
 import LogoutModal from "@/components/site_core/LogoutModal";
 
 export default function Profile() {
-  const [user] = useState({
-    name: "Jay Johnson",
-    email: "jay@example.com",
-    memberSince: "June 2025",
-    profileImage: "/man.jpg",
-  });
-
+  const [user, setUser] = useState<any>(null);
   const [isUpdateEmailOpen, setIsUpdateEmailOpen] = useState(false);
   const [isUpdatePasswordOpen, setIsUpdatePasswordOpen] = useState(false);
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [isEditInterestsOpen, setIsEditInterestsOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const allInterests = [
     "Sleep & Rest",
@@ -40,11 +36,40 @@ export default function Profile() {
     "Focus & Creativity",
     "I'm Not Sure Yet",
   ];
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([
-    "Sleep & Rest",
-    "Stress & Anxiety",
-    "Pain Relief",
-  ]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const supabase = await createClient();
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
+        if (authUser) {
+          setUser(authUser);
+
+          // Load user preferences
+          const response = await fetch("/api/v0/preferences");
+          if (response.ok) {
+            const { preferences } = await response.json();
+            const interestNames = preferences
+              .filter((p: any) => p.tag?.category === "topic")
+              .map((p: any) => p.tag?.display_name)
+              .filter(Boolean);
+            setSelectedInterests(interestNames);
+            console.log("Loaded user preferences:", interestNames);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const menuItems = [
     {
@@ -89,6 +114,28 @@ export default function Profile() {
     console.log("Edit profile image");
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
+        <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
+        <div className="text-center py-8">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
+        <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
+        <div className="text-center py-8">
+          <p>Please sign in to view your profile.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
       <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
@@ -101,10 +148,10 @@ export default function Profile() {
               className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
               style={{ borderColor: "var(--accent-light)" }}
             >
-              {user.profileImage ? (
+              {user.user_metadata?.avatar_url ? (
                 <Image
-                  src={user.profileImage}
-                  alt={user.name}
+                  src={user.user_metadata.avatar_url}
+                  alt={user.user_metadata?.name || "User"}
                   width={96}
                   height={96}
                   className="w-full h-full rounded-full object-cover"
@@ -117,9 +164,16 @@ export default function Profile() {
 
           {/* User Info */}
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {user.user_metadata?.name || user.email || "User"}
+            </h2>
+            <p className="text-[12px] text-gray-600">{user.email}</p>
             <p className="text-[12px] text-gray-600">
-              Member since {user.memberSince}
+              Member since{" "}
+              {new Date(user.created_at).toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric",
+              })}
             </p>
             <button
               onClick={handleProfileImageEdit}
@@ -174,7 +228,31 @@ export default function Profile() {
         onClose={() => setIsEditInterestsOpen(false)}
         availableInterests={allInterests}
         selected={selectedInterests}
-        onSubmit={(sel) => setSelectedInterests(sel)}
+        onSubmit={async (sel) => {
+          try {
+            const response = await fetch("/api/v0/preferences", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                interests: sel,
+              }),
+            });
+
+            if (response.ok) {
+              setSelectedInterests(sel);
+              console.log("Preferences updated successfully");
+            } else {
+              const error = await response.json();
+              console.error("Failed to update preferences:", error);
+              alert("Failed to update preferences. Please try again.");
+            }
+          } catch (error) {
+            console.error("Error updating preferences:", error);
+            alert("Failed to update preferences. Please try again.");
+          }
+        }}
       />
       <LogoutModal
         isOpen={isLogoutOpen}
