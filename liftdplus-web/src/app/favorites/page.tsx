@@ -150,7 +150,7 @@ export default function Favorites() {
   };
 
   return (
-    <div className="container mx-auto pt-6 max-w-2xl">
+    <div className="container mx-auto px-4 md:px-0 pt-6 max-w-2xl">
       {/* Profile Section */}
       <div className="flex flex-col items-center mb-8">
         <div

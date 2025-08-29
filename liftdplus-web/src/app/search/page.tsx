@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { buildPostsQueryParams } from "@/utils/tagMapper";
+import { buildPostsQueryParams, getSortDisplayName } from "@/utils/tagMapper";
 import { usePostModal } from "@/utils/postHelpers";
 import Card from "@/components/site_core/Card";
 import PostModal from "@/components/site_core/PostModal";
@@ -116,7 +116,7 @@ export default function Search() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header Section */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
+      <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
         <div className="flex items-center justify-between">
           <h1
             style={{
@@ -145,7 +145,7 @@ export default function Search() {
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white px-4 py-6">
+      <div className="bg-[#f9fafb] px-4 md:px-0 py-6">
         <div className="text-center">
           <p
             className="text-3xl font-bold mb-2"
@@ -156,18 +156,7 @@ export default function Search() {
           <p className="text-sm mb-4" style={{ color: "var(--subtext)" }}>
             Use the filter options to narrow your search.
           </p>
-          <button
-            onClick={() => router.push("/profile")}
-            className="inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-full transition-colors mb-3"
-            style={{
-              backgroundColor: "var(--background-light)",
-              color: "var(--foreground)",
-              width: "283px",
-              height: "42px",
-            }}
-          >
-            <span className="text-sm">Edit Interests</span>
-          </button>
+
           <button
             onClick={() => setIsFilterModalOpen(true)}
             className="inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-full transition-colors"
@@ -201,18 +190,18 @@ export default function Search() {
         currentFilters.audience.length > 0 ||
         currentFilters.category.length > 0 ||
         currentFilters.format.length > 0) && (
-        <div className="bg-white px-4 py-4">
+        <div className="bg-[#f9fafb] px-4  py-4">
           <h3
             className="text-sm font-medium mb-3"
             style={{ color: "var(--foreground)" }}
           >
             Current Filters
           </h3>
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-wrap gap-2 justify-start">
             {/* Sort By Filter */}
             {currentFilters.sortBy && (
               <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900">
-                {currentFilters.sortBy}
+                {getSortDisplayName(currentFilters.sortBy)}
               </span>
             )}
 
@@ -250,7 +239,7 @@ export default function Search() {
       )}
 
       {/* Results Count */}
-      <div className="bg-white px-4 py-3">
+      <div className="bg-[#f9fafb] px-4 py-3">
         <h3
           className="text-sm font-medium"
           style={{ color: "var(--foreground)" }}
@@ -261,7 +250,7 @@ export default function Search() {
 
       {/* Error State */}
       {error && (
-        <div className="px-4 py-4">
+        <div className="px-4 md:px-0 py-4">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <p>{error}</p>
             <button

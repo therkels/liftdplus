@@ -36,6 +36,7 @@ interface Interest {
 function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
     setIsIOS(
@@ -43,31 +44,105 @@ function InstallPrompt() {
     );
 
     setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
+
+    // Listen for the beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt && !isIOS) {
+      return;
+    }
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setDeferredPrompt(null);
+      }
+    }
+  };
 
   if (isStandalone) {
     return null; // Don't show install button if already installed
   }
 
   return (
-    <div>
-      <h3>Install App</h3>
-      <button>Add to Home Screen</button>
-      {isIOS && (
-        <p>
-          To install this app on your iOS device, tap the share button
-          <span role="img" aria-label="share icon">
-            {" "}
-            ⎋{" "}
-          </span>
-          and then "Add to Home Screen"
-          <span role="img" aria-label="plus icon">
-            {" "}
-            ➕{" "}
-          </span>
-          .
-        </p>
-      )}
+    <div className="container mx-auto px-4 md:px-0 py-6">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 md:p-6 max-w-2xl mx-auto">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-accent-light to-accent-dark rounded-xl flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">
+                  Install LIFTD+
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {isIOS
+                    ? "Add to your home screen for quick access"
+                    : "Install the app for a better experience"}
+                </p>
+              </div>
+            </div>
+
+            {isIOS && (
+              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-700 leading-relaxed">
+                  Tap the share button{" "}
+                  <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded text-xs mx-1">
+                    ⬆
+                  </span>{" "}
+                  then select "Add to Home Screen"{" "}
+                  <span className="inline-flex items-center justify-center w-5 h-5 bg-green-500 text-white rounded text-xs mx-1">
+                    +
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-2 ml-4">
+            {!isIOS && deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200 text-sm"
+              >
+                Install
+              </button>
+            )}
+            <button
+              onClick={() => setDeferredPrompt(null)}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              aria-label="Dismiss install prompt"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -229,7 +304,7 @@ export default function Home() {
   if (loading && user) {
     return (
       <div>
-        <div className="container mx-auto px-4 pt-8">
+        <div className="container mx-auto px-4 md:px-0 pt-8">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-4xl font-bold text-foreground">
               Hello, {user?.user_metadata?.name || "User"}
@@ -274,7 +349,7 @@ export default function Home() {
   if (!user) {
     return (
       <div>
-        <div className="container mx-auto px-4 pt-8">
+        <div className="container mx-auto px-4 md:px-0 pt-8">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-4xl font-bold text-foreground">
               Welcome to Liftd+
@@ -303,7 +378,7 @@ export default function Home() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 pt-8">
+      <div className="container px-4 pt-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-4xl font-bold text-foreground">
             Hello, {user?.user_metadata?.name || "User"}
@@ -338,11 +413,9 @@ export default function Home() {
         </button>
       </div>
 
-      <InstallPrompt />
-
       {/* Show error message if there's an error with feed data */}
       {error && (
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 md:px-0 py-4">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <p>{error}</p>
             <button
@@ -370,7 +443,7 @@ export default function Home() {
             </CardScroller>
           ))
         : !loading && (
-            <div className="container mx-auto px-4 py-8 text-center">
+            <div className="container mx-auto px-4 md:px-0 py-8 text-center">
               <p className="text-gray-600">No posts available at the moment.</p>
               <p className="text-sm text-gray-500 mt-2">
                 Try updating your interests in your profile to see personalized
@@ -382,6 +455,8 @@ export default function Home() {
       <PostModal isOpen={isModalOpen} onClose={closePostModal}>
         {selectedPost && <PostContent post={selectedPost} />}
       </PostModal>
+
+      <InstallPrompt />
     </div>
   );
 }

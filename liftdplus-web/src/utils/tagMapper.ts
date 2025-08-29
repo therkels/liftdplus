@@ -26,6 +26,18 @@ const TAG_MAPPING = {
   "Women": "women"
 } as const;
 
+// Sort options mapping
+const SORT_MAPPING = {
+  "popular": "Most Popular",
+  "recent": "Most Recent", 
+  "oldest": "Oldest"
+} as const;
+
+// Reverse mapping for sort options
+const SORT_ID_TO_DISPLAY = Object.fromEntries(
+  Object.entries(SORT_MAPPING).map(([id, display]) => [id, display])
+);
+
 // Reverse mapping for ID to display name
 const ID_TO_DISPLAY_MAPPING = Object.fromEntries(
   Object.entries(TAG_MAPPING).map(([display, id]) => [id, display])
@@ -124,3 +136,19 @@ export const AVAILABLE_TAGS = {
     "Women"
   ]
 } as const;
+
+
+/**
+ * Get display name for sort option
+ */
+export function getSortDisplayName(sortId: string): string {
+  return SORT_ID_TO_DISPLAY[sortId] || sortId.charAt(0).toUpperCase() + sortId.slice(1);
+}
+
+/**
+ * Get sort ID from display name
+ */
+export function getSortId(displayName: string): string {
+  const entry = Object.entries(SORT_MAPPING).find(([_, display]) => display === displayName);
+  return entry ? entry[0] : displayName.toLowerCase();
+}

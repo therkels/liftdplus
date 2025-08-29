@@ -116,7 +116,7 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
+      <div className="container mx-auto px-4 md:px-0 py-6 max-w-2xl screen flex flex-col">
         <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
         <div className="text-center py-8">
           <p>Loading...</p>
@@ -127,7 +127,7 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
+      <div className="container mx-auto px-4 md:px-0 py-6 max-w-2xl screen flex flex-col">
         <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
         <div className="text-center py-8">
           <p>Please sign in to view your profile.</p>
@@ -137,7 +137,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="container mx-auto px-8 py-6 max-w-2xl screen flex flex-col">
+    <div className="container mx-auto px-4 md:px-0 py-6 max-w-2xl screen flex flex-col">
       <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
 
       {/* Profile Info Section */}
