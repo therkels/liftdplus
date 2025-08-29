@@ -58,16 +58,21 @@ const Modal: React.FC<ModalProps> = ({
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-background hover:bg-backgroundLight text-foreground/70 hover:text-foreground transition"
+          className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full bg-accent hover:bg-accent/90 text-foreground transition-all duration-200 shadow-lg"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            className="w-7 h-7"
+            className="w-8 h-8"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 

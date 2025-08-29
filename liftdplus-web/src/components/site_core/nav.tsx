@@ -29,7 +29,12 @@ const NavBar: React.FC = () => {
 
   const navItems = [
     { id: "explore", label: "Explore", icon: HiOutlineBookOpen, href: "/" },
-    { id: "discover", label: "Discover", icon: HiOutlineSearch, href: "/search" },
+    {
+      id: "discover",
+      label: "Discover",
+      icon: HiOutlineSearch,
+      href: "/search",
+    },
     {
       id: "favorites",
       label: "Favorites",
@@ -44,7 +49,7 @@ const NavBar: React.FC = () => {
       {/* Desktop Navigation - Top */}
       <nav className="hidden md:block text-white bg-foreground">
         <div className="flex items-center justify-between px-6 py-4">
-          <div className="font-bold text-xl">LFTD+</div>
+          <div className="font-bold text-xl">LIFTD+</div>
           <div className="flex space-x-4 flex-1 justify-center">
             {navItems.map((item) => (
               <Link

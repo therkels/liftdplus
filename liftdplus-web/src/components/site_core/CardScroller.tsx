@@ -13,7 +13,7 @@ const CardScroller: React.FC<CardScrollerProps> = ({ children, title }) => {
       )}
       <div className="relative">
         <div className="overflow-x-auto touch-scroll">
-          <div className="flex space-x-4 px-4 pb-4">{children}</div>
+          <div className="flex space-x-4 p-4">{children}</div>
         </div>
       </div>
     </div>

@@ -151,30 +151,36 @@ const Card: React.FC<CardProps> = ({
   return (
     <div
       className={`flex-shrink-0 ${
-        compact ? "w-44" : "w-72"
+        compact ? "w-44 md:w-64" : "w-72 md:w-80"
       } bg-white rounded-lg shadow-lg overflow-hidden ${
         compact ? "m-0" : "m-2"
       } cursor-pointer md:transition-transform md:duration-200 md:hover:scale-105 md:hover:shadow-xl`}
       onClick={onClick}
     >
-      <div className={`relative ${compact ? "h-32" : "h-48"} w-full`}>
+      <div
+        className={`relative ${
+          compact ? "h-32 md:h-40" : "h-48 md:h-56"
+        } w-full`}
+      >
         <Image src={image} alt={title} fill className="object-cover" />
       </div>
       {/* Read time under image for vertical layout */}
-      <div className="px-3 pt-3 text-xs text-subtext">
+      <div className="px-3 md:px-4 pt-3 text-xs md:text-sm text-subtext">
         {readTime ?? "5 minute read"}
       </div>
       <div
         className={
           compact
-            ? "px-3 py-1 flex flex-col justify-between min-h-[7rem]"
-            : "p-4 flex flex-col justify-between min-h-[8rem]"
+            ? "px-3 md:px-4 py-1 md:py-2 flex flex-col justify-between min-h-[7rem] md:min-h-[8rem]"
+            : "p-4 md:p-6 flex flex-col justify-between min-h-[8rem] md:min-h-[10rem]"
         }
       >
         <div>
           <h2
             className={`${
-              compact ? "text-sm leading-tight" : "text-xl leading-tight"
+              compact
+                ? "text-sm md:text-base leading-tight"
+                : "text-xl md:text-2xl leading-tight"
             } font-bold line-clamp-2`}
             style={{ color: "#5b8f8d" }}
           >
@@ -182,10 +188,12 @@ const Card: React.FC<CardProps> = ({
           </h2>
           {secondaryTitle && (
             <div className={`mt-1 flex items-center gap-1`}>
-              <span className="text-xs text-gray-600 flex-1 truncate">
+              <span className="text-xs md:text-sm text-gray-600 flex-1 truncate">
                 {secondaryTitle}
               </span>
-              <span className="text-xs text-subtext flex-shrink-0">More</span>
+              <span className="text-xs md:text-sm text-subtext flex-shrink-0">
+                More
+              </span>
             </div>
           )}
         </div>
@@ -215,7 +223,7 @@ const Card: React.FC<CardProps> = ({
             </div>
             <span
               className={`${
-                compact ? "text-[10px]" : "text-xs"
+                compact ? "text-[10px] md:text-xs" : "text-xs md:text-sm"
               } font-medium text-gray-700 leading-tight`}
             >
               {authorName}
