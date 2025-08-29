@@ -40,8 +40,8 @@ export default function OnboardingPage() {
           <div>
             <div className="w-20 h-20 mx-auto flex items-center justify-center">
               <Image
-                src="/lftd-icon.svg"
-                alt="LFTD Icon"
+                src="/liftd-icon.svg"
+                alt="LIFTD+ Icon"
                 width={80}
                 height={80}
               />

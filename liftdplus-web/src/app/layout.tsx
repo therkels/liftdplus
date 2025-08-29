@@ -10,12 +10,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "LFTD+ App",
-  description: "LFTD+ Application",
+  title: "LIFTD+ App",
+  description: "LIFTD+ Application",
   icons: {
-    icon: "/lftd-icon.svg",
-    shortcut: "/lftd-icon.svg",
-    apple: "/lftd-icon.svg",
+    icon: "/liftd-icon.svg",
+    shortcut: "/liftd-icon.svg",
+    apple: "/liftd-icon.svg",
   },
 };
 
