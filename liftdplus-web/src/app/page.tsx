@@ -19,6 +19,7 @@ import {
   transformPost,
   transformPostForModal,
 } from "@/utils/postTransformers";
+import { usePostModal } from "@/utils/postHelpers";
 
 interface Topic {
   topic_id: string;
@@ -76,8 +77,8 @@ export default function Home() {
   const [feedData, setFeedData] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [interestsLoading, setInterestsLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { selectedPost, isModalOpen, openPostModal, closePostModal } =
+    usePostModal();
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [interestsData, setInterestsData] = useState<Interest[]>([]);
@@ -224,16 +225,6 @@ export default function Home() {
     fetchFeedData();
   }, [user]);
 
-  const handleCardClick = (post: Post) => {
-    setSelectedPost(transformPostForModal(post));
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedPost(null);
-  };
-
   // Show loading state
   if (loading && user) {
     return (
@@ -372,7 +363,7 @@ export default function Home() {
                 <Card
                   key={post.post_id}
                   {...transformPost(post)}
-                  onClick={() => handleCardClick(post)}
+                  onClick={() => openPostModal(post)}
                   compact={true}
                 />
               ))}
@@ -388,7 +379,7 @@ export default function Home() {
             </div>
           )}
 
-      <PostModal isOpen={isModalOpen} onClose={handleCloseModal}>
+      <PostModal isOpen={isModalOpen} onClose={closePostModal}>
         {selectedPost && <PostContent post={selectedPost} />}
       </PostModal>
     </div>

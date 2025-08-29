@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { buildPostsQueryParams } from "@/utils/tagMapper";
+import { usePostModal } from "@/utils/postHelpers";
 import Card from "@/components/site_core/Card";
 import PostModal from "@/components/site_core/PostModal";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
@@ -18,8 +19,12 @@ import {
 export default function Search() {
   const router = useRouter();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
+  const {
+    selectedPost,
+    isModalOpen: isPostModalOpen,
+    openPostModal,
+    closePostModal,
+  } = usePostModal();
   const [currentFilters, setCurrentFilters] = useState({
     sortBy: "popular",
     audience: [] as string[],
@@ -107,19 +112,6 @@ export default function Search() {
         : prev[type as keyof typeof prev],
     }));
   };
-
-  const handlePostClick = (post: Post) => {
-    const transformed = transformPostForModal(post);
-    setSelectedPost(transformed);
-    setIsPostModalOpen(true);
-  };
-
-  const closePostModal = () => {
-    setIsPostModalOpen(false);
-    setSelectedPost(null);
-  };
-
-  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -310,7 +302,7 @@ export default function Search() {
                 {...transformPost(content)}
                 readTime={content.secondary_title || "5 min read"}
                 layout="horizontal"
-                onClick={() => handlePostClick(content)}
+                onClick={() => openPostModal(content)}
               />
             ))
           ) : (
