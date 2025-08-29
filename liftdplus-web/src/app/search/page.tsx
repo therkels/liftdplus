@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+import { buildPostsQueryParams } from "@/utils/tagMapper";
 import Card from "@/components/site_core/Card";
 import PostModal from "@/components/site_core/PostModal";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
@@ -19,13 +21,78 @@ export default function Search() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [currentFilters, setCurrentFilters] = useState({
-    sortBy: "",
-    audience: ["BIPOC"],
-    category: ["Stress & Anxiety", "Sleep & Rest"],
-    format: [],
+    sortBy: "popular",
+    audience: [] as string[],
+    category: [] as string[],
+    format: [] as string[],
   });
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
 
-  // Mock data for the content cards
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    checkAuth();
+  }, []);
+
+  // Load posts from API
+  useEffect(() => {
+    const loadPosts = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Use the helper to build query parameters with proper tag ID mapping
+        const params = buildPostsQueryParams(currentFilters);
+
+        const apiUrl = `/api/v0/posts?${params.toString()}`;
+        console.log("Search API call:", apiUrl);
+        console.log("Original filters:", currentFilters);
+
+        const response = await fetch(apiUrl);
+        console.log("Posts API response status:", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Posts API error:", errorText);
+          throw new Error(`Failed to fetch posts: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log("Posts API result:", result);
+
+        // The posts API returns { posts: [...] }
+        const postsData = result.posts || [];
+        console.log("Extracted posts data:", postsData);
+
+        setPosts(Array.isArray(postsData) ? postsData : []);
+      } catch (error) {
+        console.error("Error loading posts:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to load posts"
+        );
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
+  }, [user, currentFilters]);
+
   const handleFiltersUpdate = (newFilters: any) => {
     setCurrentFilters(newFilters);
   };
@@ -52,88 +119,7 @@ export default function Search() {
     setSelectedPost(null);
   };
 
-  const discoverContent: Post[] = [
-    {
-      post_id: "1",
-      cover_image_url: "/dandelion.jpg",
-      title: "3 Reasons You Should Slow Down Today",
-      secondary_title: "5 minute read",
-      author_name: "Maya Johnson",
-      author_photo: "/woman.jpg",
-      like_count: 42,
-      topic_tag_ids: ["1", "2"],
-      topic_tags: "Wellness",
-      format_tags: "Article",
-      audience_tags: "BIPOC",
-      content_type: "text",
-      content:
-        "# 3 Reasons You Should Slow Down Today\n\nIn our fast-paced world, taking time to slow down is more important than ever...",
-    },
-    {
-      post_id: "2",
-      cover_image_url: "/dino.jpg",
-      title: "Staying Soft in the Chaos: A Cannamom's Birthday Story",
-      secondary_title: "5 minute read",
-      author_name: "Maya Johnson",
-      author_photo: "/woman.jpg",
-      like_count: 28,
-      topic_tag_ids: ["3"],
-      topic_tags: "Personal Stories",
-      format_tags: "Story",
-      audience_tags: "Parents",
-      content_type: "text",
-      content:
-        "# Staying Soft in the Chaos\n\nBeing a parent means finding moments of peace in the beautiful chaos...",
-    },
-    {
-      post_id: "3",
-      cover_image_url: "/man.jpg",
-      title: "Cannamom Approved: City Park Limeade",
-      secondary_title: "2 minute read",
-      author_name: "Maya Johnson",
-      author_photo: "/woman.jpg",
-      like_count: 15,
-      topic_tag_ids: ["4"],
-      topic_tags: "Recipes",
-      format_tags: "Recipe",
-      audience_tags: "All",
-      content_type: "text",
-      content:
-        "# City Park Limeade Recipe\n\nThis refreshing limeade is perfect for those summer days...",
-    },
-    {
-      post_id: "4",
-      cover_image_url: "/woman.jpg",
-      title: "Finding Peace in the Everyday Moments",
-      secondary_title: "4 minute read",
-      author_name: "Maya Johnson",
-      author_photo: "/woman.jpg",
-      like_count: 67,
-      topic_tag_ids: ["5", "6"],
-      topic_tags: "Mindfulness",
-      format_tags: "Guide",
-      audience_tags: "All",
-      content_type: "text",
-      content:
-        "# Finding Peace in the Everyday Moments\n\nMindfulness doesn't require a meditation cushion...",
-    },
-    {
-      post_id: "5",
-      cover_image_url: "/dandelion.jpg",
-      title: "The Art of Mindful Living",
-      secondary_title: "6 minute read",
-      author_name: "Maya Johnson",
-      author_photo: "/woman.jpg",
-      like_count: 89,
-      topic_tag_ids: ["7", "8"],
-      topic_tags: "Mindfulness",
-      format_tags: "Article",
-      audience_tags: "All",
-      content_type: "text",
-      content:
-        "# The Art of Mindful Living\n\nMindful living is about being present in each moment...",
-    },
-  ];
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -158,7 +144,7 @@ export default function Search() {
           </h1>
           <div className="w-10 h-10 rounded-full overflow-hidden">
             <img
-              src="/man.jpg"
+              src={user?.user_metadata?.avatar_url || "/man.jpg"}
               alt="Profile"
               className="w-full h-full object-cover"
             />
@@ -277,22 +263,68 @@ export default function Search() {
           className="text-sm font-medium"
           style={{ color: "var(--foreground)" }}
         >
-          {discoverContent.length} Results
+          {loading ? "Loading..." : `${posts.length} Results`}
         </h3>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="px-4 py-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p>{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 text-sm underline"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="px-4 py-4 space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="flex space-x-4">
+                <div className="w-20 h-20 bg-gray-300 rounded"></div>
+                <div className="flex-1 space-y-2 py-1">
+                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/4"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Content Cards */}
-      <div className="px-4 py-4 space-y-3">
-        {discoverContent.map((content) => (
-          <Card
-            key={content.post_id}
-            {...transformPost(content)}
-            readTime={content.secondary_title}
-            layout="horizontal"
-            onClick={() => handlePostClick(content)}
-          />
-        ))}
-      </div>
+      {!loading && !error && (
+        <div className="px-4 py-4 space-y-3">
+          {posts.length > 0 ? (
+            posts.map((content) => (
+              <Card
+                key={content.post_id}
+                {...transformPost(content)}
+                readTime={content.secondary_title || "5 min read"}
+                layout="horizontal"
+                onClick={() => handlePostClick(content)}
+              />
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">
+                No posts found matching your filters.
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Try adjusting your search criteria.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Filter Modal */}
       <PostModal
