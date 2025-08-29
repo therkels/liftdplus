@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
         return new Response(JSON.stringify({ 
             message: "Preferences updated successfully",
-            saved_preferences: tags?.map(t => t.display_name) || [],
+            saved_preferences: tags?.map((t: any) => t.display_name) || [],
             user_id: user.id
         }), {
             status: 200,
