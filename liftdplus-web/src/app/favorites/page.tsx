@@ -235,9 +235,6 @@ export default function Favorites() {
       {/* Profile Section */}
       <div className="bg-[#f9fafb] px-4 md:px-0 py-6">
         <div className="flex flex-col items-center md:items-start">
-
-
-
           <span className="text-sm text-gray-600 mt-2">
             {totalPosts} Saved Posts
           </span>
@@ -287,10 +284,10 @@ export default function Favorites() {
           <div className="relative bg-white w-full h-full flex flex-col">
             <button
               onClick={closeCategoryModal}
-              className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-all duration-200 shadow-lg"
+              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-accent hover:bg-accent/90 transition-all duration-200 shadow-lg"
               aria-label="Close modal"
             >
-              <HiX className="w-5 h-5 text-gray-600" />
+              <HiX className="w-7 h-7 text-foreground" />
             </button>
 
             <div className="p-6 border-b">

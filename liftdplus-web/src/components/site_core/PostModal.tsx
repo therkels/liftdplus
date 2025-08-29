@@ -40,11 +40,11 @@ const PostModal: React.FC<PostModalProps> = ({ isOpen, onClose, children }) => {
       <div className="relative bg-white w-full h-full overflow-hidden">
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-all duration-200 shadow-lg"
+          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-accent hover:bg-accent/90 transition-all duration-200 shadow-lg"
           aria-label="Close modal"
         >
           <svg
-            className="w-6 h-6 text-gray-600"
+            className="w-7 h-7 text-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -52,7 +52,7 @@ const PostModal: React.FC<PostModalProps> = ({ isOpen, onClose, children }) => {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={2.5}
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
