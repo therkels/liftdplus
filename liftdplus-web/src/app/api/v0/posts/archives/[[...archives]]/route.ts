@@ -35,9 +35,6 @@ export async function PUT(request: NextRequest, { params }: {params: {posts:stri
 
     const param_list = params.posts || [];
     const url = new URL(request.url);
-
-
-
 }
 
 export async function DELETE(request: NextRequest, { params }: {params: {posts:string}}) {

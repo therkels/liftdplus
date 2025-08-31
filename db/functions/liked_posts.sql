@@ -1,91 +1,6 @@
-DROP FUNCTION IF EXISTS private.remove_post_archive(text, text);
-DROP FUNCTION IF EXISTS public.remove_post_archive(text, text);
-
-CREATE OR REPLACE FUNCTION private.remove_post_archive(post_id text, user_id text)
-RETURNS void
-LANGUAGE sql
-AS $$
-  DELETE FROM private.archives
-  WHERE
-    post_id = $1::int
-    and user_id = $2::uuid
-$$;
-
-CREATE OR REPLACE FUNCTION public.remove_post_archive(post_id text, user_id text)
-RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  PERFORM private.remove_post_archive(post_id, user_id);
-END;
-$$;
-
-DROP FUNCTION IF EXISTS private.archive_post(text, text, text);
-DROP FUNCTION IF EXISTS public.archive_post(text, text, text);
-
-CREATE OR REPLACE FUNCTION private.archive_post(post_id text, user_id text, category text)
-RETURNS void
-LANGUAGE sql
-AS $$
-  INSERT INTO private.archives (post_id, user_id, category)
-  VALUES ($1::int, $2::uuid, $3)
-  ON CONFLICT (post_id, user_id) DO NOTHING;
-$$;
-
-CREATE OR REPLACE FUNCTION public.archive_post(post_id text, user_id text, category text)
-RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  PERFORM private.archive_post(post_id, user_id, category);
-END;
-$$;
-
-DROP FUNCTION IF EXISTS private.get_archive_info(text);
-DROP FUNCTION IF EXISTS public.get_archive_info(text);
-CREATE OR REPLACE FUNCTION private.get_archive_info(user_id text)
-  RETURNS TABLE (
-    category text,
-    cover_image_url text,
-    cat_count int
-  )
-  language sql
-  as $$
-  SELECT
-  category,
-  cover_image_url,
-  count(*) as cat_count
-
-  FROM private.archives
-  WHERE user_id = $1::uuid
-  GROUP BY category, cover_image_url
-
-  UNION all
-  select
-  'liked' as category,
-  'liked_image_cover' as cover_image_url,
-  count(*) as like_count
-
-  FROM private.likes likes
-  WHERE user_id = $1::uuid
-  GROUP BY category, cover_image_url
-$$;
-
-
-CREATE OR REPLACE FUNCTION public.get_archive_info(user_id text)
-  RETURNS TABLE (
-    category text,
-    cover_image_url text,
-    cat_count int
-  ) as $$
-BEGIN
-  RETURN QUERY SELECT * FROM private.get_archive_info(user_id);
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-DROP FUNCTION IF EXISTS private.get_posts_by_archive(text, text);
-DROP FUNCTION IF EXISTS public.get_posts_by_archive(text, text);
-CREATE OR REPLACE FUNCTION private.get_posts_by_archive(user_id text, category_display text)
+DROP FUNCTION IF EXISTS private.get_liked_posts(text);
+DROP FUNCTION IF EXISTS public.get_liked_posts(text);
+CREATE OR REPLACE FUNCTION private.get_liked_posts(user_id text)
   RETURNS TABLE (
     id int4,
     title varchar,
@@ -139,17 +54,16 @@ FROM
   LEFT JOIN tag_info as tinfo on tinfo.post_id=post.id
   LEFT JOIN private.users as users on users.id = post.author
   LEFT JOIN private.archives as archives on archives.post_id = post.id
-WHERE archives.user_id = $1::uuid
+WHERE likes.user_id = $1::uuid
 GROUP BY
   post.id, post.cover_image_url, post.title, post.secondary_title, users.username, users.profile_icon_url)
 
 SELECT *
 from post_info
-where $2 = ANY (topic_tags)
 $$;
 
 
-CREATE OR REPLACE FUNCTION public.get_posts_by_archive(user_id text, category_display text)
+CREATE OR REPLACE FUNCTION public.get_liked_posts(user_id text)
   RETURNS TABLE (
     id int4,
     title varchar,
@@ -168,6 +82,6 @@ CREATE OR REPLACE FUNCTION public.get_posts_by_archive(user_id text, category_di
     audience_tags text[]
   ) as $$
 BEGIN
-  RETURN QUERY SELECT * FROM private.get_posts_by_archive(user_id, category_display);
+  RETURN QUERY SELECT * FROM private.get_liked_posts(user_id);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
