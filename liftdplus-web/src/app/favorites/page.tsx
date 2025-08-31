@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { HiX } from "react-icons/hi";
+import { createClient } from "@/utils/supabase/client";
 import PostModal from "@/components/site_core/PostModal";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
 import Card from "@/components/site_core/Card";
@@ -25,11 +26,28 @@ export default function Favorites() {
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const user = {
-    name: "Jay Johnson",
-    profileImage: null,
-  };
+  // Check authentication status and load user data
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const supabase = await createClient();
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+        setUser(authUser);
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   // Mock posts data
   const mockPosts: Post[] = [
@@ -149,48 +167,82 @@ export default function Favorites() {
     setSelectedPost(null);
   };
 
-  return (
-    <div className="container mx-auto pt-6 max-w-2xl">
-      {/* Profile Section */}
-      <div className="flex flex-col items-center mb-8">
-        <div
-          className="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2 mb-4"
-          style={{ borderColor: "var(--accent-light)" }}
-        >
-          {user.profileImage ? (
-            <Image
-              src={user.profileImage}
-              alt={user.name}
-              width={80}
-              height={80}
-              className="object-cover"
-            />
-          ) : (
-            <Image
-              src="/man.jpg"
-              alt={user.name}
-              width={80}
-              height={80}
-              className="rounded-full object-cover"
-            />
-          )}
+  // Show loading state while fetching user data
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
-        <h2 className="text-xl font-bold text-gray-800">{user.name}</h2>
+      </div>
+    );
+  }
+
+  // Show sign-in prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Sign In Required
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Please sign in to view your favorites.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Section */}
+      <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
+        <div className="flex items-center justify-between">
+          <h1
+            style={{
+              width: "262px",
+              height: "34px",
+              fontWeight: 700,
+              fontStyle: "normal",
+              fontSize: "40px",
+              lineHeight: "46px",
+              letterSpacing: "0.3%",
+              verticalAlign: "middle",
+              textTransform: "capitalize",
+              color: "var(--foreground)",
+            }}
+          >
+            Favorites
+          </h1>
+          <div className="w-10 h-10 rounded-full overflow-hidden">
+            <img
+              src={user?.user_metadata?.avatar_url || "/man.jpg"}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Favorites Card */}
-      <div
-        className="rounded-2xl shadow-lg p-6"
-        style={{ backgroundColor: "var(--background-light)" }}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Favorites</h1>
-          <span className="text-sm text-gray-600">
+      {/* Profile Section */}
+      <div className="bg-[#f9fafb] px-4 md:px-0 py-6">
+        <div className="flex flex-col items-center md:items-start">
+          <span className="text-sm text-gray-600 mt-2">
             {totalPosts} Saved Posts
           </span>
         </div>
+      </div>
 
-        {/* Category Grid */}
+      {/* Favorites Content */}
+      <div className="px-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           {categories.map((category) => (
             <button
@@ -232,10 +284,10 @@ export default function Favorites() {
           <div className="relative bg-white w-full h-full flex flex-col">
             <button
               onClick={closeCategoryModal}
-              className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-all duration-200 shadow-lg"
+              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-accent hover:bg-accent/90 transition-all duration-200 shadow-lg"
               aria-label="Close modal"
             >
-              <HiX className="w-5 h-5 text-gray-600" />
+              <HiX className="w-7 h-7 text-foreground" />
             </button>
 
             <div className="p-6 border-b">
@@ -248,13 +300,13 @@ export default function Favorites() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {selectedCategory.posts.map((post) => (
                   <Card
                     key={post.post_id}
                     {...transformPost(post)}
                     onClick={() => handlePostClick(post)}
-                    compact={true}
+                    compact={false}
                   />
                 ))}
               </div>

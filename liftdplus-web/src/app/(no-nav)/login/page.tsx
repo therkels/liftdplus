@@ -14,7 +14,7 @@ export default function LoginPage() {
       {/* Header */}
       <div className="text-center">
         <div className="flex justify-center my-8">
-          <img src="/lftd-text.svg" alt="LIFTD" className="h-auto w-[60vw]" />
+          <img src="/liftd-text.svg" alt="LIFTD" className="h-auto w-[60vw]" />
         </div>
       </div>
 

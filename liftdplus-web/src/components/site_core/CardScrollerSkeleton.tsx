@@ -30,7 +30,7 @@ const CardScrollerSkeleton: React.FC<CardScrollerSkeletonProps> = ({
       {/* Cards skeleton */}
       <div className="relative">
         <div className="overflow-x-auto touch-scroll">
-          <div className="flex space-x-4 px-4 pb-4">
+          <div className="flex space-x-4 p-4">
             {Array.from({ length: cardCount }, (_, index) => (
               <CardSkeleton key={index} compact={compact} />
             ))}

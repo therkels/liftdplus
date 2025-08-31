@@ -10,14 +10,16 @@ const CardSkeleton: React.FC<CardSkeletonProps> = ({ compact = false }) => {
   return (
     <div
       className={`flex-shrink-0 ${
-        compact ? "w-44" : "w-72"
+        compact ? "w-44 md:w-64" : "w-72 md:w-80"
       } bg-white rounded-lg shadow-lg overflow-hidden ${
         compact ? "m-0" : "m-2"
       } animate-pulse`}
     >
       {/* Image skeleton */}
       <div
-        className={`relative ${compact ? "h-32" : "h-48"} w-full bg-gray-300`}
+        className={`relative ${
+          compact ? "h-32 md:h-40" : "h-48 md:h-56"
+        } w-full bg-gray-300`}
       ></div>
 
       {/* Read time skeleton */}
