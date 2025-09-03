@@ -9,23 +9,23 @@ import { Post } from "@/utils/postTransformers";
  */
 export async function fetchFullPostContent(post: Post): Promise<PostData> {
   console.log("Fetching full post content for:", post.post_id);
-  
+
   // Fetch the full post content
   const response = await fetch(`/api/v0/posts/${post.post_id}`);
-  
+
   if (!response.ok) {
     throw new Error(`Failed to fetch post: ${response.statusText}`);
   }
-  
+
   const result = await response.json();
   console.log("Full post data:", result);
-  
-  const fullPost = result.post;
-  
+
+  const fullPost = result[0];
+
   if (!fullPost) {
     throw new Error("Post not found");
   }
-  
+
   // Transform the full post data to match PostData interface
   const transformedPost: PostData = {
     post_id: fullPost.id?.toString() || post.post_id,
@@ -46,11 +46,11 @@ export async function fetchFullPostContent(post: Post): Promise<PostData> {
         ? fullPost.audience_tags
         : [fullPost.audience_tags].filter(Boolean)),
     ].filter(Boolean),
-    content_type: "text",
-    content: fullPost.markdown || "", // This is the key field we need!
-    images: [],
+    content_type: fullPost.config?.images?.length > 0 ? "image" : "text",
+    content: fullPost.markdown || "",
+    images: fullPost.config?.images || [],
   };
-  
+
   return transformedPost;
 }
 

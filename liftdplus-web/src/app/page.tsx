@@ -273,7 +273,8 @@ export default function Home() {
 
           if (postsResponse.ok) {
             const postsResult = await postsResponse.json();
-            const posts = postsResult.posts || [];
+            const posts =
+              (postsResult && postsResult[0] && postsResult[0].posts) || [];
 
             feedTopics = [
               {
@@ -435,7 +436,7 @@ export default function Home() {
               {topic.posts.map((post) => (
                 <Card
                   key={post.post_id}
-                  {...transformPost(post)}
+                  post={post}
                   onClick={() => openPostModal(post)}
                   compact={true}
                 />

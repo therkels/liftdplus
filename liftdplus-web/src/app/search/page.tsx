@@ -79,8 +79,8 @@ export default function Search() {
         const result = await response.json();
         console.log("Posts API result:", result);
 
-        // The posts API returns { posts: [...] }
-        const postsData = result.posts || [];
+        // The posts API returns an array with one object containing posts
+        const postsData = (result && result[0] && result[0].posts) || [];
         console.log("Extracted posts data:", postsData);
 
         setPosts(Array.isArray(postsData) ? postsData : []);
@@ -288,7 +288,7 @@ export default function Search() {
             posts.map((content) => (
               <Card
                 key={content.post_id}
-                {...transformPost(content)}
+                post={content}
                 readTime={content.secondary_title || "5 min read"}
                 layout="horizontal"
                 onClick={() => openPostModal(content)}

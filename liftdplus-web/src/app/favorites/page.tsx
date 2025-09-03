@@ -12,15 +12,23 @@ import {
   transformPost,
   transformPostForModal,
 } from "@/utils/postTransformers";
+import {
+  getArchiveCategories,
+  getArchivedPosts,
+  getLikedPosts,
+  ArchiveCategory,
+} from "@/utils/postActions";
 
 interface FavoriteCategory {
   id: string;
   name: string;
   postCount: number;
   posts: Post[];
+  coverImage: string;
 }
 
 export default function Favorites() {
+  const [categories, setCategories] = useState<FavoriteCategory[]>([]);
   const [selectedCategory, setSelectedCategory] =
     useState<FavoriteCategory | null>(null);
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
@@ -28,6 +36,9 @@ export default function Favorites() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Check authentication status and load user data
   useEffect(() => {
@@ -49,107 +60,94 @@ export default function Favorites() {
     loadUserData();
   }, []);
 
-  // Mock posts data
-  const mockPosts: Post[] = [
-    {
-      post_id: "1",
-      cover_image_url: "/dandelion.jpg",
-      title: "Better Sleep Habits",
-      secondary_title: "A guide to restful nights",
-      author_name: "Maya Johnson",
-      author_photo: null,
-      like_count: 42,
-      topic_tag_ids: ["sleep"],
-      topic_tags: "Sleep & Rest",
-      format_tags: "Guide",
-      audience_tags: "Beginner",
-      content_type: "text",
-      content: "# Better Sleep Habits\n\nThis is a guide to better sleep...",
-    },
-    {
-      post_id: "2",
-      cover_image_url: "/dandelion.jpg",
-      title: "Managing Daily Stress",
-      secondary_title: "Practical stress relief techniques",
-      author_name: "Alex Chen",
-      author_photo: null,
-      like_count: 89,
-      topic_tag_ids: ["stress"],
-      topic_tags: "Stress & Anxiety",
-      format_tags: "Tips",
-      audience_tags: "Intermediate",
-      content_type: "text",
-      content: "# Managing Daily Stress\n\nStress management strategies...",
-    },
-    {
-      post_id: "3",
-      cover_image_url: "/dandelion.jpg",
-      title: "Intimacy and Connection",
-      secondary_title: "Building stronger relationships",
-      author_name: "Sarah Wilson",
-      author_photo: null,
-      like_count: 156,
-      topic_tag_ids: ["intimacy"],
-      topic_tags: "Intimacy & Libido",
-      format_tags: "Article",
-      audience_tags: "All Levels",
-      content_type: "text",
-      content:
-        "# Intimacy and Connection\n\nBuilding meaningful connections...",
-    },
-  ];
+  // Load archive categories when user is available
+  useEffect(() => {
+    if (user) {
+      loadCategories();
+    }
+  }, [user]);
 
-  // Mock categories with different post counts
-  const categories: FavoriteCategory[] = [
-    {
-      id: "liked-posts",
-      name: "Liked Posts",
-      postCount: 36,
-      posts: mockPosts,
-    },
-    {
-      id: "sleep-rest",
-      name: "Sleep & Rest",
-      postCount: 24,
-      posts: mockPosts.filter((p) => p.topic_tags === "Sleep & Rest"),
-    },
-    {
-      id: "stress-anxiety",
-      name: "Stress & Anxiety",
-      postCount: 18,
-      posts: mockPosts.filter((p) => p.topic_tags === "Stress & Anxiety"),
-    },
-    {
-      id: "intimacy-libido",
-      name: "Intimacy & Libido",
-      postCount: 12,
-      posts: mockPosts.filter((p) => p.topic_tags === "Intimacy & Libido"),
-    },
-    {
-      id: "hormonal-changes",
-      name: "Hormonal Changes",
-      postCount: 15,
-      posts: mockPosts,
-    },
-    {
-      id: "pain-relief",
-      name: "Pain Relief",
-      postCount: 8,
-      posts: mockPosts,
-    },
-    {
-      id: "focus-creativity",
-      name: "Focus & Creativity",
-      postCount: 10,
-      posts: mockPosts,
-    },
-  ];
+  const loadCategories = async () => {
+    setCategoriesLoading(true);
+    setError(null);
 
-  const totalPosts = categories.reduce((sum, cat) => sum + cat.postCount, 0);
+    try {
+      const archiveCategories = await getArchiveCategories();
+      const likedPosts = await getLikedPosts();
 
-  const handleCategoryClick = (category: FavoriteCategory) => {
-    setSelectedCategory(category);
+      // Get all available topic categories from tagMapper
+      const { AVAILABLE_TAGS } = await import("@/utils/tagMapper");
+      const allTopicCategories = AVAILABLE_TAGS.topic;
+
+      // Create a map of existing archive categories for quick lookup
+      const archiveCategoryMap = new Map(
+        archiveCategories.map((cat: ArchiveCategory) => [cat.category, cat])
+      );
+
+      // Create favorite categories for all available topics
+      const favoriteCategories: FavoriteCategory[] = allTopicCategories.map(
+        (categoryName) => {
+          const existingCategory = archiveCategoryMap.get(categoryName);
+          return {
+            id: categoryName.toLowerCase().replace(/\s+/g, "-"),
+            name: categoryName,
+            postCount: existingCategory?.cat_count || 0,
+            posts: [], // Will be loaded when category is selected
+            coverImage: existingCategory?.cover_image_url || null, // null for empty categories
+          };
+        }
+      );
+
+      // Add liked posts as a special category (always show, even if empty)
+      favoriteCategories.unshift({
+        id: "liked-posts",
+        name: "Liked Posts",
+        postCount: likedPosts.length,
+        posts: likedPosts,
+        coverImage: likedPosts.length > 0 ? "/dandelion.jpg" : null, // null for empty
+      });
+
+      setCategories(favoriteCategories);
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      setError("Failed to load categories. Please try again.");
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  const loadCategoryPosts = async (category: FavoriteCategory) => {
+    setPostsLoading(true);
+
+    try {
+      let posts: Post[] = [];
+
+      if (category.id === "liked-posts") {
+        // Posts are already loaded for liked posts
+        posts = category.posts;
+      } else {
+        // Load archived posts for this category
+        posts = await getArchivedPosts(category.name);
+      }
+
+      // Update the category with loaded posts
+      const updatedCategory = {
+        ...category,
+        posts: posts,
+      };
+
+      setSelectedCategory(updatedCategory);
+    } catch (error) {
+      console.error("Error loading category posts:", error);
+      setError("Failed to load posts. Please try again.");
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
+  const handleCategoryClick = async (category: FavoriteCategory) => {
     setIsCategoryModalOpen(true);
+    await loadCategoryPosts(category);
   };
 
   const handlePostClick = (post: Post) => {
@@ -166,6 +164,8 @@ export default function Favorites() {
     setIsPostModalOpen(false);
     setSelectedPost(null);
   };
+
+  const totalPosts = categories.reduce((sum, cat) => sum + cat.postCount, 0);
 
   // Show loading state while fetching user data
   if (loading) {
@@ -238,44 +238,59 @@ export default function Favorites() {
           <span className="text-sm text-gray-600 mt-2">
             {totalPosts} Saved Posts
           </span>
+          {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
         </div>
       </div>
 
       {/* Favorites Content */}
       <div className="px-4 py-4">
-        <div className="grid grid-cols-2 gap-4">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => handleCategoryClick(category)}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="relative h-32">
-                <Image
-                  src="/dandelion.jpg"
-                  alt={category.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-3 bg-white text-left">
-                <div className="text-gray-500 text-xs mb-1">
-                  {category.postCount} Posts
+        {categoriesLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your saved posts...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryClick(category)}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
+              >
+                <div className="relative h-32">
+                  {category.coverImage ? (
+                    <Image
+                      src={category.coverImage}
+                      alt={category.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full"
+                      style={{ backgroundColor: "#475a6b" }}
+                    />
+                  )}
                 </div>
-                <div
-                  className="font-semibold text-sm"
-                  style={{ color: "var(--accent-light)" }}
-                >
-                  {category.name}
+                <div className="p-3 bg-white text-left">
+                  <div className="text-gray-500 text-xs mb-1">
+                    {category.postCount} Posts
+                  </div>
+                  <div
+                    className="font-semibold text-sm"
+                    style={{ color: "var(--accent-light)" }}
+                  >
+                    {category.name}
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Category Modal */}
-      {isCategoryModalOpen && selectedCategory && (
+      {isCategoryModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
             className="absolute inset-0 bg-black bg-opacity-50"
@@ -292,24 +307,37 @@ export default function Favorites() {
 
             <div className="p-6 border-b">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                {selectedCategory.name}
+                {selectedCategory?.name || "Loading..."}
               </h2>
               <p className="text-sm text-gray-600">
-                {selectedCategory.postCount} posts
+                {selectedCategory?.postCount || 0} posts
               </p>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {selectedCategory.posts.map((post) => (
-                  <Card
-                    key={post.post_id}
-                    {...transformPost(post)}
-                    onClick={() => handlePostClick(post)}
-                    compact={false}
-                  />
-                ))}
-              </div>
+              {postsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading posts...</p>
+                </div>
+              ) : selectedCategory?.posts.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">
+                    No posts in this category yet.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {selectedCategory?.posts.map((post) => (
+                    <Card
+                      key={post.post_id}
+                      post={post}
+                      onClick={() => handlePostClick(post)}
+                      compact={false}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

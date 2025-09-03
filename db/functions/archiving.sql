@@ -14,6 +14,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.remove_post_archive(post_id text, user_id text)
 RETURNS void
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
   PERFORM private.remove_post_archive(post_id, user_id);
@@ -27,14 +28,23 @@ CREATE OR REPLACE FUNCTION private.archive_post(post_id text, user_id text, cate
 RETURNS void
 LANGUAGE sql
 AS $$
-  INSERT INTO private.archives (post_id, user_id, category)
-  VALUES ($1::int, $2::uuid, $3)
-  ON CONFLICT (post_id, user_id) DO NOTHING;
+  INSERT INTO private.archives (post_id, user_id, category, cover_image_url)
+  SELECT 
+    $1::int, 
+    $2::uuid, 
+    $3,
+    COALESCE(post.cover_image_url, '/dandelion.jpg') as cover_image_url
+  FROM private.post 
+  WHERE post.id = $1::int
+  ON CONFLICT (post_id, user_id) DO UPDATE SET 
+    category = EXCLUDED.category,
+    cover_image_url = EXCLUDED.cover_image_url;
 $$;
 
 CREATE OR REPLACE FUNCTION public.archive_post(post_id text, user_id text, category text)
 RETURNS void
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
   PERFORM private.archive_post(post_id, user_id, category);
@@ -139,13 +149,12 @@ FROM
   LEFT JOIN tag_info as tinfo on tinfo.post_id=post.id
   LEFT JOIN private.users as users on users.id = post.author
   LEFT JOIN private.archives as archives on archives.post_id = post.id
-WHERE archives.user_id = $1::uuid
+WHERE archives.user_id = $1::uuid 
+  AND archives.category = $2
 GROUP BY
   post.id, post.cover_image_url, post.title, post.secondary_title, users.username, users.profile_icon_url)
 
-SELECT *
-from post_info
-where $2 = ANY (topic_tags)
+SELECT * FROM post_info
 $$;
 
 
