@@ -1,16 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { Post } from "@/utils/postTransformers";
 import { usePostInteractions } from "@/hooks/usePostInteractions";
-import CategorySelectionModal from "./CategorySelectionModal";
 
 interface PostMetadataProps {
   post: Post;
 }
 
 const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-
   // Guard clause to handle undefined post
   if (!post) {
     return (
@@ -46,18 +43,8 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
   } = usePostInteractions(post);
 
   const handleBookmarkClick = () => {
-    if (isArchived) {
-      // If already archived, unarchive directly
-      handleArchive(""); // Empty category will trigger unarchive
-    } else {
-      // Show category selection modal
-      setShowCategoryModal(true);
-    }
-  };
-
-  const handleCategorySelect = (category: string) => {
-    handleArchive(category);
-    setShowCategoryModal(false);
+    // Auto-archive or unarchive directly - no category selection needed
+    handleArchive();
   };
 
   return (
@@ -147,14 +134,6 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
           </div>
         </div>
       </div>
-
-      <CategorySelectionModal
-        isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        onSelectCategory={handleCategorySelect}
-        postTitle={post.title}
-        isLoading={isLoading}
-      />
     </>
   );
 };

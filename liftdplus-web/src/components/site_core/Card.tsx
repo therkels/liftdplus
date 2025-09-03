@@ -1,8 +1,6 @@
 import Image from "next/image";
-import { useState } from "react";
 import { Post } from "@/utils/postTransformers";
 import { usePostInteractions } from "@/hooks/usePostInteractions";
-import CategorySelectionModal from "./CategorySelectionModal";
 
 interface CardProps {
   post: Post; // Changed from individual fields to full post object
@@ -19,8 +17,6 @@ const Card: React.FC<CardProps> = ({
   readTime,
   layout = "vertical",
 }) => {
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-
   // Guard clause to handle undefined post
   if (!post) {
     return (
@@ -59,18 +55,8 @@ const Card: React.FC<CardProps> = ({
 
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isArchived) {
-      // If already archived, unarchive directly
-      handleArchive(""); // Empty category will trigger unarchive
-    } else {
-      // Show category selection modal
-      setShowCategoryModal(true);
-    }
-  };
-
-  const handleCategorySelect = (category: string) => {
-    handleArchive(category);
-    setShowCategoryModal(false);
+    // Auto-archive or unarchive directly - no category selection needed
+    handleArchive();
   };
 
   const handleLikeClick = (e: React.MouseEvent) => {
@@ -190,14 +176,6 @@ const Card: React.FC<CardProps> = ({
             </div>
           </div>
         </div>
-
-        <CategorySelectionModal
-          isOpen={showCategoryModal}
-          onClose={() => setShowCategoryModal(false)}
-          onSelectCategory={handleCategorySelect}
-          postTitle={cardData.title}
-          isLoading={isLoading}
-        />
       </>
     );
   }
@@ -343,14 +321,6 @@ const Card: React.FC<CardProps> = ({
           </div>
         </div>
       </div>
-
-      <CategorySelectionModal
-        isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        onSelectCategory={handleCategorySelect}
-        postTitle={cardData.title}
-        isLoading={isLoading}
-      />
     </>
   );
 };

@@ -42,35 +42,32 @@ export function usePostInteractions(post: Post) {
     }
   }, [isLiked, isLoading, post?.post_id]);
 
-  const handleArchive = useCallback(
-    async (category: string) => {
-      if (isLoading) return;
+  const handleArchive = useCallback(async () => {
+    if (isLoading) return;
 
-      setIsLoading(true);
-      const newArchivedState = !isArchived;
+    setIsLoading(true);
+    const newArchivedState = !isArchived;
 
-      // Optimistic update
-      setIsArchived(newArchivedState);
+    // Optimistic update
+    setIsArchived(newArchivedState);
 
-      try {
-        const success = newArchivedState
-          ? await archivePost(post?.post_id || "", category)
-          : await unarchivePost(post?.post_id || "");
+    try {
+      const success = newArchivedState
+        ? await archivePost(post?.post_id || "")
+        : await unarchivePost(post?.post_id || "");
 
-        if (!success) {
-          // Revert on failure
-          setIsArchived(!newArchivedState);
-          throw new Error("Failed to update archive status");
-        }
-      } catch (error) {
-        console.error("Error handling archive:", error);
-        // State already reverted above
-      } finally {
-        setIsLoading(false);
+      if (!success) {
+        // Revert on failure
+        setIsArchived(!newArchivedState);
+        throw new Error("Failed to update archive status");
       }
-    },
-    [isArchived, isLoading, post?.post_id]
-  );
+    } catch (error) {
+      console.error("Error handling archive:", error);
+      // State already reverted above
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isArchived, isLoading, post?.post_id]);
 
   return {
     isLiked,

@@ -59,24 +59,16 @@ export async function unlikePost(postId: string): Promise<boolean> {
 }
 
 /**
- * Archive a post to a specific category
+ * Archive a post automatically to the correct category based on user preferences
  */
-export async function archivePost(
-  postId: string,
-  category: string
-): Promise<boolean> {
+export async function archivePost(postId: string): Promise<boolean> {
   try {
-    const response = await fetch(
-      `/api/v0/posts/${postId}/archive?category=${encodeURIComponent(
-        category
-      )}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`/api/v0/posts/${postId}/archive`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to archive post: ${response.statusText}`);

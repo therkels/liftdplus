@@ -45,16 +45,8 @@ export async function PUT(
 
   if (param_list.length === 2) {
     if (param_list[1] == "archive") {
-      const category = url.searchParams.get("category");
-      if (!category) {
-        return jsonResponse({ error: "a category is required for archives" });
-      }
-      return putArchivedPost(
-        supabase,
-        param_list[0],
-        user.id,
-        url.searchParams.get("category") || ""
-      );
+      // Auto-archive: determine category from post's topic tag and user preferences
+      return autoArchivePost(supabase, param_list[0], user.id);
     } else if (param_list[1] == "like") {
       return putLikePost(supabase, param_list[0], user.id);
     }
@@ -89,13 +81,13 @@ export async function DELETE(
 }
 
 async function getAllPosts(supabase: any, user_id: string, url: URL) {
-    const { data, error } = await supabase.rpc("get_posts_with_user_data", {
-      user_id: user_id,
-      category_filter: url.searchParams.getAll("category"),
-      audience_filter: url.searchParams.getAll("audience"),
-      format_filter: url.searchParams.getAll("format"),
-      sort_by: url.searchParams.get("sort_by") || "popular",
-    });
+  const { data, error } = await supabase.rpc("get_posts_with_user_data", {
+    user_id: user_id,
+    category_filter: url.searchParams.getAll("category"),
+    audience_filter: url.searchParams.getAll("audience"),
+    format_filter: url.searchParams.getAll("format"),
+    sort_by: url.searchParams.get("sort_by") || "popular",
+  });
   console.log("get_posts_with_user_data error:", error);
   console.log("get_posts_with_user_data data:", data);
   return jsonResponse(data);
@@ -129,6 +121,27 @@ async function putArchivedPost(
   console.log("Archive post success:", { post_id, user_id, category });
   return jsonResponse({ success: true, data });
 }
+
+async function autoArchivePost(
+  supabase: any,
+  post_id: string,
+  user_id: string
+) {
+  const { data, error } = await supabase.rpc("auto_archive_post", {
+    post_id: post_id,
+    user_id: user_id,
+  });
+
+  // Log and handle errors properly
+  if (error) {
+    console.error("Auto archive post error:", error);
+    return jsonResponse({ error: error.message || error }, 500);
+  }
+
+  console.log("Auto archive post success:", { post_id, user_id });
+  return jsonResponse({ success: true, data });
+}
+
 async function putLikePost(supabase: any, post_id: string, user_id: string) {
   const { data, error } = await supabase.rpc("like_post", {
     post_id: post_id,
