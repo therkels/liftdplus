@@ -75,17 +75,23 @@ export default function Favorites() {
       const archiveCategories = await getArchiveCategories();
       const likedPosts = await getLikedPosts();
 
-      // Get all available topic categories from tagMapper
-      const { AVAILABLE_TAGS } = await import("@/utils/tagMapper");
-      const allTopicCategories = AVAILABLE_TAGS.topic;
+      // Define the 6 core interests (excluding "I'm Not Sure Yet" and "Cannabis 101")
+      const coreInterests = [
+        "Sleep & Rest",
+        "Stress & Anxiety",
+        "Intimacy & Libido",
+        "Hormonal Changes",
+        "Pain Relief",
+        "Focus & Creativity",
+      ];
 
       // Create a map of existing archive categories for quick lookup
       const archiveCategoryMap = new Map(
         archiveCategories.map((cat: ArchiveCategory) => [cat.category, cat])
       );
 
-      // Create favorite categories for all available topics
-      const favoriteCategories: FavoriteCategory[] = allTopicCategories.map(
+      // Create favorite categories for core interests only
+      const favoriteCategories: FavoriteCategory[] = coreInterests.map(
         (categoryName) => {
           const existingCategory = archiveCategoryMap.get(categoryName);
           return {
@@ -250,7 +256,7 @@ export default function Favorites() {
             <p className="text-gray-600">Loading your saved posts...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {categories.map((category) => (
               <button
                 key={category.id}

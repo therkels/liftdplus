@@ -6,12 +6,14 @@ import {
   archivePost,
   unarchivePost,
 } from "@/utils/postActions";
+import { useToast } from "@/contexts/ToastContext";
 
 export function usePostInteractions(post: Post) {
   const [isLiked, setIsLiked] = useState(post?.user_liked || false);
   const [isArchived, setIsArchived] = useState(post?.user_archived || false);
   const [likeCount, setLikeCount] = useState(post?.like_count || 0);
   const [isLoading, setIsLoading] = useState(false);
+  const { showSuccess, showError } = useToast();
 
   const handleLike = useCallback(async () => {
     if (isLoading) return;
@@ -59,7 +61,17 @@ export function usePostInteractions(post: Post) {
       if (!success) {
         // Revert on failure
         setIsArchived(!newArchivedState);
+        if (newArchivedState) {
+          showError("Failed to save post");
+        }
         throw new Error("Failed to update archive status");
+      } else {
+        // Show success message only when saving (not removing)
+        if (newArchivedState) {
+          // Determine which category the post was saved to based on its topic tags
+          const postTopicTag = post?.topic_tags || "favorites";
+          showSuccess(`Saved to ${postTopicTag}`);
+        }
       }
     } catch (error) {
       console.error("Error handling archive:", error);
