@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import ConditionalNavBar from "@/components/site_core/ConditionalNavBar";
 import ConditionalMain from "@/components/site_core/ConditionalMain";
+import { ToastProvider } from "@/contexts/ToastContext";
+import ToastContainer from "@/components/site_core/ToastContainer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,8 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased min-h-screen bg-gray-50`}>
-        <ConditionalNavBar />
-        <ConditionalMain>{children}</ConditionalMain>
+        <ToastProvider>
+          <ConditionalNavBar />
+          <ConditionalMain>{children}</ConditionalMain>
+          <ToastContainer />
+        </ToastProvider>
       </body>
     </html>
   );

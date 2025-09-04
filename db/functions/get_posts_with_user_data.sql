@@ -1,11 +1,19 @@
-DROP FUNCTION IF EXISTS private.get_posts(text, text[], text[], text[], text);
-DROP FUNCTION IF EXISTS public.get_posts(text, text[], text[], text[], text);
-CREATE OR REPLACE FUNCTION private.get_posts(user_id text, audience_filter text[] DEFAULT NULL, category_filter text[] DEFAULT NULL, format_filter text[] DEFAULT NULL, sort_by text default null)
-  RETURNS TABLE (
-    posts json
-  )
-  language sql
-  as $$
+-- Enhanced get_posts function that includes user-specific data (liked/archived status)
+DROP FUNCTION IF EXISTS private.get_posts_with_user_data(text, text[], text[], text[], text);
+DROP FUNCTION IF EXISTS public.get_posts_with_user_data(text, text[], text[], text[], text);
+
+CREATE OR REPLACE FUNCTION private.get_posts_with_user_data(
+  user_id text,
+  audience_filter text[] DEFAULT NULL,
+  category_filter text[] DEFAULT NULL, 
+  format_filter text[] DEFAULT NULL,
+  sort_by text DEFAULT NULL
+)
+RETURNS TABLE (
+  posts json
+)
+LANGUAGE sql
+AS $$
   WITH tag_info AS (
     SELECT
       ptag.post_id,
@@ -38,6 +46,7 @@ CREATE OR REPLACE FUNCTION private.get_posts(user_id text, audience_filter text[
       LEFT JOIN tag_info as tinfo on tinfo.post_id=post.id
       LEFT JOIN private.users as users on users.id = post.author
       LEFT JOIN private.archives as archives on archives.post_id = post.id
+    WHERE post.post_status = 'published'
     GROUP BY
       post.id, post.cover_image_url, post.title, post.secondary_title, users.username, users.profile_icon_url
   ), filtered_posts AS (
@@ -65,12 +74,17 @@ SELECT
 FROM filtered_posts fp
 $$;
 
-
-CREATE OR REPLACE FUNCTION public.get_posts(user_id text, audience_filter text[] DEFAULT NULL, category_filter text[] DEFAULT NULL, format_filter text[] DEFAULT NULL, sort_by text default null)
-  RETURNS TABLE (
-    posts json
-  ) as $$
+CREATE OR REPLACE FUNCTION public.get_posts_with_user_data(
+  user_id text,
+  audience_filter text[] DEFAULT NULL,
+  category_filter text[] DEFAULT NULL, 
+  format_filter text[] DEFAULT NULL,
+  sort_by text DEFAULT NULL
+)
+RETURNS TABLE (
+  posts json
+) AS $$
 BEGIN
-  RETURN QUERY SELECT * FROM private.get_posts(user_id, audience_filter, category_filter, format_filter, sort_by);
+  RETURN QUERY SELECT * FROM private.get_posts_with_user_data(user_id, audience_filter, category_filter, format_filter, sort_by);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

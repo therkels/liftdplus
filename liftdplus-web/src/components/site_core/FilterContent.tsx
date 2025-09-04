@@ -7,7 +7,6 @@ interface FilterContentProps {
     sortBy: string;
     audience: string[];
     category: string[];
-    format: string[];
   };
   onFiltersUpdate: (filters: any) => void;
 }
@@ -16,7 +15,6 @@ interface FilterState {
   sortBy: string;
   audience: string[];
   category: string[];
-  format: string[];
 }
 
 const FilterContent: React.FC<FilterContentProps> = ({
@@ -53,17 +51,6 @@ const FilterContent: React.FC<FilterContentProps> = ({
       category: filters.category.includes(value)
         ? filters.category.filter((item) => item !== value)
         : [...filters.category, value],
-    };
-    setFilters(newFilters);
-    onFiltersUpdate(newFilters);
-  };
-
-  const handleFormatChange = (value: string) => {
-    const newFilters = {
-      ...filters,
-      format: filters.format.includes(value)
-        ? filters.format.filter((item) => item !== value)
-        : [...filters.format, value],
     };
     setFilters(newFilters);
     onFiltersUpdate(newFilters);
@@ -144,7 +131,14 @@ const FilterContent: React.FC<FilterContentProps> = ({
             Audience
           </h3>
           <div className="space-y-3">
-            {["Women", "BIPOC", "Men", "Mother"].map((option) => (
+            {[
+              "New to Cannabis",
+              "For Women",
+              "By and For BIPOC Voices",
+              "For Parents",
+              "For Ages 50+",
+              "Smoke-Free Friendly",
+            ].map((option) => (
               <label
                 key={option}
                 className="flex items-center justify-between cursor-pointer"
@@ -216,50 +210,6 @@ const FilterContent: React.FC<FilterContentProps> = ({
                 />
               </label>
             ))}
-          </div>
-        </div>
-
-        {/* Separator Line */}
-        <hr className="border-gray-200 mb-6" />
-
-        {/* Format */}
-        <div className="pb-6">
-          <h3
-            className="text-gray-800 mb-4"
-            style={{
-              fontWeight: 600,
-              fontSize: "20px",
-              lineHeight: "24px",
-            }}
-          >
-            Format
-          </h3>
-          <div className="space-y-3">
-            {["Long Form Blog", "Short Form Blog", "Quick Reads"].map(
-              (option) => (
-                <label
-                  key={option}
-                  className="flex items-center justify-between cursor-pointer"
-                >
-                  <span
-                    className="text-gray-700"
-                    style={{
-                      fontSize: "16px",
-                      lineHeight: "20px",
-                    }}
-                  >
-                    {option}
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={filters.format.includes(option)}
-                    onChange={() => handleFormatChange(option)}
-                    className="w-4 h-4 border-gray-400 rounded focus:ring-gray-500"
-                    style={{ accentColor: "var(--foreground)" }}
-                  />
-                </label>
-              )
-            )}
           </div>
         </div>
       </div>

@@ -29,7 +29,6 @@ export default function Search() {
     sortBy: "popular",
     audience: [] as string[],
     category: [] as string[],
-    format: [] as string[],
   });
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,8 +78,8 @@ export default function Search() {
         const result = await response.json();
         console.log("Posts API result:", result);
 
-        // The posts API returns { posts: [...] }
-        const postsData = result.posts || [];
+        // The posts API returns an array with one object containing posts
+        const postsData = (result && result[0] && result[0].posts) || [];
         console.log("Extracted posts data:", postsData);
 
         setPosts(Array.isArray(postsData) ? postsData : []);
@@ -188,8 +187,7 @@ export default function Search() {
       {/* Current Filters Section */}
       {(currentFilters.sortBy ||
         currentFilters.audience.length > 0 ||
-        currentFilters.category.length > 0 ||
-        currentFilters.format.length > 0) && (
+        currentFilters.category.length > 0) && (
         <div className="bg-[#f9fafb] px-4  py-4">
           <h3
             className="text-sm font-medium mb-3"
@@ -219,16 +217,6 @@ export default function Search() {
             {currentFilters.category.map((filter) => (
               <span
                 key={`category-${filter}`}
-                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900"
-              >
-                {filter}
-              </span>
-            ))}
-
-            {/* Format Filters */}
-            {currentFilters.format.map((filter) => (
-              <span
-                key={`format-${filter}`}
                 className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900"
               >
                 {filter}
@@ -288,7 +276,7 @@ export default function Search() {
             posts.map((content) => (
               <Card
                 key={content.post_id}
-                {...transformPost(content)}
+                post={content}
                 readTime={content.secondary_title || "5 min read"}
                 layout="horizontal"
                 onClick={() => openPostModal(content)}

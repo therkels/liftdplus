@@ -14,6 +14,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.remove_post_archive(post_id text, user_id text)
 RETURNS void
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
   PERFORM private.remove_post_archive(post_id, user_id);
@@ -23,21 +24,68 @@ $$;
 DROP FUNCTION IF EXISTS private.archive_post(text, text, text);
 DROP FUNCTION IF EXISTS public.archive_post(text, text, text);
 
+-- Keep the old function for backward compatibility
 CREATE OR REPLACE FUNCTION private.archive_post(post_id text, user_id text, category text)
 RETURNS void
 LANGUAGE sql
 AS $$
-  INSERT INTO private.archives (post_id, user_id, category)
-  VALUES ($1::int, $2::uuid, $3)
-  ON CONFLICT (post_id, user_id) DO NOTHING;
+  INSERT INTO private.archives (post_id, user_id, category, cover_image_url)
+  SELECT 
+    $1::int, 
+    $2::uuid, 
+    $3,
+    COALESCE(post.cover_image_url, '/dandelion.jpg') as cover_image_url
+  FROM private.post 
+  WHERE post.id = $1::int
+  ON CONFLICT (post_id, user_id) DO UPDATE SET 
+    category = EXCLUDED.category,
+    cover_image_url = EXCLUDED.cover_image_url;
+$$;
+
+-- New auto-archive function that determines category from post's topic tag and user preferences
+CREATE OR REPLACE FUNCTION private.auto_archive_post(post_id text, user_id text)
+RETURNS void
+LANGUAGE sql
+AS $$
+  INSERT INTO private.archives (post_id, user_id, category, cover_image_url)
+  SELECT 
+    $1::int, 
+    $2::uuid, 
+    tag.display_name,  -- Use the post's topic tag as category
+    COALESCE(post.cover_image_url, '/dandelion.jpg') as cover_image_url
+  FROM private.post 
+  LEFT JOIN private.post_tag ptag ON post.id = ptag.post_id
+  LEFT JOIN private.tag tag ON ptag.tag_id = tag.id
+  WHERE post.id = $1::int 
+    AND tag.category = 'topic'
+    AND tag.id IN (
+      SELECT p.tag_id 
+      FROM private.preferences p 
+      WHERE p.user_id = $2::uuid
+    )
+  ON CONFLICT (post_id, user_id) DO UPDATE SET 
+    category = EXCLUDED.category,
+    cover_image_url = EXCLUDED.cover_image_url;
 $$;
 
 CREATE OR REPLACE FUNCTION public.archive_post(post_id text, user_id text, category text)
 RETURNS void
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
   PERFORM private.archive_post(post_id, user_id, category);
+END;
+$$;
+
+-- Public auto-archive function
+CREATE OR REPLACE FUNCTION public.auto_archive_post(post_id text, user_id text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  PERFORM private.auto_archive_post(post_id, user_id);
 END;
 $$;
 
@@ -52,20 +100,18 @@ CREATE OR REPLACE FUNCTION private.get_archive_info(user_id text)
   language sql
   as $$
   SELECT
-  category,
-  cover_image_url,
-  count(*) as cat_count
-
+    category,
+    (array_agg(cover_image_url))[1] as cover_image_url,  -- Take first image as representative
+    count(*)::int as cat_count
   FROM private.archives
   WHERE user_id = $1::uuid
-  GROUP BY category, cover_image_url
+  GROUP BY category  -- Only group by category, not cover_image_url
 
   UNION all
   select
-  'liked' as category,
-  'liked_image_cover' as cover_image_url,
-  count(*) as like_count
-
+    'liked' as category,
+    'liked_image_cover' as cover_image_url,
+    count(*)::int as like_count
   FROM private.likes likes
   WHERE user_id = $1::uuid
   GROUP BY category, cover_image_url
@@ -139,13 +185,12 @@ FROM
   LEFT JOIN tag_info as tinfo on tinfo.post_id=post.id
   LEFT JOIN private.users as users on users.id = post.author
   LEFT JOIN private.archives as archives on archives.post_id = post.id
-WHERE archives.user_id = $1::uuid
+WHERE archives.user_id = $1::uuid 
+  AND archives.category = $2
 GROUP BY
   post.id, post.cover_image_url, post.title, post.secondary_title, users.username, users.profile_icon_url)
 
-SELECT *
-from post_info
-where $2 = ANY (topic_tags)
+SELECT * FROM post_info
 $$;
 
 
