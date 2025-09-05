@@ -19,7 +19,7 @@ export async function POST(
     const user_name = formData.get("user_name");
     const param_list = params.user || [];
     if (param_list.length === 1) {
-      return updateUserName(supabase, param_list[0], user_name as string);
+      return updateUserName(supabase, user.id, user_name as string);
     }
   }
 }
