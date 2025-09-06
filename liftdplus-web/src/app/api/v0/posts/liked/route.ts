@@ -13,6 +13,13 @@ export async function GET(
     }
 
     const url = new URL(request.url);
+    await supabase.from('event_logs').insert([
+        {
+            event_type: 'get_liked_info',
+            details: {},
+            user_id: user.id
+        }
+    ]);
     return getLikedInfo(supabase,user.id)
 }
 
