@@ -399,9 +399,11 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-foreground">
             Hello, {user?.user_metadata?.name || "User"}
           </h1>
-          <div
-            className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
+          <button
+            onClick={() => router.push("/profile")}
+            className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2 hover:opacity-80 transition-opacity cursor-pointer"
             style={{ borderColor: "var(--accent-light)" }}
+            aria-label="Go to profile"
           >
             <Image
               src={user?.user_metadata?.avatar_url || "/man.jpg"}
@@ -410,7 +412,7 @@ export default function Home() {
               height={48}
               className="rounded-full object-cover"
             />
-          </div>
+          </button>
         </div>
 
         {interestsLoading ? (

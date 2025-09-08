@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { HiX } from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
@@ -28,6 +29,7 @@ interface FavoriteCategory {
 }
 
 export default function Favorites() {
+  const router = useRouter();
   const [categories, setCategories] = useState<FavoriteCategory[]>([]);
   const [selectedCategory, setSelectedCategory] =
     useState<FavoriteCategory | null>(null);
@@ -228,13 +230,17 @@ export default function Favorites() {
           >
             Favorites
           </h1>
-          <div className="w-10 h-10 rounded-full overflow-hidden">
+          <button
+            onClick={() => router.push("/profile")}
+            className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
+            aria-label="Go to profile"
+          >
             <img
               src={user?.user_metadata?.avatar_url || "/man.jpg"}
               alt="Profile"
               className="w-full h-full object-cover"
             />
-          </div>
+          </button>
         </div>
       </div>
 
