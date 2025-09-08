@@ -36,11 +36,20 @@ interface Interest {
 function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    setIsIOS(
-      /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+    const userAgent = navigator.userAgent;
+
+    setIsIOS(/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream);
+
+    // Detect mobile devices (phones and small tablets)
+    setIsMobile(
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(
+        userAgent
+      ) ||
+        (window.innerWidth <= 768 && "ontouchstart" in window)
     );
 
     setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
@@ -75,8 +84,14 @@ function InstallPrompt() {
     }
   };
 
+  // Don't show install button if already installed
   if (isStandalone) {
-    return null; // Don't show install button if already installed
+    return null;
+  }
+
+  // Only show on mobile devices
+  if (!isMobile) {
+    return null;
   }
 
   return (
