@@ -78,18 +78,18 @@ export default function Profile() {
       icon: HiOutlineCog,
       action: () => console.log("Account Settings"),
     },
-    {
-      id: "update-email",
-      label: "Update Email",
-      icon: HiOutlineMail,
-      action: () => setIsUpdateEmailOpen(true),
-    },
-    {
-      id: "change-password",
-      label: "Change Password",
-      icon: HiOutlineKey,
-      action: () => setIsUpdatePasswordOpen(true),
-    },
+    // {
+    //   id: "update-email",
+    //   label: "Update Email",
+    //   icon: HiOutlineMail,
+    //   action: () => setIsUpdateEmailOpen(true),
+    // },
+    // {
+    //   id: "change-password",
+    //   label: "Change Password",
+    //   icon: HiOutlineKey,
+    //   action: () => setIsUpdatePasswordOpen(true),
+    // },
     {
       id: "edit-interests",
       label: "Edit Interests",
@@ -175,13 +175,13 @@ export default function Profile() {
                 year: "numeric",
               })}
             </p>
-            <button
+            {/* <button
               onClick={handleProfileImageEdit}
               className="text-[10px] mt-1 hover:underline flex items-center text-gray-500"
             >
               <HiOutlineCog className="w-3 h-3 mr-1" />
               <span className="leading-none">Edit Profile Image</span>
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -257,7 +257,23 @@ export default function Profile() {
       <LogoutModal
         isOpen={isLogoutOpen}
         onClose={() => setIsLogoutOpen(false)}
-        onConfirm={async () => {}}
+        onConfirm={async () => {
+          try {
+            const supabase = await createClient();
+            const { error } = await supabase.auth.signOut();
+
+            if (error) {
+              console.error("Error logging out:", error);
+              alert("Failed to log out. Please try again.");
+            } else {
+              // Redirect to login page after successful logout
+              window.location.href = "/login";
+            }
+          } catch (error) {
+            console.error("Error during logout:", error);
+            alert("Failed to log out. Please try again.");
+          }
+        }}
       />
     </div>
   );
