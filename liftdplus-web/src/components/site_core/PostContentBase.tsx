@@ -2,20 +2,15 @@ import Image from "next/image";
 import ReactMarkdownOrig from "react-markdown";
 import type { Options as ReactMarkdownOptions } from "react-markdown";
 import PostMetadata from "./PostMetadata";
+import { Post } from "@/utils/postTransformers";
 
 const ReactMarkdown =
   ReactMarkdownOrig as unknown as React.FC<ReactMarkdownOptions>;
 
 interface PostContentBaseProps {
-  post: {
-    post_id: string;
-    cover_image_url: string;
-    title: string;
-    secondary_title: string;
-    author_name: string;
-    author_photo?: string;
-    like_count: number;
-    tags: string[];
+  post: Post & {
+    user_liked: boolean;
+    user_archived: boolean;
     content?: string; // Markdown content
   };
 }

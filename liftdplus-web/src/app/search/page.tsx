@@ -49,46 +49,55 @@ export default function Search() {
 
   // Load posts from API
   useEffect(() => {
-    const loadPosts = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+    if (!user) return;
 
+    const loadPosts = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Use the helper to build query parameters with proper tag ID mapping
-        const params = buildPostsQueryParams(currentFilters);
-
-        const apiUrl = `/api/v0/posts?${params.toString()}`;
-        console.log("Search API call:", apiUrl);
-        console.log("Original filters:", currentFilters);
-
-        const response = await fetch(apiUrl);
-        console.log("Posts API response status:", response.status);
+        const queryParams = buildPostsQueryParams(currentFilters);
+        const response = await fetch(`/api/v0/posts?${queryParams}`);
 
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Posts API error:", errorText);
           throw new Error(`Failed to fetch posts: ${response.statusText}`);
         }
 
-        const result = await response.json();
-        console.log("Posts API result:", result);
+        const data = await response.json();
 
-        // The posts API returns an array with one object containing posts
-        const postsData = (result && result[0] && result[0].posts) || [];
-        console.log("Extracted posts data:", postsData);
+        // Handle different response formats
+        let postsData: any[] = [];
+        if (
+          Array.isArray(data) &&
+          data.length > 0 &&
+          data[0].posts &&
+          Array.isArray(data[0].posts)
+        ) {
+          // Extract posts from nested structure: [{posts: [...]}]
+          postsData = data[0].posts;
+        } else if (Array.isArray(data)) {
+          // Direct array of posts
+          postsData = data;
+        } else if (data.posts && Array.isArray(data.posts)) {
+          postsData = data.posts;
+        } else if (data.topics && Array.isArray(data.topics)) {
+          // If it's topic format, flatten the posts
+          postsData = data.topics.flatMap((topic: any) => topic.posts || []);
+        }
 
-        setPosts(Array.isArray(postsData) ? postsData : []);
+        // Transform posts to ensure they have proper structure
+        const transformedPosts = postsData.map((post: any, index: number) => ({
+          ...post,
+          post_id:
+            post.id?.toString() || post.post_id?.toString() || index.toString(),
+          user_liked: Boolean(post.user_liked),
+          user_archived: Boolean(post.user_archived),
+        }));
+
+        setPosts(transformedPosts);
       } catch (error) {
         console.error("Error loading posts:", error);
-        setError(
-          error instanceof Error ? error.message : "Failed to load posts"
-        );
-        setPosts([]);
+        setError("Failed to load posts. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -97,24 +106,40 @@ export default function Search() {
     loadPosts();
   }, [user, currentFilters]);
 
-  const handleFiltersUpdate = (newFilters: any) => {
+  const handleFiltersUpdate = (newFilters: {
+    sortBy: string;
+    audience: string[];
+    category: string[];
+  }) => {
     setCurrentFilters(newFilters);
+    setIsFilterModalOpen(false);
   };
 
-  const removeFilter = (type: string, value: string) => {
-    setCurrentFilters((prev) => ({
-      ...prev,
-      [type]: Array.isArray(prev[type as keyof typeof prev])
-        ? (prev[type as keyof typeof prev] as string[]).filter(
-            (item) => item !== value
-          )
-        : prev[type as keyof typeof prev],
-    }));
-  };
+  // Show loading state while checking authentication
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Sign In Required
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Please sign in to search and discover content.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Section */}
+      {/* Header */}
       <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
         <div className="flex items-center justify-between">
           <h1
@@ -131,113 +156,43 @@ export default function Search() {
               color: "var(--foreground)",
             }}
           >
-            Discover
+            Search
           </h1>
-          <button
-            onClick={() => router.push("/profile")}
-            className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
-            aria-label="Go to profile"
-          >
-            <img
-              src={user?.user_metadata?.avatar_url || "/man.jpg"}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Filter Section */}
-      <div className="bg-[#f9fafb] px-4 md:px-0 py-6">
-        <div className="text-center">
-          <p
-            className="text-3xl font-bold mb-2"
-            style={{ color: "var(--foreground)" }}
-          >
-            Explore More Topics
-          </p>
-          <p className="text-sm mb-4" style={{ color: "var(--subtext)" }}>
-            Use the filter options to narrow your search.
-          </p>
-
-          <button
-            onClick={() => setIsFilterModalOpen(true)}
-            className="inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-full transition-colors"
-            style={{
-              backgroundColor: "var(--background-light)",
-              color: "var(--4c5a58)",
-              width: "283px",
-              height: "42px",
-            }}
-          >
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setIsFilterModalOpen(true)}
+              className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="6" y1="12" x2="18" y2="12"></line>
-              <line x1="9" y1="18" x2="15" y2="18"></line>
-            </svg>
-            <span className="text-sm">Filter & Sort By</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Current Filters Section */}
-      {(currentFilters.sortBy ||
-        currentFilters.audience.length > 0 ||
-        currentFilters.category.length > 0) && (
-        <div className="bg-[#f9fafb] px-4  py-4">
-          <h3
-            className="text-sm font-medium mb-3"
-            style={{ color: "var(--foreground)" }}
-          >
-            Current Filters
-          </h3>
-          <div className="flex flex-wrap gap-2 justify-start">
-            {/* Sort By Filter */}
-            {currentFilters.sortBy && (
-              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900">
-                {getSortDisplayName(currentFilters.sortBy)}
-              </span>
-            )}
-
-            {/* Audience Filters */}
-            {currentFilters.audience.map((filter) => (
-              <span
-                key={`audience-${filter}`}
-                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900"
-              >
-                {filter}
-              </span>
-            ))}
-
-            {/* Category Filters */}
-            {currentFilters.category.map((filter) => (
-              <span
-                key={`category-${filter}`}
-                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-accent text-slate-900"
-              >
-                {filter}
-              </span>
-            ))}
+              <HiOutlineAdjustments className="w-5 h-5 text-gray-600" />
+              <span className="text-gray-700 font-medium">Filters</span>
+            </button>
+            <button
+              onClick={() => router.push("/profile")}
+              className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
+              aria-label="Go to profile"
+            >
+              <img
+                src={user?.user_metadata?.avatar_url || "/man.jpg"}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Results Count */}
-      <div className="bg-[#f9fafb] px-4 py-3">
-        <h3
-          className="text-sm font-medium"
-          style={{ color: "var(--foreground)" }}
-        >
-          {loading ? "Loading..." : `${posts.length} Results`}
-        </h3>
+      {/* Filter Summary */}
+      <div className="bg-[#f9fafb] px-4 md:px-0 py-3 border-b border-gray-200">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+          <span>Sorted by: {getSortDisplayName(currentFilters.sortBy)}</span>
+          {currentFilters.audience.length > 0 && (
+            <span>• Audience: {currentFilters.audience.join(", ")}</span>
+          )}
+          {currentFilters.category.length > 0 && (
+            <span>• Topics: {currentFilters.category.join(", ")}</span>
+          )}
+          <span>• {posts.length} posts</span>
+        </div>
       </div>
 
       {/* Error State */}
@@ -277,9 +232,9 @@ export default function Search() {
       {!loading && !error && (
         <div className="px-4 py-4 space-y-3">
           {posts.length > 0 ? (
-            posts.map((content) => (
+            posts.map((content, index) => (
               <Card
-                key={content.post_id}
+                key={`search-post-${content.post_id || index}`}
                 post={content}
                 readTime={content.secondary_title || "5 min read"}
                 layout="horizontal"

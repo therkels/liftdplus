@@ -63,7 +63,7 @@ from post_info
 $$;
 
 
-CREATE OR REPLACE FUNCTION public.get_liked_posts(user_id text)
+CREATE OR REPLACE FUNCTION public.get_liked_posts(p_user_id text)
   RETURNS TABLE (
     id int4,
     title varchar,
@@ -82,6 +82,49 @@ CREATE OR REPLACE FUNCTION public.get_liked_posts(user_id text)
     audience_tags text[]
   ) as $$
 BEGIN
-  RETURN QUERY SELECT * FROM private.get_liked_posts(user_id);
+  RETURN QUERY SELECT * FROM private.get_liked_posts(p_user_id);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to get liked posts thumbnail info (matches archive pattern)
+CREATE OR REPLACE FUNCTION public.get_liked_posts_info(p_user_id text)
+  RETURNS TABLE (
+    category text,
+    cover_image_url text,
+    post_count int4
+  ) as $$
+BEGIN
+  RETURN QUERY 
+  SELECT
+    'Liked Posts'::text as category,
+    COALESCE(
+      (SELECT post.cover_image_url 
+       FROM private.likes likes
+       LEFT JOIN private.post post ON likes.post_id = post.id
+       WHERE likes.user_id = p_user_id::uuid
+       ORDER BY post.published_at DESC
+       LIMIT 1),
+      '/dandelion.jpg'
+    ) as cover_image_url,
+    (SELECT COUNT(*)::int4 
+     FROM private.likes 
+     WHERE user_id = p_user_id::uuid) as post_count;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to get unique saved posts count (avoids double counting liked + archived posts)
+CREATE OR REPLACE FUNCTION public.get_unique_saved_posts_count(p_user_id text)
+RETURNS int4 as $$
+BEGIN
+  RETURN (
+    SELECT COUNT(DISTINCT post_id)::int4
+    FROM (
+      -- Get all liked posts
+      SELECT post_id FROM private.likes WHERE user_id = p_user_id::uuid
+      UNION
+      -- Get all archived posts  
+      SELECT post_id FROM private.archives WHERE user_id = p_user_id::uuid
+    ) AS all_saved_posts
+  );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

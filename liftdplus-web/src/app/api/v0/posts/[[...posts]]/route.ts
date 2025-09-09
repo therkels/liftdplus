@@ -189,7 +189,11 @@ async function putLikePost(supabase: any, post_id: string, user_id: string) {
     post_id: post_id,
     user_id: user_id,
   });
-  return jsonResponse(data);
+  if (error) {
+    console.error("Database error in like_post:", error);
+    return jsonResponse({ error: error.message }, 500);
+  }
+  return jsonResponse({ success: true, message: "Post liked successfully" });
 }
 
 async function deleteArchivedPost(
@@ -213,11 +217,15 @@ async function deleteArchivedPost(
 }
 
 async function deleteLikePost(supabase: any, post_id: string, user_id: string) {
-  const { data, error } = await supabase.rpc("remove_post_like", {
+  const { error } = await supabase.rpc("remove_post_like", {
     post_id: post_id,
     user_id: user_id,
   });
-  return jsonResponse(data);
+  if (error) {
+    console.error("Database error in remove_post_like:", error);
+    return jsonResponse({ error: error.message }, 500);
+  }
+  return jsonResponse({ success: true, message: "Post unliked successfully" });
 }
 
 function jsonResponse(body: unknown, status = 200) {

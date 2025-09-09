@@ -18,7 +18,6 @@ export async function fetchFullPostContent(post: Post): Promise<PostData> {
   }
 
   const result = await response.json();
-  console.log("Full post data:", result);
 
   const fullPost = result[0];
 
@@ -27,7 +26,10 @@ export async function fetchFullPostContent(post: Post): Promise<PostData> {
   }
 
   // Transform the full post data to match PostData interface
-  const transformedPost: PostData = {
+  const transformedPost: PostData & {
+    user_liked: boolean;
+    user_archived: boolean;
+  } = {
     post_id: fullPost.id?.toString() || post.post_id,
     cover_image_url: fullPost.cover_image_url || post.cover_image_url,
     title: fullPost.title || post.title,
@@ -35,6 +37,8 @@ export async function fetchFullPostContent(post: Post): Promise<PostData> {
     author_name: fullPost.author_name || post.author_name,
     author_photo: fullPost.author_photo || post.author_photo,
     like_count: fullPost.like_count || post.like_count,
+    user_liked: Boolean(fullPost.user_liked),
+    user_archived: Boolean(fullPost.user_archived),
     tags: [
       ...(Array.isArray(fullPost.topic_tags)
         ? fullPost.topic_tags

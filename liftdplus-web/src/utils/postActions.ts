@@ -25,9 +25,12 @@ export async function likePost(postId: string): Promise<boolean> {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to like post: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("Like post failed:", response.status, errorText);
+      throw new Error(
+        `Failed to like post: ${response.statusText} - ${errorText}`
+      );
     }
-
     return true;
   } catch (error) {
     console.error("Error liking post:", error);
@@ -48,9 +51,15 @@ export async function unlikePost(postId: string): Promise<boolean> {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to unlike post: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("Unlike post failed:", response.status, errorText);
+      throw new Error(
+        `Failed to unlike post: ${response.statusText} - ${errorText}`
+      );
     }
 
+    const responseData = await response.json();
+    console.log("Unlike post success:", responseData);
     return true;
   } catch (error) {
     console.error("Error unliking post:", error);
@@ -121,11 +130,14 @@ export async function getLikedPosts(): Promise<Post[]> {
     }
 
     const result = await response.json();
+
     // Handle the array response format from Supabase RPC
     const posts = Array.isArray(result) ? result : [];
     return posts.map((post: any) => ({
       ...post,
       post_id: post.id?.toString() || post.post_id,
+      user_liked: Boolean(post.user_liked),
+      user_archived: Boolean(post.user_archived),
       // Map markdown field to content for modal compatibility
       content: post.markdown || post.content || "",
       // Handle array format for tags
@@ -166,12 +178,15 @@ export async function getArchivedPosts(category?: string): Promise<Post[]> {
     }
 
     const result = await response.json();
+
     // Handle the array response format from Supabase RPC
     // Transform the posts to match the Post interface
     const posts = Array.isArray(result) ? result : [];
     return posts.map((post: any) => ({
       ...post,
       post_id: post.id?.toString() || post.post_id,
+      user_liked: Boolean(post.user_liked),
+      user_archived: Boolean(post.user_archived),
       // Map markdown field to content for modal compatibility
       content: post.markdown || post.content || "",
       // Handle array format for tags
@@ -220,5 +235,31 @@ export async function getArchiveCategories(): Promise<ArchiveCategory[]> {
   } catch (error) {
     console.error("Error fetching archive categories:", error);
     return [];
+  }
+}
+
+/**
+ * Get unique saved posts count (avoids double counting liked + archived posts)
+ */
+export async function getUniqueSavedPostsCount(): Promise<number> {
+  try {
+    const response = await fetch("/api/v0/posts/saved-count", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch saved posts count: ${response.statusText}`
+      );
+    }
+
+    const result = await response.json();
+    return result.count || 0;
+  } catch (error) {
+    console.error("Error fetching saved posts count:", error);
+    return 0;
   }
 }

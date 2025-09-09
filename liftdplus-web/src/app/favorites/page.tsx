@@ -17,6 +17,7 @@ import {
   getArchiveCategories,
   getArchivedPosts,
   getLikedPosts,
+  getUniqueSavedPostsCount,
   ArchiveCategory,
 } from "@/utils/postActions";
 
@@ -41,6 +42,7 @@ export default function Favorites() {
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [postsLoading, setPostsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uniquePostsCount, setUniquePostsCount] = useState(0);
 
   // Check authentication status and load user data
   useEffect(() => {
@@ -74,8 +76,11 @@ export default function Favorites() {
     setError(null);
 
     try {
-      const archiveCategories = await getArchiveCategories();
-      const likedPosts = await getLikedPosts();
+      const [archiveCategories, likedPosts, uniqueCount] = await Promise.all([
+        getArchiveCategories(),
+        getLikedPosts(),
+        getUniqueSavedPostsCount(),
+      ]);
 
       // Define the 6 core interests (excluding "I'm Not Sure Yet" and "Cannabis 101")
       const coreInterests = [
@@ -107,15 +112,22 @@ export default function Favorites() {
       );
 
       // Add liked posts as a special category (always show, even if empty)
+      // Use the same thumbnail logic as archive categories - first post's cover image
+      const likedCoverImage =
+        likedPosts.length > 0
+          ? likedPosts[0]?.cover_image_url || "/dandelion.jpg"
+          : null;
+
       favoriteCategories.unshift({
         id: "liked-posts",
         name: "Liked Posts",
         postCount: likedPosts.length,
         posts: likedPosts,
-        coverImage: likedPosts.length > 0 ? "/dandelion.jpg" : null, // null for empty
+        coverImage: likedCoverImage, // Use first liked post's cover image
       });
 
       setCategories(favoriteCategories);
+      setUniquePostsCount(uniqueCount);
     } catch (error) {
       console.error("Error loading categories:", error);
       setError("Failed to load categories. Please try again.");
@@ -173,7 +185,8 @@ export default function Favorites() {
     setSelectedPost(null);
   };
 
-  const totalPosts = categories.reduce((sum, cat) => sum + cat.postCount, 0);
+  // Use the accurate unique posts count from the database
+  const totalPosts = uniquePostsCount;
 
   // Show loading state while fetching user data
   if (loading) {

@@ -11,6 +11,8 @@ interface PostData {
   author_name: string;
   author_photo?: string;
   like_count: number;
+  user_liked: boolean;
+  user_archived: boolean;
   tags: string[];
   content_type: PostContentType;
   content?: string; // Markdown
