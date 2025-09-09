@@ -20,13 +20,14 @@ import {
   getUniqueSavedPostsCount,
   ArchiveCategory,
 } from "@/utils/postActions";
+import { pageCache } from "@/utils/cache/PageCache";
 
 interface FavoriteCategory {
   id: string;
   name: string;
   postCount: number;
   posts: Post[];
-  coverImage: string;
+  coverImage: string | null;
 }
 
 export default function Favorites() {
@@ -72,6 +73,18 @@ export default function Favorites() {
   }, [user]);
 
   const loadCategories = async () => {
+    // Create cache key for favorites data
+    const cacheKey = `favorites:${user?.id}`;
+
+    // Check cache first
+    const cachedData = pageCache.get(cacheKey);
+    if (cachedData) {
+      setCategories(cachedData.categories);
+      setUniquePostsCount(cachedData.uniqueCount);
+      setCategoriesLoading(false);
+      return;
+    }
+
     setCategoriesLoading(true);
     setError(null);
 
@@ -126,6 +139,12 @@ export default function Favorites() {
         coverImage: likedCoverImage, // Use first liked post's cover image
       });
 
+      // Cache the favorites data before setting state
+      pageCache.set(cacheKey, {
+        categories: favoriteCategories,
+        uniqueCount: uniqueCount,
+      });
+
       setCategories(favoriteCategories);
       setUniquePostsCount(uniqueCount);
     } catch (error) {
@@ -137,6 +156,18 @@ export default function Favorites() {
   };
 
   const loadCategoryPosts = async (category: FavoriteCategory) => {
+    // Create cache key for category posts
+    const cacheKey = `favorites-posts:${category.id}:${user?.id}`;
+
+    // Check cache first
+    const cachedPosts = pageCache.get(cacheKey);
+    if (cachedPosts) {
+      const updatedCategory = { ...category, posts: cachedPosts };
+      setSelectedCategory(updatedCategory);
+      setPostsLoading(false);
+      return;
+    }
+
     setPostsLoading(true);
 
     try {
@@ -149,6 +180,9 @@ export default function Favorites() {
         // Load archived posts for this category
         posts = await getArchivedPosts(category.name);
       }
+
+      // Cache the posts before setting state
+      pageCache.set(cacheKey, posts);
 
       // Update the category with loaded posts
       const updatedCategory = {

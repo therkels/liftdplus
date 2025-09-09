@@ -15,6 +15,7 @@ import {
   transformPost,
   transformPostForModal,
 } from "@/utils/postTransformers";
+import { pageCache } from "@/utils/cache/PageCache";
 
 export default function Search() {
   const router = useRouter();
@@ -53,6 +54,17 @@ export default function Search() {
 
     const loadPosts = async () => {
       try {
+        // Create cache key based on filters and user
+        const cacheKey = `search:${JSON.stringify(currentFilters)}:${user?.id}`;
+
+        // Check cache first
+        const cachedPosts = pageCache.get(cacheKey);
+        if (cachedPosts) {
+          setPosts(cachedPosts);
+          setLoading(false);
+          return;
+        }
+
         setLoading(true);
         setError(null);
 
@@ -94,6 +106,8 @@ export default function Search() {
           user_archived: Boolean(post.user_archived),
         }));
 
+        // Cache the transformed posts before setting state
+        pageCache.set(cacheKey, transformedPosts);
         setPosts(transformedPosts);
       } catch (error) {
         console.error("Error loading posts:", error);
@@ -111,6 +125,8 @@ export default function Search() {
     audience: string[];
     category: string[];
   }) => {
+    // Invalidate search cache when filters change
+    pageCache.invalidate("search:");
     setCurrentFilters(newFilters);
     setIsFilterModalOpen(false);
   };

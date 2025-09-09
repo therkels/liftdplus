@@ -12,6 +12,7 @@ import {
   HiOutlineUser,
 } from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
+import { pageCache } from "@/utils/cache/PageCache";
 import UpdateEmailModal from "@/components/site_core/UpdateEmailModal";
 import UpdatePasswordModal from "@/components/site_core/UpdatePasswordModal";
 import DeleteAccountModal from "@/components/site_core/DeleteAccountModal";
@@ -49,6 +50,17 @@ export default function Profile() {
         if (authUser) {
           setUser(authUser);
 
+          // Create cache key for profile data
+          const cacheKey = `profile:${authUser.id}`;
+
+          // Check cache first
+          const cachedPreferences = pageCache.get(cacheKey);
+          if (cachedPreferences) {
+            setSelectedInterests(cachedPreferences);
+            setLoading(false);
+            return;
+          }
+
           // Load user preferences
           const response = await fetch("/api/v0/preferences");
           if (response.ok) {
@@ -57,6 +69,9 @@ export default function Profile() {
               .filter((p: any) => p.tag?.category === "topic")
               .map((p: any) => p.tag?.display_name)
               .filter(Boolean);
+
+            // Cache the preferences before setting state
+            pageCache.set(cacheKey, interestNames);
             setSelectedInterests(interestNames);
             console.log("Loaded user preferences:", interestNames);
           }
@@ -241,6 +256,10 @@ export default function Profile() {
             });
 
             if (response.ok) {
+              // Invalidate cache when preferences change
+              pageCache.invalidate("feed:");
+              pageCache.invalidate("profile:");
+              pageCache.invalidate("favorites:");
               setSelectedInterests(sel);
               console.log("Preferences updated successfully");
             } else {

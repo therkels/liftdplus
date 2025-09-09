@@ -20,6 +20,7 @@ import {
   transformPostForModal,
 } from "@/utils/postTransformers";
 import { usePostModal } from "@/utils/postHelpers";
+import { pageCache } from "@/utils/cache/PageCache";
 
 interface Topic {
   topic_id: string;
@@ -148,7 +149,7 @@ export default function Home() {
       provider: "google",
       options: {
         // redirectTo: "https://liftdplus.vercel.app/api/v0/auth/callback",
-        redirectTo: 'http://localhost:3000/api/v0/auth/callback',
+        redirectTo: "http://localhost:3000/api/v0/auth/callback",
       },
     });
     if (data?.url) {
@@ -235,6 +236,17 @@ export default function Home() {
 
     const loadFeed = async () => {
       try {
+        // Create cache key based on user
+        const cacheKey = `feed:${user?.id}`;
+
+        // Check cache first
+        const cachedFeed = pageCache.get(cacheKey);
+        if (cachedFeed) {
+          setFeedData(cachedFeed);
+          setLoading(false);
+          return;
+        }
+
         setLoading(true);
         const response = await fetch("/api/v0/feed");
         if (!response.ok) {
@@ -244,6 +256,9 @@ export default function Home() {
 
         // FIX: Extract topics array from the response
         const topics = data.topics || data || [];
+
+        // Cache the topics before setting state
+        pageCache.set(cacheKey, topics);
         setFeedData(topics);
       } catch (error) {
         console.error("Error loading feed:", error);

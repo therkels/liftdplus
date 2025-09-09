@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
+import { pageCache } from "@/utils/cache/PageCache";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -71,6 +72,10 @@ export default function OnboardingPage() {
       if (!response.ok) {
         throw new Error("Failed to save preferences");
       }
+
+      pageCache.invalidate("feed:");
+      pageCache.invalidate("profile:");
+      pageCache.invalidate("favorites:");
 
       // Redirect to main app
       router.push("/");
