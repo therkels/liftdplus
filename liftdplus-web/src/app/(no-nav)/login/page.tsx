@@ -57,7 +57,7 @@ export default function LoginPage() {
                 what you're curious about.
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-4 flex flex-col items-center">
                 <button
                   onClick={handleGoogleSignIn}
                   className="w-[60vw] py-4 rounded-full font-medium text-black bg-accent flex items-center justify-center space-x-3"

@@ -100,26 +100,26 @@ export default function DisclaimerPage() {
 
             {/* Checkboxes */}
             <div className="space-y-4 mb-8 text-left">
-              <label className="flex items-start space-x-3 cursor-pointer">
+              <label className="flex cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={ageVerified}
                   onChange={(e) => setAgeVerified(e.target.checked)}
-                  className="mt-1 w-5 h-5 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2"
+                  className="mt-1 w-5 h-5 flex-shrink-0 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
                 />
-                <span className="text-white text-base leading-relaxed">
+                <span className="ml-4 text-white text-base leading-relaxed">
                   I confirm that I am <strong>18 years of age or older</strong>
                 </span>
               </label>
 
-              <label className="flex items-start space-x-3 cursor-pointer">
+              <label className="flex cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={educationalAccepted}
                   onChange={(e) => setEducationalAccepted(e.target.checked)}
-                  className="mt-1 w-5 h-5 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2"
+                  className="mt-1 w-5 h-5 flex-shrink-0 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
                 />
-                <span className="text-white text-base leading-relaxed">
+                <span className="ml-4 text-white text-base leading-relaxed">
                   I understand this application is for{" "}
                   <strong>educational purposes only</strong> and does not
                   provide medical advice
@@ -205,26 +205,26 @@ export default function DisclaimerPage() {
 
             {/* Checkboxes */}
             <div className="space-y-6 mb-8">
-              <label className="flex items-start space-x-4 cursor-pointer group">
+              <label className="flex cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={ageVerified}
                   onChange={(e) => setAgeVerified(e.target.checked)}
-                  className="mt-1 w-6 h-6 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
+                  className="mt-1 w-5 h-5 flex-shrink-0 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
                 />
-                <span className="text-foreground text-lg leading-relaxed">
+                <span className="ml-4 text-foreground text-lg leading-relaxed">
                   I confirm that I am <strong>18 years of age or older</strong>
                 </span>
               </label>
 
-              <label className="flex items-start space-x-4 cursor-pointer group">
+              <label className="flex cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={educationalAccepted}
                   onChange={(e) => setEducationalAccepted(e.target.checked)}
-                  className="mt-1 w-6 h-6 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
+                  className="mt-1 w-5 h-5 flex-shrink-0 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
                 />
-                <span className="text-foreground text-lg leading-relaxed">
+                <span className="ml-4 text-foreground text-lg leading-relaxed">
                   I understand this application is for{" "}
                   <strong>educational purposes only</strong> and does not
                   provide medical advice

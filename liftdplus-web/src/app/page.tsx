@@ -39,6 +39,7 @@ function InstallPrompt() {
   const [isStandalone, setIsStandalone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     const userAgent = navigator.userAgent;
@@ -85,8 +86,8 @@ function InstallPrompt() {
     }
   };
 
-  // Don't show if already installed or not on mobile
-  if (!isMobile || isStandalone || (!isIOS && !deferredPrompt)) {
+  // Don't show if already installed, not on mobile, or dismissed
+  if (!isMobile || isStandalone || (!isIOS && !deferredPrompt) || isDismissed) {
     return null;
   }
 
@@ -117,14 +118,35 @@ function InstallPrompt() {
                 : "Get quick access from your home screen"}
             </p>
           </div>
-          {!isIOS && (
+          <div className="flex items-center space-x-2">
+            {!isIOS && (
+              <button
+                onClick={handleInstallClick}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
+              >
+                Install
+              </button>
+            )}
             <button
-              onClick={handleInstallClick}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
+              onClick={() => setIsDismissed(true)}
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Close"
             >
-              Install
+              <svg
+                className="w-5 h-5 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
-          )}
+          </div>
         </div>
       </div>
     </div>
@@ -333,14 +355,14 @@ export default function Home() {
       <div className="container mx-auto px-4 md:px-0 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Image
-              src="/liftd-text.svg"
-              alt="Liftd+ Logo"
-              width={120}
-              height={36}
-              className="h-9 w-auto"
-            />
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl font-semibold text-gray-800">
+              Hello,{" "}
+              {user?.user_metadata?.name ||
+                user?.email?.split("@")[0] ||
+                "there"}
+              !
+            </h1>
           </div>
           <div className="flex items-center space-x-4">
             <button
