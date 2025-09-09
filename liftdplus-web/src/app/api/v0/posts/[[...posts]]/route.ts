@@ -19,10 +19,24 @@ export async function GET(
 
   //case 1: Get all posts
   if (param_list.length === 0) {
+    await supabase.from('event_logs').insert([
+      {
+          event_type: 'get_all_posts',
+          details: {},
+          user_id: user.id
+      }
+    ]);
     return getAllPosts(supabase, user.id, url);
   }
   //get by post
   else if (param_list.length === 1) {
+    await supabase.from('event_logs').insert([
+      {
+          event_type: 'get_post_by_id',
+          details: {post_id: param_list[0]},
+          user_id: user.id
+      }
+    ]);
     return getPostByID(supabase, param_list[0], user.id);
   }
 }
@@ -45,9 +59,23 @@ export async function PUT(
 
   if (param_list.length === 2) {
     if (param_list[1] == "archive") {
+      await supabase.from('event_logs').insert([
+        {
+            event_type: 'archive_post',
+            details: {post_id: param_list[0]},
+            user_id: user.id
+        }
+      ]);
       // Auto-archive: determine category from post's topic tag and user preferences
       return autoArchivePost(supabase, param_list[0], user.id);
     } else if (param_list[1] == "like") {
+      await supabase.from('event_logs').insert([
+        {
+            event_type: 'like_post',
+            details: {post_id: param_list[0]},
+            user_id: user.id
+        }
+      ]);
       return putLikePost(supabase, param_list[0], user.id);
     }
   }
@@ -73,8 +101,22 @@ export async function DELETE(
   const url = new URL(request.url);
   if (param_list.length === 2) {
     if (param_list[1] == "archive") {
+      await supabase.from('event_logs').insert([
+        {
+            event_type: 'delete_archived_post',
+            details: {post_id: param_list[0]},
+            user_id: user.id
+        }
+      ]);
       return deleteArchivedPost(supabase, param_list[0], user.id);
     } else if (param_list[1] == "like") {
+      await supabase.from('event_logs').insert([
+        {
+            event_type: 'delete_liked_post',
+            details: {post_id: param_list[0]},
+            user_id: user.id
+        }
+      ]);
       return deleteLikePost(supabase, param_list[0], user.id);
     }
   }

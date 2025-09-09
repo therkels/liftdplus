@@ -12,10 +12,18 @@ export async function GET(request: NextRequest) {
         })
     }
 
+
     // Get user preferences with tag info - using RPC to access private schema
     const { data: preferences, error } = await supabase
         .rpc('get_user_preferences', { user_id: user.id });
 
+    await supabase.from('event_logs').insert([
+        {
+            event_type: 'get_preferences',
+            details: {},
+            user_id: user.id
+        }
+    ]);
     if (error) {
         console.error("Error fetching preferences:", error);
         return new Response(JSON.stringify({ error: error.message }), {

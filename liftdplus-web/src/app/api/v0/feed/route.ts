@@ -15,6 +15,13 @@ export async function GET(request: NextRequest) {
         })
     }
 
+    await supabase.from('event_logs').insert([
+        {
+            event_type: 'get_feed',
+            details: {},
+            user_id: user.id
+        }
+    ]);
     console.log("Feed API: Authenticated user:", user.id);
 
     // First, let's check user preferences using RPC

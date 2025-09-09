@@ -16,9 +16,23 @@ export async function GET(
     const param_list = params.archives || [];
     const url = new URL(request.url);
     if (param_list.length === 0){
+        await supabase.from('event_logs').insert([
+            {
+                event_type: 'get_archive_info',
+                details: {},
+                user_id: user.id
+            }
+        ]);
         return getArchiveInfo(supabase, user.id);
     }
     else if (param_list.length === 1){
+        await supabase.from('event_logs').insert([
+            {
+                event_type: 'get_archived_posts',
+                details: {category_display: param_list[0]},
+                user_id: user.id
+            }
+        ]);
         return getArchivedPosts(supabase, user.id, param_list[0])
     }
 
