@@ -1,10 +1,10 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
-
 export async function POST(
   request: NextRequest,
-  {params}: {params: {user: string}}) {
+  { params }: { params: { user: string } }
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -24,8 +24,7 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  request: NextRequest) {
+export async function DELETE() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -40,10 +39,14 @@ export async function DELETE(
   return deleteUser(supabase, user.id);
 }
 
-async function updateUserName(supabase: any, user_id: string, user_name: string) {
+async function updateUserName(
+  supabase: unknown,
+  user_id: string,
+  user_name: string
+) {
   const { data, error } = await supabase.rpc("get_user", {
     user_id: user_id,
-    user_name: user_name
+    user_name: user_name,
   });
   if (error) {
     return jsonResponse({ error: error.message }, 500);
@@ -51,9 +54,9 @@ async function updateUserName(supabase: any, user_id: string, user_name: string)
   return jsonResponse(data);
 }
 
-async function deleteUser(supabase: any, user_id: string) {
+async function deleteUser(supabase: unknown, user_id: string) {
   const { data, error } = await supabase.rpc("delete_user", {
-    user_id: user_id
+    user_id: user_id,
   });
   if (error) {
     return jsonResponse({ error: error.message }, 500);

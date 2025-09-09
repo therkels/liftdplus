@@ -13,12 +13,8 @@ import InterestTagsSkeleton from "@/components/site_core/InterestTagsSkeleton";
 import PostModal from "@/components/site_core/PostModal";
 import CardScroller from "@/components/site_core/CardScroller";
 import CardScrollerSkeleton from "@/components/site_core/CardScrollerSkeleton";
-import PostContent, { PostData } from "@/components/site_core/PostContent";
-import {
-  Post,
-  transformPost,
-  transformPostForModal,
-} from "@/utils/postTransformers";
+import PostContent from "@/components/site_core/PostContent";
+import { Post } from "@/utils/postTransformers";
 import { usePostModal } from "@/utils/postHelpers";
 import { pageCache } from "@/utils/cache/PageCache";
 
@@ -38,13 +34,16 @@ function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<unknown>(null);
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     const userAgent = navigator.userAgent;
 
-    setIsIOS(/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream);
+    setIsIOS(
+      /iPad|iPhone|iPod/.test(userAgent) &&
+        !(window as { MSStream?: unknown }).MSStream
+    );
 
     // Detect mobile devices (phones and small tablets)
     setIsMobile(
@@ -57,7 +56,7 @@ function InstallPrompt() {
     setIsStandalone(
       (window.matchMedia &&
         window.matchMedia("(display-mode: standalone)").matches) ||
-        (window.navigator as any).standalone ||
+        (window.navigator as { standalone?: boolean }).standalone ||
         document.referrer.includes("android-app://")
     );
 
@@ -159,7 +158,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [interestsLoading, setInterestsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const [interestsData, setInterestsData] = useState<Interest[]>([]);
 
   const { selectedPost, isModalOpen, openPostModal, closePostModal } =
@@ -236,7 +235,8 @@ export default function Home() {
         ].map((interest) => ({
           ...interest,
           isActive: preferencesArray.some(
-            (pref: any) => pref.tag?.display_name === interest.displayName
+            (pref: { tag?: { display_name?: string } }) =>
+              pref.tag?.display_name === interest.displayName
           ),
         }));
 

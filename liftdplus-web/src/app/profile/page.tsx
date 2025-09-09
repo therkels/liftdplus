@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   HiOutlineCog,
-  HiOutlineMail,
-  HiOutlineKey,
   HiOutlineHeart,
   HiOutlineLogout,
   HiOutlineTrash,
@@ -20,7 +18,11 @@ import EditInterestsModal from "@/components/site_core/EditInterestsModal";
 import LogoutModal from "@/components/site_core/LogoutModal";
 
 export default function Profile() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    email?: string;
+    user_metadata?: { full_name?: string };
+  } | null>(null);
   const [isUpdateEmailOpen, setIsUpdateEmailOpen] = useState(false);
   const [isUpdatePasswordOpen, setIsUpdatePasswordOpen] = useState(false);
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
@@ -66,8 +68,13 @@ export default function Profile() {
           if (response.ok) {
             const { preferences } = await response.json();
             const interestNames = preferences
-              .filter((p: any) => p.tag?.category === "topic")
-              .map((p: any) => p.tag?.display_name)
+              .filter(
+                (p: { tag?: { category?: string } }) =>
+                  p.tag?.category === "topic"
+              )
+              .map(
+                (p: { tag?: { display_name?: string } }) => p.tag?.display_name
+              )
               .filter(Boolean);
 
             // Cache the preferences before setting state
@@ -124,10 +131,6 @@ export default function Profile() {
       action: () => setIsDeleteAccountOpen(true),
     },
   ];
-
-  const handleProfileImageEdit = () => {
-    console.log("Edit profile image");
-  };
 
   if (loading) {
     return (

@@ -1,12 +1,10 @@
 "use client";
 
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const handleGoogleSignIn = useCallback(async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -22,19 +20,17 @@ export default function LoginPage() {
     }
   }, []);
 
-  const handleGetStarted = () => {
-    router.push("/onboarding");
-  };
-
   return (
     <div className="min-h-screen">
       {/* Mobile Web View */}
       <div className="flex flex-col bg-background lg:hidden">
         <div className="text-center">
           <div className="flex justify-center my-8">
-            <img
+            <Image
               src="/liftd-text.svg"
               alt="LIFTD"
+              width={240}
+              height={96}
               className="h-auto w-[60vw]"
             />
           </div>
@@ -49,12 +45,12 @@ export default function LoginPage() {
               <p className="text-lg text-white mb-4 leading-relaxed">
                 Curious about what cannabis really has
                 <br />
-                to offer? You're in the right place.
+                to offer? You&apos;re in the right place.
               </p>
               <p className="text-gray-100 mb-8 text-base">
-                We'll tailor your experience based on
+                We&apos;ll tailor your experience based on
                 <br />
-                what you're curious about.
+                what you&apos;re curious about.
               </p>
 
               <div className="space-y-4 flex flex-col items-center">
@@ -99,9 +95,11 @@ export default function LoginPage() {
         {/* Left Side - Hero/Branding */}
         <div className="flex-1 bg-foreground flex flex-col justify-center items-center text-white px-12">
           <div className="max-w-lg text-center">
-            <img
+            <Image
               src="/liftd-text.svg"
               alt="LIFTD"
+              width={200}
+              height={96}
               className="h-24 mb-8 mx-auto bg-white px-6 py-3 rounded-lg"
             />
             <h1 className="text-6xl font-[560] mb-6 text-accent-light leading-tight">
@@ -110,11 +108,12 @@ export default function LoginPage() {
               Your Way
             </h1>
             <p className="text-xl text-white mb-6 leading-relaxed">
-              Curious about what cannabis really has to offer? You're in the
-              right place.
+              Curious about what cannabis really has to offer? You&apos;re in
+              the right place.
             </p>
             <p className="text-lg text-gray-100">
-              We'll tailor your experience based on what you're curious about.
+              We&apos;ll tailor your experience based on what you&apos;re
+              curious about.
             </p>
           </div>
         </div>

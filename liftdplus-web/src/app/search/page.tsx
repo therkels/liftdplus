@@ -7,14 +7,10 @@ import { buildPostsQueryParams, getSortDisplayName } from "@/utils/tagMapper";
 import { usePostModal } from "@/utils/postHelpers";
 import Card from "@/components/site_core/Card";
 import PostModal from "@/components/site_core/PostModal";
-import PostContent, { PostData } from "@/components/site_core/PostContent";
+import PostContent from "@/components/site_core/PostContent";
 import FilterContent from "@/components/site_core/FilterContent";
 import { HiOutlineAdjustments } from "react-icons/hi";
-import {
-  Post,
-  transformPost,
-  transformPostForModal,
-} from "@/utils/postTransformers";
+import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
 
 export default function Search() {
@@ -34,7 +30,7 @@ export default function Search() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
 
   // Check authentication status
   useEffect(() => {
@@ -78,7 +74,7 @@ export default function Search() {
         const data = await response.json();
 
         // Handle different response formats
-        let postsData: any[] = [];
+        let postsData: unknown[] = [];
         if (
           Array.isArray(data) &&
           data.length > 0 &&
@@ -94,17 +90,23 @@ export default function Search() {
           postsData = data.posts;
         } else if (data.topics && Array.isArray(data.topics)) {
           // If it's topic format, flatten the posts
-          postsData = data.topics.flatMap((topic: any) => topic.posts || []);
+          postsData = data.topics.flatMap(
+            (topic: { posts?: unknown[] }) => topic.posts || []
+          );
         }
 
         // Transform posts to ensure they have proper structure
-        const transformedPosts = postsData.map((post: any, index: number) => ({
-          ...post,
-          post_id:
-            post.id?.toString() || post.post_id?.toString() || index.toString(),
-          user_liked: Boolean(post.user_liked),
-          user_archived: Boolean(post.user_archived),
-        }));
+        const transformedPosts = postsData.map(
+          (post: Record<string, unknown>, index: number) => ({
+            ...post,
+            post_id:
+              post.id?.toString() ||
+              post.post_id?.toString() ||
+              index.toString(),
+            user_liked: Boolean(post.user_liked),
+            user_archived: Boolean(post.user_archived),
+          })
+        );
 
         // Cache the transformed posts before setting state
         pageCache.set(cacheKey, transformedPosts);

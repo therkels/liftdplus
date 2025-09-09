@@ -8,11 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 import PostModal from "@/components/site_core/PostModal";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
 import Card from "@/components/site_core/Card";
-import {
-  Post,
-  transformPost,
-  transformPostForModal,
-} from "@/utils/postTransformers";
+import { Post } from "@/utils/postTransformers";
 import {
   getArchiveCategories,
   getArchivedPosts,
@@ -38,7 +34,7 @@ export default function Favorites() {
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [postsLoading, setPostsLoading] = useState(false);

@@ -1,7 +1,6 @@
-import type { NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -22,7 +21,7 @@ export async function GET(request: NextRequest) {
   return getUniqueSavedPostsCount(supabase, user.id);
 }
 
-async function getUniqueSavedPostsCount(supabase: any, user_id: string) {
+async function getUniqueSavedPostsCount(supabase: unknown, user_id: string) {
   const { data, error } = await supabase.rpc("get_unique_saved_posts_count", {
     p_user_id: user_id,
   });

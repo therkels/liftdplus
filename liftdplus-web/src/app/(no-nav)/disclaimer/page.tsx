@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 
 export default function DisclaimerPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [setUser] = useState<{ id: string; email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [ageVerified, setAgeVerified] = useState(false);
   const [educationalAccepted, setEducationalAccepted] = useState(false);
@@ -150,9 +150,11 @@ export default function DisclaimerPage() {
         {/* Left side - Branding */}
         <div className="w-2/5 bg-foreground text-white p-12 flex flex-col justify-center">
           <div className="text-center">
-            <img
+            <Image
               src="/liftd-text.svg"
               alt="LIFTD"
+              width={200}
+              height={96}
               className="h-24 mb-8 mx-auto bg-white px-8 py-4 rounded-lg"
             />
             <h3 className="text-xl text-accent-light font-medium">

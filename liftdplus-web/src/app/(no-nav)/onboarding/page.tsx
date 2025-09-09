@@ -10,7 +10,7 @@ import { pageCache } from "@/utils/cache/PageCache";
 export default function OnboardingPage() {
   const router = useRouter();
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -124,9 +124,9 @@ export default function OnboardingPage() {
               about right now?
             </h2>
             <p className="text-base text-white mb-4 leading-relaxed">
-              There's no right answer, just what feels
+              There&apos;s no right answer, just what feels
               <br />
-              true today. We'll guide you from there.
+              true today. We&apos;ll guide you from there.
             </p>
 
             {/* Interest buttons */}
@@ -164,16 +164,18 @@ export default function OnboardingPage() {
         {/* Left side - Branding */}
         <div className="w-2/5 bg-foreground text-white p-12 flex flex-col justify-center">
           <div className="text-center">
-            <img
+            <Image
               src="/liftd-text.svg"
               alt="LIFTD"
+              width={200}
+              height={96}
               className="h-24 mb-8 mx-auto bg-white px-8 py-4 rounded-lg"
             />
             <h3 className="text-xl text-accent-light font-medium">
               Personalized Cannabis Journey
             </h3>
             <p className="text-gray-200 mt-2">
-              We'll curate content based on your interests and curiosity.
+              We&apos;ll curate content based on your interests and curiosity.
             </p>
           </div>
         </div>
@@ -186,8 +188,8 @@ export default function OnboardingPage() {
                 What are you curious about right now?
               </h1>
               <p className="text-lg text-subtext leading-relaxed">
-                There's no right answer, just what feels true today. We'll guide
-                you from there.
+                There&apos;s no right answer, just what feels true today.
+                We&apos;ll guide you from there.
               </p>
             </div>
 

@@ -133,7 +133,7 @@ export async function getLikedPosts(): Promise<Post[]> {
 
     // Handle the array response format from Supabase RPC
     const posts = Array.isArray(result) ? result : [];
-    return posts.map((post: any) => ({
+    return posts.map((post: Record<string, unknown>) => ({
       ...post,
       post_id: post.id?.toString() || post.post_id,
       user_liked: Boolean(post.user_liked),
@@ -182,7 +182,7 @@ export async function getArchivedPosts(category?: string): Promise<Post[]> {
     // Handle the array response format from Supabase RPC
     // Transform the posts to match the Post interface
     const posts = Array.isArray(result) ? result : [];
-    return posts.map((post: any) => ({
+    return posts.map((post: Record<string, unknown>) => ({
       ...post,
       post_id: post.id?.toString() || post.post_id,
       user_liked: Boolean(post.user_liked),
@@ -227,7 +227,7 @@ export async function getArchiveCategories(): Promise<ArchiveCategory[]> {
     const result = await response.json();
     // Handle the array response format from Supabase RPC
     const categories = Array.isArray(result) ? result : [];
-    return categories.map((cat: any) => ({
+    return categories.map((cat: Record<string, unknown>) => ({
       category: cat.category,
       cover_image_url: cat.cover_image_url || "/dandelion.jpg", // Default image
       cat_count: cat.cat_count || 0,

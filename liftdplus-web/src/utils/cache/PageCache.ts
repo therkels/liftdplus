@@ -4,7 +4,7 @@
  */
 
 interface CacheEntry {
-  data: any;
+  data: unknown;
   timestamp: number;
 }
 
@@ -17,7 +17,7 @@ class PageCache {
    * @param key - Cache key
    * @returns Cached data or null if not found/expired
    */
-  get(key: string): any | null {
+  get(key: string): unknown | null {
     const entry = this.cache.get(key);
 
     if (!entry) {
@@ -39,7 +39,7 @@ class PageCache {
    * @param key - Cache key
    * @param data - Data to cache
    */
-  set(key: string, data: any): void {
+  set(key: string, data: unknown): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),

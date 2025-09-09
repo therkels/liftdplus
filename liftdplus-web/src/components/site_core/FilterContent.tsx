@@ -8,7 +8,7 @@ interface FilterContentProps {
     audience: string[];
     category: string[];
   };
-  onFiltersUpdate: (filters: any) => void;
+  onFiltersUpdate: (filters: Record<string, unknown>) => void;
 }
 
 interface FilterState {
