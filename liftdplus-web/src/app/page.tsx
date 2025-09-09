@@ -184,8 +184,8 @@ export default function Home() {
         }
         const data = await response.json();
 
-        // Ensure data is an array before using .some()
-        const preferencesArray = Array.isArray(data) ? data : [];
+        // Extract preferences array from response (same as profile page)
+        const preferencesArray = data.preferences || [];
 
         const interests: Interest[] = [
           { id: "sleep-rest", displayName: "Sleep & Rest", isActive: false },
@@ -213,7 +213,7 @@ export default function Home() {
         ].map((interest) => ({
           ...interest,
           isActive: preferencesArray.some(
-            (pref: any) => pref.display_name === interest.displayName
+            (pref: any) => pref.tag?.display_name === interest.displayName
           ),
         }));
 
