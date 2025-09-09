@@ -1,13 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { HiOutlineArrowRight } from "react-icons/hi";
+import { createClient } from "@/utils/supabase/client";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        // Redirect to login if not authenticated
+        router.push("/login");
+        return;
+      }
+
+      setUser(user);
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, [router]);
 
   const interests = [
     "Sleep & Rest",
@@ -27,9 +52,47 @@ export default function OnboardingPage() {
     );
   };
 
-  const handleNext = () => {
-    router.push("/");
+  const handleNext = async () => {
+    if (!user || selectedInterests.length === 0) return;
+
+    setSaving(true);
+    try {
+      // Save preferences to API
+      const response = await fetch("/api/v0/preferences", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          interests: selectedInterests,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save preferences");
+      }
+
+      // Redirect to main app
+      router.push("/");
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+      alert("Failed to save your preferences. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -144,14 +207,23 @@ export default function OnboardingPage() {
             <div className="flex justify-center">
               <button
                 onClick={handleNext}
-                disabled={selectedInterests.length === 0}
+                disabled={selectedInterests.length === 0 || saving}
                 className={`px-8 py-3 rounded-lg text-lg font-medium flex items-center transition-all ${
-                  selectedInterests.length > 0
+                  selectedInterests.length > 0 && !saving
                     ? "bg-accent text-[#616161] hover:bg-accent/90"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >
-                Continue <HiOutlineArrowRight className="w-5 h-5 ml-2" />
+                {saving ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-gray-500 border-t-transparent rounded-full animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Continue <HiOutlineArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                )}
               </button>
             </div>
 
