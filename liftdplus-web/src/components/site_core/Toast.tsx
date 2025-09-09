@@ -6,7 +6,6 @@ import {
   HiCheckCircle,
   HiExclamationCircle,
   HiInformationCircle,
-  HiExclamationTriangle,
 } from "react-icons/hi";
 import { Toast as ToastType, useToast } from "@/contexts/ToastContext";
 
@@ -37,7 +36,7 @@ const Toast: React.FC<ToastProps> = ({ toast }) => {
         return {
           bg: "bg-yellow-50 border-yellow-200",
           text: "text-yellow-800",
-          icon: HiExclamationTriangle,
+          icon: HiExclamationCircle,
           iconColor: "text-yellow-400",
         };
       case "info":

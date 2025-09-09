@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -10,10 +9,9 @@ export default function LoginPage() {
   };
 
   return (
-    <>
-      {/* Mobile View */}
-      <div className="min-h-screen flex flex-col bg-background lg:hidden">
-        {/* Header */}
+    <div className="min-h-screen">
+      {/* Mobile Web View */}
+      <div className="flex flex-col bg-background lg:hidden">
         <div className="text-center">
           <div className="flex justify-center my-8">
             <img
@@ -22,37 +20,36 @@ export default function LoginPage() {
               className="h-auto w-[60vw]"
             />
           </div>
-        </div>
 
-        {/* Main content */}
-        <div className="flex-1 flex flex-col">
-          <div className="flex-1 rounded-t-3xl text-center text-white flex flex-col justify-start py-16 bg-foreground">
-            <h2 className="text-5xl font-[560] mb-4 text-accent-light">
-              Explore
-              <br />
-              Your Way
-            </h2>
-            <p className="text-lg text-white mb-4 leading-relaxed">
-              Curious about what cannabis really has
-              <br />
-              to offer? You're in the right place.
-            </p>
-            <p className="text-gray-100 mb-8 text-base">
-              We'll tailor your experience based on
-              <br />
-              what you're curious about.
-            </p>
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1 rounded-t-3xl text-center text-white flex flex-col justify-start py-16 bg-foreground">
+              <h2 className="text-5xl font-[560] mb-4 text-accent-light">
+                Explore
+                <br />
+                Your Way
+              </h2>
+              <p className="text-lg text-white mb-4 leading-relaxed">
+                Curious about what cannabis really has
+                <br />
+                to offer? You're in the right place.
+              </p>
+              <p className="text-gray-100 mb-8 text-base">
+                We'll tailor your experience based on
+                <br />
+                what you're curious about.
+              </p>
 
-            <div className="space-y-4">
-              <button
-                onClick={handleGetStarted}
-                className="w-[60vw] py-4 rounded-full font-medium text-black bg-accent"
-              >
-                Get Started
-              </button>
-              <button className="w-[60vw] py-4 rounded-full border text-white border-accent">
-                Sign In
-              </button>
+              <div className="space-y-4">
+                <button
+                  onClick={handleGetStarted}
+                  className="w-[60vw] py-4 rounded-full font-medium text-black bg-accent"
+                >
+                  Get Started
+                </button>
+                <button className="w-[60vw] py-4 rounded-full border text-white border-accent">
+                  Sign In
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -119,6 +116,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
