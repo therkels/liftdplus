@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 import PostModal from "@/components/site_core/PostModal";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
 import Card from "@/components/site_core/Card";
-import { Post } from "@/utils/postTransformers";
+import { Post, transformPostForModal } from "@/utils/postTransformers";
 import {
   getArchiveCategories,
   getArchivedPosts,

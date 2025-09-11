@@ -13,6 +13,7 @@ import { createClient } from "@/utils/supabase/client";
 import { pageCache } from "@/utils/cache/PageCache";
 import UpdateEmailModal from "@/components/site_core/UpdateEmailModal";
 import UpdatePasswordModal from "@/components/site_core/UpdatePasswordModal";
+import UpdateUsernameModal from "@/components/site_core/UpdateUsernameModal";
 import DeleteAccountModal from "@/components/site_core/DeleteAccountModal";
 import EditInterestsModal from "@/components/site_core/EditInterestsModal";
 import LogoutModal from "@/components/site_core/LogoutModal";
@@ -23,8 +24,13 @@ export default function Profile() {
     email?: string;
     user_metadata?: { full_name?: string };
   } | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    username?: string;
+    profile_icon_url?: string;
+  } | null>(null);
   const [isUpdateEmailOpen, setIsUpdateEmailOpen] = useState(false);
   const [isUpdatePasswordOpen, setIsUpdatePasswordOpen] = useState(false);
+  const [isUpdateUsernameOpen, setIsUpdateUsernameOpen] = useState(false);
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [isEditInterestsOpen, setIsEditInterestsOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
@@ -59,28 +65,45 @@ export default function Profile() {
           const cachedPreferences = pageCache.get(cacheKey);
           if (cachedPreferences) {
             setSelectedInterests(cachedPreferences);
-            setLoading(false);
-            return;
           }
 
-          // Load user preferences
-          const response = await fetch("/api/v0/preferences");
-          if (response.ok) {
-            const { preferences } = await response.json();
-            const interestNames = preferences
-              .filter(
-                (p: { tag?: { category?: string } }) =>
-                  p.tag?.category === "topic"
-              )
-              .map(
-                (p: { tag?: { display_name?: string } }) => p.tag?.display_name
-              )
-              .filter(Boolean);
+          // Load user profile data
+          const supabase = await createClient();
+          const { data: userData, error: userError } = await supabase.rpc(
+            "get_user",
+            {
+              user_id: authUser.id,
+            }
+          );
 
-            // Cache the preferences before setting state
-            pageCache.set(cacheKey, interestNames);
-            setSelectedInterests(interestNames);
-            console.log("Loaded user preferences:", interestNames);
+          if (!userError && userData && userData.length > 0) {
+            setUserProfile({
+              username: userData[0].username,
+              profile_icon_url: userData[0].profile_icon_url,
+            });
+          }
+
+          // Load user preferences if not cached
+          if (!cachedPreferences) {
+            const response = await fetch("/api/v0/preferences");
+            if (response.ok) {
+              const { preferences } = await response.json();
+              const interestNames = preferences
+                .filter(
+                  (p: { tag?: { category?: string } }) =>
+                    p.tag?.category === "topic"
+                )
+                .map(
+                  (p: { tag?: { display_name?: string } }) =>
+                    p.tag?.display_name
+                )
+                .filter(Boolean);
+
+              // Cache the preferences before setting state
+              pageCache.set(cacheKey, interestNames);
+              setSelectedInterests(interestNames);
+              console.log("Loaded user preferences:", interestNames);
+            }
           }
         }
       } catch (error) {
@@ -99,6 +122,12 @@ export default function Profile() {
       label: "Account Settings",
       icon: HiOutlineCog,
       action: () => console.log("Account Settings"),
+    },
+    {
+      id: "update-username",
+      label: "Update Username",
+      icon: HiOutlineUser,
+      action: () => setIsUpdateUsernameOpen(true),
     },
     // {
     //   id: "update-email",
@@ -166,10 +195,17 @@ export default function Profile() {
               className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
               style={{ borderColor: "var(--accent-light)" }}
             >
-              {user.user_metadata?.avatar_url ? (
+              {userProfile?.profile_icon_url ||
+              user.user_metadata?.avatar_url ? (
                 <Image
-                  src={user.user_metadata.avatar_url}
-                  alt={user.user_metadata?.name || "User"}
+                  src={
+                    userProfile?.profile_icon_url ||
+                    user.user_metadata?.avatar_url ||
+                    ""
+                  }
+                  alt={
+                    userProfile?.username || user.user_metadata?.name || "User"
+                  }
                   width={96}
                   height={96}
                   className="w-full h-full rounded-full object-cover"
@@ -183,8 +219,16 @@ export default function Profile() {
           {/* User Info */}
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-gray-800">
-              {user.user_metadata?.name || user.email || "User"}
+              {userProfile?.username ||
+                user.user_metadata?.name ||
+                user.email ||
+                "User"}
             </h2>
+            {userProfile?.username && (
+              <p className="text-[12px] text-gray-600">
+                @{userProfile.username}
+              </p>
+            )}
             <p className="text-[12px] text-gray-600">{user.email}</p>
             <p className="text-[12px] text-gray-600">
               Member since{" "}
@@ -235,6 +279,38 @@ export default function Profile() {
         isOpen={isUpdatePasswordOpen}
         onClose={() => setIsUpdatePasswordOpen(false)}
         onSubmit={async () => {}}
+      />
+      <UpdateUsernameModal
+        isOpen={isUpdateUsernameOpen}
+        onClose={() => setIsUpdateUsernameOpen(false)}
+        currentUsername={userProfile?.username || ""}
+        onSubmit={async (newUsername: string) => {
+          try {
+            const formData = new FormData();
+            formData.append("username", newUsername);
+
+            const response = await fetch("/api/v0/user/username", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (response.ok) {
+              // Update local state
+              setUserProfile((prev) =>
+                prev
+                  ? { ...prev, username: newUsername }
+                  : { username: newUsername }
+              );
+              console.log("Username updated successfully");
+            } else {
+              const error = await response.json();
+              throw new Error(error.error || "Failed to update username");
+            }
+          } catch (error) {
+            console.error("Error updating username:", error);
+            throw error;
+          }
+        }}
       />
       <DeleteAccountModal
         isOpen={isDeleteAccountOpen}

@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 
 export default function DisclaimerPage() {
   const router = useRouter();
-  const [setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [ageVerified, setAgeVerified] = useState(false);
   const [educationalAccepted, setEducationalAccepted] = useState(false);

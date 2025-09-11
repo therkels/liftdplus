@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { user: string } }
+  { params }: { params: { user: string[] } }
 ) {
   const supabase = await createClient();
   const {
@@ -11,17 +11,28 @@ export async function POST(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return jsonResponse({ error: "not Authenticated" }, 400);
+    return jsonResponse({ error: "Not authenticated" }, 401);
   }
+
   const param_list = params.user || [];
-  if (param_list.length === 0) {
+
+  // Handle username change: POST /api/v0/user/username
+  if (param_list.length === 1 && param_list[0] === "username") {
     const formData = await request.formData();
-    const user_name = formData.get("user_name");
-    const param_list = params.user || [];
-    if (param_list.length === 1) {
-      return updateUserName(supabase, user.id, user_name as string);
+    const new_username = formData.get("username");
+
+    if (!new_username || typeof new_username !== "string") {
+      return jsonResponse({ error: "Username is required" }, 400);
     }
+
+    if (new_username.trim().length === 0) {
+      return jsonResponse({ error: "Username cannot be empty" }, 400);
+    }
+
+    return updateUserName(supabase, user.id, new_username.trim());
   }
+
+  return jsonResponse({ error: "Invalid endpoint" }, 404);
 }
 
 export async function DELETE() {
@@ -40,18 +51,23 @@ export async function DELETE() {
 }
 
 async function updateUserName(
-  supabase: unknown,
+  supabase: any,
   user_id: string,
-  user_name: string
+  new_username: string
 ) {
-  const { data, error } = await supabase.rpc("get_user", {
+  const { data, error } = await supabase.rpc("update_username", {
     user_id: user_id,
-    user_name: user_name,
+    username: new_username,
   });
+
   if (error) {
     return jsonResponse({ error: error.message }, 500);
   }
-  return jsonResponse(data);
+
+  return jsonResponse({
+    message: "Username updated successfully",
+    data: data,
+  });
 }
 
 async function deleteUser(supabase: unknown, user_id: string) {
