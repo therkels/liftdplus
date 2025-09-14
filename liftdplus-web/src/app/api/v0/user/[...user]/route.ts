@@ -51,7 +51,7 @@ export async function DELETE() {
 }
 
 async function updateUserName(
-  supabase: any,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   user_id: string,
   new_username: string
 ) {
@@ -70,7 +70,10 @@ async function updateUserName(
   });
 }
 
-async function deleteUser(supabase: unknown, user_id: string) {
+async function deleteUser(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  user_id: string
+) {
   const { data, error } = await supabase.rpc("delete_user", {
     user_id: user_id,
   });
