@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function GET() {
   const supabase = await createClient();
@@ -37,7 +38,7 @@ export async function PUT(
   const param_list = params.posts || [];
 }
 
-async function getLikedInfo(supabase: unknown, user_id: string) {
+async function getLikedInfo(supabase: SupabaseClient, user_id: string) {
   const { data, error } = await supabase.rpc("get_liked_posts", {
     p_user_id: user_id,
   });

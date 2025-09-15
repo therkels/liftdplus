@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function GET(
   request: NextRequest,
@@ -73,7 +74,7 @@ export async function DELETE(
   const param_list = params.posts || [];
 }
 
-async function getArchiveInfo(supabase: unknown, user_id: string) {
+async function getArchiveInfo(supabase: SupabaseClient, user_id: string) {
   const { data, error } = await supabase.rpc("get_archive_info", {
     user_id: user_id,
   });
@@ -81,7 +82,7 @@ async function getArchiveInfo(supabase: unknown, user_id: string) {
   return jsonResponse(data);
 }
 async function getArchivedPosts(
-  supabase: unknown,
+  supabase: SupabaseClient,
   user_id: string,
   category_display: string
 ) {
