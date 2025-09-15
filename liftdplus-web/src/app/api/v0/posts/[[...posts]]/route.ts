@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function GET(
   request: NextRequest,
@@ -119,7 +120,7 @@ export async function DELETE(
   }
 }
 
-async function getAllPosts(supabase: unknown, user_id: string, url: URL) {
+async function getAllPosts(supabase: SupabaseClient, user_id: string, url: URL) {
   const { data, error } = await supabase.rpc("get_posts_with_user_data", {
     user_id: user_id,
     category_filter: url.searchParams.getAll("category"),
@@ -132,7 +133,7 @@ async function getAllPosts(supabase: unknown, user_id: string, url: URL) {
   return jsonResponse(data);
 }
 async function getPostByID(
-  supabase: unknown,
+  supabase: SupabaseClient,
   post_id: string,
   user_id: string
 ) {
@@ -144,7 +145,7 @@ async function getPostByID(
 }
 
 async function putArchivedPost(
-  supabase: unknown,
+  supabase: SupabaseClient,
   post_id: string,
   user_id: string,
   category: string
@@ -166,7 +167,7 @@ async function putArchivedPost(
 }
 
 async function autoArchivePost(
-  supabase: unknown,
+  supabase: SupabaseClient,
   post_id: string,
   user_id: string
 ) {
@@ -186,7 +187,7 @@ async function autoArchivePost(
 }
 
 async function putLikePost(
-  supabase: unknown,
+  supabase: SupabaseClient,
   post_id: string,
   user_id: string
 ) {
@@ -202,7 +203,7 @@ async function putLikePost(
 }
 
 async function deleteArchivedPost(
-  supabase: unknown,
+  supabase: SupabaseClient,
   post_id: string,
   user_id: string
 ) {
@@ -222,7 +223,7 @@ async function deleteArchivedPost(
 }
 
 async function deleteLikePost(
-  supabase: unknown,
+  supabase: SupabaseClient,
   post_id: string,
   user_id: string
 ) {
