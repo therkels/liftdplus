@@ -55,12 +55,14 @@
   --font-mono: var(--font-mono);
 }
 
+/* Dark mode disabled - application will always use light mode colors
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
+*/
 
 body {
   background: var(--background);

@@ -8,6 +8,15 @@ interface PostMetadataProps {
 }
 
 const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
+  const {
+    isLiked,
+    isArchived,
+    likeCount,
+    isLoading,
+    handleLike,
+    handleArchive,
+  } = usePostInteractions(post);
+
   // Guard clause to handle undefined post
   if (!post) {
     return (
@@ -32,15 +41,6 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
       </div>
     );
   }
-
-  const {
-    isLiked,
-    isArchived,
-    likeCount,
-    isLoading,
-    handleLike,
-    handleArchive,
-  } = usePostInteractions(post);
 
   const handleBookmarkClick = () => {
     // Auto-archive or unarchive directly - no category selection needed

@@ -4,24 +4,33 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   HiOutlineCog,
-  HiOutlineMail,
-  HiOutlineKey,
   HiOutlineHeart,
   HiOutlineLogout,
   HiOutlineTrash,
   HiOutlineUser,
 } from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
+import { pageCache } from "@/utils/cache/PageCache";
 import UpdateEmailModal from "@/components/site_core/UpdateEmailModal";
 import UpdatePasswordModal from "@/components/site_core/UpdatePasswordModal";
+import UpdateUsernameModal from "@/components/site_core/UpdateUsernameModal";
 import DeleteAccountModal from "@/components/site_core/DeleteAccountModal";
 import EditInterestsModal from "@/components/site_core/EditInterestsModal";
 import LogoutModal from "@/components/site_core/LogoutModal";
 
 export default function Profile() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    email?: string;
+    user_metadata?: { full_name?: string };
+  } | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    username?: string;
+    profile_icon_url?: string;
+  } | null>(null);
   const [isUpdateEmailOpen, setIsUpdateEmailOpen] = useState(false);
   const [isUpdatePasswordOpen, setIsUpdatePasswordOpen] = useState(false);
+  const [isUpdateUsernameOpen, setIsUpdateUsernameOpen] = useState(false);
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [isEditInterestsOpen, setIsEditInterestsOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
@@ -49,16 +58,52 @@ export default function Profile() {
         if (authUser) {
           setUser(authUser);
 
-          // Load user preferences
-          const response = await fetch("/api/v0/preferences");
-          if (response.ok) {
-            const { preferences } = await response.json();
-            const interestNames = preferences
-              .filter((p: any) => p.tag?.category === "topic")
-              .map((p: any) => p.tag?.display_name)
-              .filter(Boolean);
-            setSelectedInterests(interestNames);
-            console.log("Loaded user preferences:", interestNames);
+          // Create cache key for profile data
+          const cacheKey = `profile:${authUser.id}`;
+
+          // Check cache first
+          const cachedPreferences = pageCache.get(cacheKey);
+          if (cachedPreferences) {
+            setSelectedInterests(cachedPreferences);
+          }
+
+          // Load user profile data
+          const supabase = await createClient();
+          const { data: userData, error: userError } = await supabase.rpc(
+            "get_user",
+            {
+              user_id: authUser.id,
+            }
+          );
+
+          if (!userError && userData && userData.length > 0) {
+            setUserProfile({
+              username: userData[0].username,
+              profile_icon_url: userData[0].profile_icon_url,
+            });
+          }
+
+          // Load user preferences if not cached
+          if (!cachedPreferences) {
+            const response = await fetch("/api/v0/preferences");
+            if (response.ok) {
+              const { preferences } = await response.json();
+              const interestNames = preferences
+                .filter(
+                  (p: { tag?: { category?: string } }) =>
+                    p.tag?.category === "topic"
+                )
+                .map(
+                  (p: { tag?: { display_name?: string } }) =>
+                    p.tag?.display_name
+                )
+                .filter(Boolean);
+
+              // Cache the preferences before setting state
+              pageCache.set(cacheKey, interestNames);
+              setSelectedInterests(interestNames);
+              console.log("Loaded user preferences:", interestNames);
+            }
           }
         }
       } catch (error) {
@@ -79,17 +124,23 @@ export default function Profile() {
       action: () => console.log("Account Settings"),
     },
     {
-      id: "update-email",
-      label: "Update Email",
-      icon: HiOutlineMail,
-      action: () => setIsUpdateEmailOpen(true),
+      id: "update-username",
+      label: "Update Username",
+      icon: HiOutlineUser,
+      action: () => setIsUpdateUsernameOpen(true),
     },
-    {
-      id: "change-password",
-      label: "Change Password",
-      icon: HiOutlineKey,
-      action: () => setIsUpdatePasswordOpen(true),
-    },
+    // {
+    //   id: "update-email",
+    //   label: "Update Email",
+    //   icon: HiOutlineMail,
+    //   action: () => setIsUpdateEmailOpen(true),
+    // },
+    // {
+    //   id: "change-password",
+    //   label: "Change Password",
+    //   icon: HiOutlineKey,
+    //   action: () => setIsUpdatePasswordOpen(true),
+    // },
     {
       id: "edit-interests",
       label: "Edit Interests",
@@ -109,10 +160,6 @@ export default function Profile() {
       action: () => setIsDeleteAccountOpen(true),
     },
   ];
-
-  const handleProfileImageEdit = () => {
-    console.log("Edit profile image");
-  };
 
   if (loading) {
     return (
@@ -148,10 +195,17 @@ export default function Profile() {
               className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
               style={{ borderColor: "var(--accent-light)" }}
             >
-              {user.user_metadata?.avatar_url ? (
+              {userProfile?.profile_icon_url ||
+              user.user_metadata?.avatar_url ? (
                 <Image
-                  src={user.user_metadata.avatar_url}
-                  alt={user.user_metadata?.name || "User"}
+                  src={
+                    userProfile?.profile_icon_url ||
+                    user.user_metadata?.avatar_url ||
+                    ""
+                  }
+                  alt={
+                    userProfile?.username || user.user_metadata?.name || "User"
+                  }
                   width={96}
                   height={96}
                   className="w-full h-full rounded-full object-cover"
@@ -165,8 +219,16 @@ export default function Profile() {
           {/* User Info */}
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-gray-800">
-              {user.user_metadata?.name || user.email || "User"}
+              {userProfile?.username ||
+                user.user_metadata?.name ||
+                user.email ||
+                "User"}
             </h2>
+            {userProfile?.username && (
+              <p className="text-[12px] text-gray-600">
+                @{userProfile.username}
+              </p>
+            )}
             <p className="text-[12px] text-gray-600">{user.email}</p>
             <p className="text-[12px] text-gray-600">
               Member since{" "}
@@ -175,13 +237,13 @@ export default function Profile() {
                 year: "numeric",
               })}
             </p>
-            <button
+            {/* <button
               onClick={handleProfileImageEdit}
               className="text-[10px] mt-1 hover:underline flex items-center text-gray-500"
             >
               <HiOutlineCog className="w-3 h-3 mr-1" />
               <span className="leading-none">Edit Profile Image</span>
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -218,6 +280,38 @@ export default function Profile() {
         onClose={() => setIsUpdatePasswordOpen(false)}
         onSubmit={async () => {}}
       />
+      <UpdateUsernameModal
+        isOpen={isUpdateUsernameOpen}
+        onClose={() => setIsUpdateUsernameOpen(false)}
+        currentUsername={userProfile?.username || ""}
+        onSubmit={async (newUsername: string) => {
+          try {
+            const formData = new FormData();
+            formData.append("username", newUsername);
+
+            const response = await fetch("/api/v0/user/username", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (response.ok) {
+              // Update local state
+              setUserProfile((prev) =>
+                prev
+                  ? { ...prev, username: newUsername }
+                  : { username: newUsername }
+              );
+              console.log("Username updated successfully");
+            } else {
+              const error = await response.json();
+              throw new Error(error.error || "Failed to update username");
+            }
+          } catch (error) {
+            console.error("Error updating username:", error);
+            throw error;
+          }
+        }}
+      />
       <DeleteAccountModal
         isOpen={isDeleteAccountOpen}
         onClose={() => setIsDeleteAccountOpen(false)}
@@ -241,6 +335,10 @@ export default function Profile() {
             });
 
             if (response.ok) {
+              // Invalidate cache when preferences change
+              pageCache.invalidate("feed:");
+              pageCache.invalidate("profile:");
+              pageCache.invalidate("favorites:");
               setSelectedInterests(sel);
               console.log("Preferences updated successfully");
             } else {
@@ -257,7 +355,23 @@ export default function Profile() {
       <LogoutModal
         isOpen={isLogoutOpen}
         onClose={() => setIsLogoutOpen(false)}
-        onConfirm={async () => {}}
+        onConfirm={async () => {
+          try {
+            const supabase = await createClient();
+            const { error } = await supabase.auth.signOut();
+
+            if (error) {
+              console.error("Error logging out:", error);
+              alert("Failed to log out. Please try again.");
+            } else {
+              // Redirect to login page after successful logout
+              window.location.href = "/login";
+            }
+          } catch (error) {
+            console.error("Error during logout:", error);
+            alert("Failed to log out. Please try again.");
+          }
+        }}
       />
     </div>
   );

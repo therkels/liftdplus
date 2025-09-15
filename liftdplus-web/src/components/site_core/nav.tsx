@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   HiOutlineBookOpen,
@@ -49,7 +50,15 @@ const NavBar: React.FC = () => {
       {/* Desktop Navigation - Top */}
       <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-foreground shadow-sm">
         <div className="flex items-center justify-between px-6 py-4">
-          <div className="font-bold text-xl text-white">LIFTD+</div>
+          <div className="flex items-center bg-white rounded-lg p-2">
+            <Image
+              src="/liftd-text.svg"
+              alt="Liftd+ Logo"
+              width={64}
+              height={64}
+              className="h-8 w-24"
+            />
+          </div>
 
           {/* Centered navigation tabs */}
           <div className="flex items-center space-x-8 flex-1 justify-center">

@@ -140,7 +140,7 @@ export function getSortDisplayName(sortId: string): string {
  */
 export function getSortId(displayName: string): string {
   const entry = Object.entries(SORT_MAPPING).find(
-    ([_, display]) => display === displayName
+    ([, display]) => display === displayName
   );
   return entry ? entry[0] : displayName.toLowerCase();
 }

@@ -8,6 +8,8 @@ export interface Post {
   author_name: string;
   author_photo: string | null;
   like_count: number;
+  user_liked: boolean;
+  user_archived: boolean;
   topic_tag_ids: string[];
   topic_tags: string;
   format_tags: string;
@@ -44,8 +46,11 @@ export const transformPost = (post: Post): CardProps => {
   };
 };
 
-export const transformPostForModal = (post: Post): PostData => {
-  return {
+// Updated to include user interaction data for modal
+export const transformPostForModal = (
+  post: Post
+): PostData & { user_liked: boolean; user_archived: boolean } => {
+  const result = {
     post_id: post.post_id,
     cover_image_url: post.cover_image_url,
     title: post.title,
@@ -53,6 +58,8 @@ export const transformPostForModal = (post: Post): PostData => {
     author_name: post.author_name,
     author_photo: post.author_photo || undefined,
     like_count: post.like_count,
+    user_liked: post.user_liked,
+    user_archived: post.user_archived,
     tags: [post.topic_tags, post.format_tags, post.audience_tags].filter(
       Boolean
     ),
@@ -60,4 +67,6 @@ export const transformPostForModal = (post: Post): PostData => {
     content: post.content,
     images: post.images || [],
   };
+
+  return result;
 };
