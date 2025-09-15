@@ -1,44 +1,45 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { HiX } from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
 import PostModal from "@/components/site_core/PostModal";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
 import Card from "@/components/site_core/Card";
-import {
-  Post,
-  transformPost,
-  transformPostForModal,
-} from "@/utils/postTransformers";
+import { Post, transformPostForModal } from "@/utils/postTransformers";
 import {
   getArchiveCategories,
   getArchivedPosts,
   getLikedPosts,
+  getUniqueSavedPostsCount,
   ArchiveCategory,
 } from "@/utils/postActions";
+import { pageCache } from "@/utils/cache/PageCache";
 
 interface FavoriteCategory {
   id: string;
   name: string;
   postCount: number;
   posts: Post[];
-  coverImage: string;
+  coverImage: string | null;
 }
 
 export default function Favorites() {
+  const router = useRouter();
   const [categories, setCategories] = useState<FavoriteCategory[]>([]);
   const [selectedCategory, setSelectedCategory] =
     useState<FavoriteCategory | null>(null);
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [postsLoading, setPostsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uniquePostsCount, setUniquePostsCount] = useState(0);
 
   // Check authentication status and load user data
   useEffect(() => {
@@ -68,12 +69,27 @@ export default function Favorites() {
   }, [user]);
 
   const loadCategories = async () => {
+    // Create cache key for favorites data
+    const cacheKey = `favorites:${user?.id}`;
+
+    // Check cache first
+    const cachedData = pageCache.get(cacheKey);
+    if (cachedData) {
+      setCategories(cachedData.categories);
+      setUniquePostsCount(cachedData.uniqueCount);
+      setCategoriesLoading(false);
+      return;
+    }
+
     setCategoriesLoading(true);
     setError(null);
 
     try {
-      const archiveCategories = await getArchiveCategories();
-      const likedPosts = await getLikedPosts();
+      const [archiveCategories, likedPosts, uniqueCount] = await Promise.all([
+        getArchiveCategories(),
+        getLikedPosts(),
+        getUniqueSavedPostsCount(),
+      ]);
 
       // Define the 6 core interests (excluding "I'm Not Sure Yet" and "Cannabis 101")
       const coreInterests = [
@@ -105,15 +121,28 @@ export default function Favorites() {
       );
 
       // Add liked posts as a special category (always show, even if empty)
+      // Use the same thumbnail logic as archive categories - first post's cover image
+      const likedCoverImage =
+        likedPosts.length > 0
+          ? likedPosts[0]?.cover_image_url || "/dandelion.jpg"
+          : null;
+
       favoriteCategories.unshift({
         id: "liked-posts",
         name: "Liked Posts",
         postCount: likedPosts.length,
         posts: likedPosts,
-        coverImage: likedPosts.length > 0 ? "/dandelion.jpg" : null, // null for empty
+        coverImage: likedCoverImage, // Use first liked post's cover image
+      });
+
+      // Cache the favorites data before setting state
+      pageCache.set(cacheKey, {
+        categories: favoriteCategories,
+        uniqueCount: uniqueCount,
       });
 
       setCategories(favoriteCategories);
+      setUniquePostsCount(uniqueCount);
     } catch (error) {
       console.error("Error loading categories:", error);
       setError("Failed to load categories. Please try again.");
@@ -123,6 +152,18 @@ export default function Favorites() {
   };
 
   const loadCategoryPosts = async (category: FavoriteCategory) => {
+    // Create cache key for category posts
+    const cacheKey = `favorites-posts:${category.id}:${user?.id}`;
+
+    // Check cache first
+    const cachedPosts = pageCache.get(cacheKey);
+    if (cachedPosts) {
+      const updatedCategory = { ...category, posts: cachedPosts };
+      setSelectedCategory(updatedCategory);
+      setPostsLoading(false);
+      return;
+    }
+
     setPostsLoading(true);
 
     try {
@@ -135,6 +176,9 @@ export default function Favorites() {
         // Load archived posts for this category
         posts = await getArchivedPosts(category.name);
       }
+
+      // Cache the posts before setting state
+      pageCache.set(cacheKey, posts);
 
       // Update the category with loaded posts
       const updatedCategory = {
@@ -171,7 +215,8 @@ export default function Favorites() {
     setSelectedPost(null);
   };
 
-  const totalPosts = categories.reduce((sum, cat) => sum + cat.postCount, 0);
+  // Use the accurate unique posts count from the database
+  const totalPosts = uniquePostsCount;
 
   // Show loading state while fetching user data
   if (loading) {
@@ -228,13 +273,17 @@ export default function Favorites() {
           >
             Favorites
           </h1>
-          <div className="w-10 h-10 rounded-full overflow-hidden">
+          <button
+            onClick={() => router.push("/profile")}
+            className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
+            aria-label="Go to profile"
+          >
             <img
               src={user?.user_metadata?.avatar_url || "/man.jpg"}
               alt="Profile"
               className="w-full h-full object-cover"
             />
-          </div>
+          </button>
         </div>
       </div>
 

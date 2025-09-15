@@ -15,27 +15,26 @@ export async function GET(
   }
 
   const param_list = params.posts || [];
-  const url = new URL(request.url);
 
   //case 1: Get all posts
   if (param_list.length === 0) {
-    await supabase.from('event_logs').insert([
+    await supabase.from("event_logs").insert([
       {
-          event_type: 'get_all_posts',
-          details: {},
-          user_id: user.id
-      }
+        event_type: "get_all_posts",
+        details: {},
+        user_id: user.id,
+      },
     ]);
-    return getAllPosts(supabase, user.id, url);
+    return getAllPosts(supabase, user.id, new URL(request.url));
   }
   //get by post
   else if (param_list.length === 1) {
-    await supabase.from('event_logs').insert([
+    await supabase.from("event_logs").insert([
       {
-          event_type: 'get_post_by_id',
-          details: {post_id: param_list[0]},
-          user_id: user.id
-      }
+        event_type: "get_post_by_id",
+        details: { post_id: param_list[0] },
+        user_id: user.id,
+      },
     ]);
     return getPostByID(supabase, param_list[0], user.id);
   }
@@ -55,26 +54,25 @@ export async function PUT(
   }
 
   const param_list = params.posts || [];
-  const url = new URL(request.url);
 
   if (param_list.length === 2) {
     if (param_list[1] == "archive") {
-      await supabase.from('event_logs').insert([
+      await supabase.from("event_logs").insert([
         {
-            event_type: 'archive_post',
-            details: {post_id: param_list[0]},
-            user_id: user.id
-        }
+          event_type: "archive_post",
+          details: { post_id: param_list[0] },
+          user_id: user.id,
+        },
       ]);
       // Auto-archive: determine category from post's topic tag and user preferences
       return autoArchivePost(supabase, param_list[0], user.id);
     } else if (param_list[1] == "like") {
-      await supabase.from('event_logs').insert([
+      await supabase.from("event_logs").insert([
         {
-            event_type: 'like_post',
-            details: {post_id: param_list[0]},
-            user_id: user.id
-        }
+          event_type: "like_post",
+          details: { post_id: param_list[0] },
+          user_id: user.id,
+        },
       ]);
       return putLikePost(supabase, param_list[0], user.id);
     }
@@ -98,31 +96,30 @@ export async function DELETE(
   }
 
   const param_list = params.posts || [];
-  const url = new URL(request.url);
   if (param_list.length === 2) {
     if (param_list[1] == "archive") {
-      await supabase.from('event_logs').insert([
+      await supabase.from("event_logs").insert([
         {
-            event_type: 'delete_archived_post',
-            details: {post_id: param_list[0]},
-            user_id: user.id
-        }
+          event_type: "delete_archived_post",
+          details: { post_id: param_list[0] },
+          user_id: user.id,
+        },
       ]);
       return deleteArchivedPost(supabase, param_list[0], user.id);
     } else if (param_list[1] == "like") {
-      await supabase.from('event_logs').insert([
+      await supabase.from("event_logs").insert([
         {
-            event_type: 'delete_liked_post',
-            details: {post_id: param_list[0]},
-            user_id: user.id
-        }
+          event_type: "delete_liked_post",
+          details: { post_id: param_list[0] },
+          user_id: user.id,
+        },
       ]);
       return deleteLikePost(supabase, param_list[0], user.id);
     }
   }
 }
 
-async function getAllPosts(supabase: any, user_id: string, url: URL) {
+async function getAllPosts(supabase: unknown, user_id: string, url: URL) {
   const { data, error } = await supabase.rpc("get_posts_with_user_data", {
     user_id: user_id,
     category_filter: url.searchParams.getAll("category"),
@@ -134,7 +131,11 @@ async function getAllPosts(supabase: any, user_id: string, url: URL) {
   console.log("get_posts_with_user_data data:", data);
   return jsonResponse(data);
 }
-async function getPostByID(supabase: any, post_id: string, user_id: string) {
+async function getPostByID(
+  supabase: unknown,
+  post_id: string,
+  user_id: string
+) {
   const { data, error } = await supabase.rpc("get_post", {
     post_id: post_id,
     user_id: user_id,
@@ -143,7 +144,7 @@ async function getPostByID(supabase: any, post_id: string, user_id: string) {
 }
 
 async function putArchivedPost(
-  supabase: any,
+  supabase: unknown,
   post_id: string,
   user_id: string,
   category: string
@@ -165,7 +166,7 @@ async function putArchivedPost(
 }
 
 async function autoArchivePost(
-  supabase: any,
+  supabase: unknown,
   post_id: string,
   user_id: string
 ) {
@@ -184,16 +185,24 @@ async function autoArchivePost(
   return jsonResponse({ success: true, data });
 }
 
-async function putLikePost(supabase: any, post_id: string, user_id: string) {
+async function putLikePost(
+  supabase: unknown,
+  post_id: string,
+  user_id: string
+) {
   const { data, error } = await supabase.rpc("like_post", {
     post_id: post_id,
     user_id: user_id,
   });
-  return jsonResponse(data);
+  if (error) {
+    console.error("Database error in like_post:", error);
+    return jsonResponse({ error: error.message }, 500);
+  }
+  return jsonResponse({ success: true, message: "Post liked successfully" });
 }
 
 async function deleteArchivedPost(
-  supabase: any,
+  supabase: unknown,
   post_id: string,
   user_id: string
 ) {
@@ -212,12 +221,20 @@ async function deleteArchivedPost(
   return jsonResponse({ success: true, data });
 }
 
-async function deleteLikePost(supabase: any, post_id: string, user_id: string) {
-  const { data, error } = await supabase.rpc("remove_post_like", {
+async function deleteLikePost(
+  supabase: unknown,
+  post_id: string,
+  user_id: string
+) {
+  const { error } = await supabase.rpc("remove_post_like", {
     post_id: post_id,
     user_id: user_id,
   });
-  return jsonResponse(data);
+  if (error) {
+    console.error("Database error in remove_post_like:", error);
+    return jsonResponse({ error: error.message }, 500);
+  }
+  return jsonResponse({ success: true, message: "Post unliked successfully" });
 }
 
 function jsonResponse(body: unknown, status = 200) {

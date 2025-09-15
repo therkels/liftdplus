@@ -7,6 +7,7 @@ import {
   unarchivePost,
 } from "@/utils/postActions";
 import { useToast } from "@/contexts/ToastContext";
+import { pageCache } from "@/utils/cache/PageCache";
 
 export function usePostInteractions(post: Post) {
   const [isLiked, setIsLiked] = useState(post?.user_liked || false);
@@ -35,6 +36,11 @@ export function usePostInteractions(post: Post) {
         setIsLiked(!newLikedState);
         setLikeCount((prev) => (newLikedState ? prev - 1 : prev + 1));
         throw new Error("Failed to update like status");
+      } else {
+        // Invalidate cache on successful like/unlike
+        pageCache.invalidate("search:");
+        pageCache.invalidate("feed:");
+        pageCache.invalidate("favorites:");
       }
     } catch (error) {
       console.error("Error handling like:", error);
@@ -66,6 +72,11 @@ export function usePostInteractions(post: Post) {
         }
         throw new Error("Failed to update archive status");
       } else {
+        // Invalidate cache on successful archive/unarchive
+        pageCache.invalidate("search:");
+        pageCache.invalidate("feed:");
+        pageCache.invalidate("favorites:");
+
         // Show success message only when saving (not removing)
         if (newArchivedState) {
           // Determine which category the post was saved to based on its topic tags

@@ -17,6 +17,15 @@ const Card: React.FC<CardProps> = ({
   readTime,
   layout = "vertical",
 }) => {
+  const {
+    isLiked,
+    isArchived,
+    likeCount,
+    isLoading,
+    handleLike,
+    handleArchive,
+  } = usePostInteractions(post);
+
   // Guard clause to handle undefined post
   if (!post) {
     return (
@@ -29,15 +38,6 @@ const Card: React.FC<CardProps> = ({
       </div>
     );
   }
-
-  const {
-    isLiked,
-    isArchived,
-    likeCount,
-    isLoading,
-    handleLike,
-    handleArchive,
-  } = usePostInteractions(post);
 
   // Transform post data for display
   const cardData = {
