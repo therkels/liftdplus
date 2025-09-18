@@ -30,11 +30,17 @@ interface Interest {
   isActive: boolean;
 }
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<unknown>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
@@ -63,7 +69,7 @@ function InstallPrompt() {
     // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -158,7 +164,11 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [interestsLoading, setInterestsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    email?: string;
+    user_metadata?: { name?: string; avatar_url?: string };
+  } | null>(null);
   const [interestsData, setInterestsData] = useState<Interest[]>([]);
 
   const { selectedPost, isModalOpen, openPostModal, closePostModal } =
@@ -262,7 +272,7 @@ export default function Home() {
         const cacheKey = `feed:${user?.id}`;
 
         // Check cache first
-        const cachedFeed = pageCache.get(cacheKey);
+        const cachedFeed = pageCache.get(cacheKey) as Topic[] | null;
         if (cachedFeed) {
           setFeedData(cachedFeed);
           setLoading(false);

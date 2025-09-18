@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export async function GET() {
   const supabase = await createClient();
@@ -22,7 +22,10 @@ export async function GET() {
   return getUniqueSavedPostsCount(supabase, user.id);
 }
 
-async function getUniqueSavedPostsCount(supabase: SupabaseClient, user_id: string) {
+async function getUniqueSavedPostsCount(
+  supabase: SupabaseClient,
+  user_id: string
+) {
   const { data, error } = await supabase.rpc("get_unique_saved_posts_count", {
     p_user_id: user_id,
   });
