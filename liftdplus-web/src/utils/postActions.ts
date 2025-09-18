@@ -150,7 +150,7 @@ export async function getLikedPosts(): Promise<Post[]> {
       audience_tags: Array.isArray(post.audience_tags)
         ? post.audience_tags.join(", ")
         : post.audience_tags,
-    }));
+    })) as Post[];
   } catch (error) {
     console.error("Error fetching liked posts:", error);
     return [];
@@ -199,7 +199,7 @@ export async function getArchivedPosts(category?: string): Promise<Post[]> {
       audience_tags: Array.isArray(post.audience_tags)
         ? post.audience_tags.join(", ")
         : post.audience_tags,
-    }));
+    })) as Post[];
   } catch (error) {
     console.error("Error fetching archived posts:", error);
     return [];
@@ -231,7 +231,7 @@ export async function getArchiveCategories(): Promise<ArchiveCategory[]> {
       category: cat.category,
       cover_image_url: cat.cover_image_url || "/dandelion.jpg", // Default image
       cat_count: cat.cat_count || 0,
-    }));
+    })) as ArchiveCategory[];
   } catch (error) {
     console.error("Error fetching archive categories:", error);
     return [];

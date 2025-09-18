@@ -3,12 +3,10 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import PostMetadata from "./PostMetadata";
-import { Post } from "@/utils/postTransformers";
+import { PostData } from "./PostContent";
 
 interface PostContentCarouselProps {
-  post: Post & {
-    user_liked: boolean;
-    user_archived: boolean;
+  post: PostData & {
     images: string[];
   };
 }

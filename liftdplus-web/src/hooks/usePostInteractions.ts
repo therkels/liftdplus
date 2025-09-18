@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { PostData } from "@/components/site_core/PostContent";
 import { Post } from "@/utils/postTransformers";
 import {
   likePost,
@@ -9,7 +10,10 @@ import {
 import { useToast } from "@/contexts/ToastContext";
 import { pageCache } from "@/utils/cache/PageCache";
 
-export function usePostInteractions(post: Post) {
+// Union type to support both Post and PostData
+type PostLike = Post | PostData;
+
+export function usePostInteractions(post: PostLike) {
   const [isLiked, setIsLiked] = useState(post?.user_liked || false);
   const [isArchived, setIsArchived] = useState(post?.user_archived || false);
   const [likeCount, setLikeCount] = useState(post?.like_count || 0);
@@ -79,8 +83,11 @@ export function usePostInteractions(post: Post) {
 
         // Show success message only when saving (not removing)
         if (newArchivedState) {
-          // Determine which category the post was saved to based on its topic tags
-          const postTopicTag = post?.topic_tags || "favorites";
+          // Determine which category the post was saved to based on its tags
+          // Handle both Post (with topic_tags) and PostData (with tags array)
+          const postTopicTag =
+            ("topic_tags" in post ? post.topic_tags : post?.tags?.[0]) ||
+            "favorites";
           showSuccess(`Saved to ${postTopicTag}`);
         }
       }

@@ -34,7 +34,10 @@ export default function Favorites() {
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    user_metadata?: { avatar_url?: string };
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [postsLoading, setPostsLoading] = useState(false);
@@ -73,7 +76,10 @@ export default function Favorites() {
     const cacheKey = `favorites:${user?.id}`;
 
     // Check cache first
-    const cachedData = pageCache.get(cacheKey);
+    const cachedData = pageCache.get(cacheKey) as {
+      categories: FavoriteCategory[];
+      uniqueCount: number;
+    } | null;
     if (cachedData) {
       setCategories(cachedData.categories);
       setUniquePostsCount(cachedData.uniqueCount);
@@ -156,7 +162,7 @@ export default function Favorites() {
     const cacheKey = `favorites-posts:${category.id}:${user?.id}`;
 
     // Check cache first
-    const cachedPosts = pageCache.get(cacheKey);
+    const cachedPosts = pageCache.get(cacheKey) as Post[] | null;
     if (cachedPosts) {
       const updatedCategory = { ...category, posts: cachedPosts };
       setSelectedCategory(updatedCategory);

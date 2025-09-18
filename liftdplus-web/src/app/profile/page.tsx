@@ -22,7 +22,8 @@ export default function Profile() {
   const [user, setUser] = useState<{
     id: string;
     email?: string;
-    user_metadata?: { full_name?: string };
+    created_at?: string;
+    user_metadata?: { full_name?: string; name?: string; avatar_url?: string };
   } | null>(null);
   const [userProfile, setUserProfile] = useState<{
     username?: string;
@@ -62,7 +63,7 @@ export default function Profile() {
           const cacheKey = `profile:${authUser.id}`;
 
           // Check cache first
-          const cachedPreferences = pageCache.get(cacheKey);
+          const cachedPreferences = pageCache.get(cacheKey) as string[] | null;
           if (cachedPreferences) {
             setSelectedInterests(cachedPreferences);
           }
@@ -232,10 +233,12 @@ export default function Profile() {
             <p className="text-[12px] text-gray-600">{user.email}</p>
             <p className="text-[12px] text-gray-600">
               Member since{" "}
-              {new Date(user.created_at).toLocaleDateString("en-US", {
-                month: "long",
-                year: "numeric",
-              })}
+              {user.created_at
+                ? new Date(user.created_at).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })
+                : "Unknown"}
             </p>
             {/* <button
               onClick={handleProfileImageEdit}

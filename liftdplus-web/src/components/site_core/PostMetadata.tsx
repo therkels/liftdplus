@@ -1,10 +1,10 @@
 import React from "react";
 import Image from "next/image";
-import { Post } from "@/utils/postTransformers";
+import { PostData } from "./PostContent";
 import { usePostInteractions } from "@/hooks/usePostInteractions";
 
 interface PostMetadataProps {
-  post: Post;
+  post: PostData;
 }
 
 const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
