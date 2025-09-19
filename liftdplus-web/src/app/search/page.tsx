@@ -30,7 +30,10 @@ export default function Search() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    user_metadata?: { avatar_url?: string };
+  } | null>(null);
 
   // Check authentication status
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function Search() {
         const cacheKey = `search:${JSON.stringify(currentFilters)}:${user?.id}`;
 
         // Check cache first
-        const cachedPosts = pageCache.get(cacheKey);
+        const cachedPosts = pageCache.get(cacheKey) as Post[] | null;
         if (cachedPosts) {
           setPosts(cachedPosts);
           setLoading(false);
@@ -96,8 +99,8 @@ export default function Search() {
         }
 
         // Transform posts to ensure they have proper structure
-        const transformedPosts = postsData.map(
-          (post: Record<string, unknown>, index: number) => ({
+        const transformedPosts = (postsData as Record<string, unknown>[]).map(
+          (post, index) => ({
             ...post,
             post_id:
               post.id?.toString() ||
@@ -106,7 +109,7 @@ export default function Search() {
             user_liked: Boolean(post.user_liked),
             user_archived: Boolean(post.user_archived),
           })
-        );
+        ) as Post[];
 
         // Cache the transformed posts before setting state
         pageCache.set(cacheKey, transformedPosts);
@@ -122,14 +125,16 @@ export default function Search() {
     loadPosts();
   }, [user, currentFilters]);
 
-  const handleFiltersUpdate = (newFilters: {
-    sortBy: string;
-    audience: string[];
-    category: string[];
-  }) => {
+  const handleFiltersUpdate = (newFilters: Record<string, unknown>) => {
     // Invalidate search cache when filters change
     pageCache.invalidate("search:");
-    setCurrentFilters(newFilters);
+    setCurrentFilters(
+      newFilters as {
+        sortBy: string;
+        audience: string[];
+        category: string[];
+      }
+    );
     setIsFilterModalOpen(false);
   };
 

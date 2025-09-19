@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export async function GET(
   request: NextRequest,
@@ -120,7 +120,11 @@ export async function DELETE(
   }
 }
 
-async function getAllPosts(supabase: SupabaseClient, user_id: string, url: URL) {
+async function getAllPosts(
+  supabase: SupabaseClient,
+  user_id: string,
+  url: URL
+) {
   const { data, error } = await supabase.rpc("get_posts_with_user_data", {
     user_id: user_id,
     category_filter: url.searchParams.getAll("category"),

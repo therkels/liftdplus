@@ -3,7 +3,7 @@ import PostContentCarousel from "./PostContentCarousel";
 
 export type PostContentType = "text" | "image";
 
-interface PostData {
+export interface PostData {
   post_id: string;
   cover_image_url: string;
   title: string;
@@ -40,4 +40,3 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
 };
 
 export default PostContent;
-export type { PostData };
