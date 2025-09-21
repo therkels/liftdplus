@@ -179,8 +179,10 @@ export default function Home() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "https://liftdplus.vercel.app/api/v0/auth/callback",
-        //redirectTo: "http://localhost:3000/api/v0/auth/callback",
+        redirectTo:
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:3000/api/v0/auth/callback"
+            : "https://liftdplus.vercel.app/api/v0/auth/callback",
       },
     });
     if (data?.url) {
@@ -190,17 +192,37 @@ export default function Home() {
     }
   }, []);
 
-  // Check authentication status
+  // Check authentication status and listen for auth changes
   useEffect(() => {
-    const checkAuth = async () => {
+    let subscription: any;
+
+    const initAuth = async () => {
       const supabase = await createClient();
+
+      // Get initial user
       const {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
+
+      // Listen for auth state changes
+      const {
+        data: { subscription: authSubscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log("Auth state changed:", event, session?.user);
+        setUser(session?.user ?? null);
+      });
+
+      subscription = authSubscription;
     };
 
-    checkAuth();
+    initAuth();
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, []);
 
   // Load user interests from API

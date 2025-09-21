@@ -10,7 +10,10 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "https://liftdplus.vercel.app/api/v0/auth/callback",
+        redirectTo:
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:3000/api/v0/auth/callback"
+            : "https://liftdplus.vercel.app/api/v0/auth/callback",
       },
     });
     if (data?.url) {
