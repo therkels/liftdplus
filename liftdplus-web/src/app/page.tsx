@@ -66,6 +66,11 @@ function InstallPrompt() {
         document.referrer.includes("android-app://")
     );
 
+    // Check if banner was dismissed in this session
+    const wasDismissed =
+      sessionStorage.getItem("installBannerDismissed") === "true";
+    setIsDismissed(wasDismissed);
+
     // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -133,7 +138,10 @@ function InstallPrompt() {
               </button>
             )}
             <button
-              onClick={() => setIsDismissed(true)}
+              onClick={() => {
+                setIsDismissed(true);
+                sessionStorage.setItem("installBannerDismissed", "true");
+              }}
               className="p-1 rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Close"
             >
@@ -180,7 +188,6 @@ export default function Home() {
       provider: "google",
       options: {
         redirectTo: "https://liftdplus.vercel.app/api/v0/auth/callback",
-        //redirectTo: "http://localhost:3000/api/v0/auth/callback",
       },
     });
     if (data?.url) {
@@ -190,17 +197,37 @@ export default function Home() {
     }
   }, []);
 
-  // Check authentication status
+  // Check authentication status and listen for auth changes
   useEffect(() => {
-    const checkAuth = async () => {
+    let subscription: any;
+
+    const initAuth = async () => {
       const supabase = await createClient();
+
+      // Get initial user
       const {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
+
+      // Listen for auth state changes
+      const {
+        data: { subscription: authSubscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log("Auth state changed:", event, session?.user);
+        setUser(session?.user ?? null);
+      });
+
+      subscription = authSubscription;
     };
 
-    checkAuth();
+    initAuth();
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, []);
 
   // Load user interests from API

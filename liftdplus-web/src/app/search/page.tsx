@@ -135,7 +135,6 @@ export default function Search() {
         category: string[];
       }
     );
-    setIsFilterModalOpen(false);
   };
 
   // Show loading state while checking authentication
