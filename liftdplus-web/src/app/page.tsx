@@ -187,7 +187,7 @@ export default function Home() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "https://liftdplus.vercel.app/api/v0/auth/callback",
+        redirectTo: "https://app.liftdplus.com/api/v0/auth/callback",
       },
     });
     if (data?.url) {
