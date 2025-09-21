@@ -318,7 +318,43 @@ export default function Profile() {
       <DeleteAccountModal
         isOpen={isDeleteAccountOpen}
         onClose={() => setIsDeleteAccountOpen(false)}
-        onConfirm={async () => {}}
+        onConfirm={async () => {
+          try {
+            const response = await fetch("/api/v0/user/delete", {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (!response.ok) {
+              let errorMessage = "Failed to delete account";
+              try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+              } catch {
+                // Response is not JSON (probably HTML error page)
+                errorMessage = `Server error (${response.status}): ${response.statusText}`;
+              }
+              throw new Error(errorMessage);
+            }
+
+            // Account deleted successfully - sign out and redirect
+            const supabase = await createClient();
+            await supabase.auth.signOut();
+
+            // Clear any cached data
+            pageCache.clear();
+
+            // Redirect to login page
+            window.location.href = "/login";
+          } catch (error) {
+            console.error("Error deleting account:", error);
+            alert("Failed to delete account. Please try again.");
+          } finally {
+            setIsDeleteAccountOpen(false);
+          }
+        }}
       />
       <EditInterestsModal
         isOpen={isEditInterestsOpen}
