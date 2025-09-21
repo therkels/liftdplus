@@ -1,2 +1,2 @@
 # liftdplus-app
-Main application that drives LIFTD+
+Main application that drives LIFTD+.
