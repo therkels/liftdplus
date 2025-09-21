@@ -199,7 +199,7 @@ export default function Home() {
 
   // Check authentication status and listen for auth changes
   useEffect(() => {
-    let subscription: any;
+    let subscription: { unsubscribe: () => void } | null = null;
 
     const initAuth = async () => {
       const supabase = await createClient();
