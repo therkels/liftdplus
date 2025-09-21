@@ -66,6 +66,11 @@ function InstallPrompt() {
         document.referrer.includes("android-app://")
     );
 
+    // Check if banner was dismissed in this session
+    const wasDismissed =
+      sessionStorage.getItem("installBannerDismissed") === "true";
+    setIsDismissed(wasDismissed);
+
     // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -133,7 +138,10 @@ function InstallPrompt() {
               </button>
             )}
             <button
-              onClick={() => setIsDismissed(true)}
+              onClick={() => {
+                setIsDismissed(true);
+                sessionStorage.setItem("installBannerDismissed", "true");
+              }}
               className="p-1 rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Close"
             >
