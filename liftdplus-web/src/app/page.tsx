@@ -269,11 +269,19 @@ export default function Home() {
             displayName: "Focus & Creativity",
             isActive: false,
           },
+          {
+            id: "not-sure",
+            displayName: "Cannabis 101",
+            isActive: false,
+          },
         ].map((interest) => ({
           ...interest,
           isActive: preferencesArray.some(
             (pref: { tag?: { display_name?: string } }) =>
-              pref.tag?.display_name === interest.displayName
+              // Special case for "Cannabis 101" - match against "I'm Not Sure Yet" in database
+              interest.id === "not-sure"
+                ? pref.tag?.display_name === "I'm Not Sure Yet"
+                : pref.tag?.display_name === interest.displayName
           ),
         }));
 
