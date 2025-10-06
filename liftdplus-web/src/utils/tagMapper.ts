@@ -10,7 +10,7 @@ const TAG_MAPPING = {
   "Pain Relief": "pain-relief",
   "Focus & Creativity": "focus-creativity",
   "I'm Not Sure Yet": "not-sure",
-  "Cannabis 101": "not-sure",
+  "Cannabis 101": "cannabis_101",
 
   // Format tags
   "Blog Post": "blog",

@@ -187,7 +187,6 @@ const FilterContent: React.FC<FilterContentProps> = ({
               "Hormonal Changes",
               "Pain Relief",
               "Focus & Creativity",
-              "Cannabis 101",
             ].map((option) => (
               <label
                 key={option}

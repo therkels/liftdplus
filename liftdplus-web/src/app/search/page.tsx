@@ -205,36 +205,15 @@ export default function Search() {
 
       {/* Filter Summary */}
       <div className="bg-[#f9fafb] px-4 md:px-0 py-3 border-b border-gray-200">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-gray-600">Current filters:</span>
-
-          {/* Sort Filter */}
-          <div className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
-            {getSortDisplayName(currentFilters.sortBy)}
-          </div>
-
-          {/* Audience Filters */}
-          {currentFilters.audience.map((audience) => (
-            <div
-              key={audience}
-              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-            >
-              {audience}
-            </div>
-          ))}
-
-          {/* Category Filters */}
-          {currentFilters.category.map((category) => (
-            <div
-              key={category}
-              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-            >
-              {category}
-            </div>
-          ))}
-
-          {/* Post Count */}
-          <span className="text-sm text-gray-600">• {posts.length} posts</span>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+          <span>Sorted by: {getSortDisplayName(currentFilters.sortBy)}</span>
+          {currentFilters.audience.length > 0 && (
+            <span>• Audience: {currentFilters.audience.join(", ")}</span>
+          )}
+          {currentFilters.category.length > 0 && (
+            <span>• Topics: {currentFilters.category.join(", ")}</span>
+          )}
+          <span>• {posts.length} posts</span>
         </div>
       </div>
 
