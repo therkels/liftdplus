@@ -115,7 +115,7 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
         <div
           ref={containerRef}
           className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100"
-          style={{ aspectRatio: "4/3" }}
+          style={{ aspectRatio: "4/5" }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -148,7 +148,7 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
                   src={image}
                   alt={`${post.title} - Image ${index + 1}`}
                   fill
-                  className="object-cover pointer-events-none"
+                  className="object-contain pointer-events-none"
                   draggable={false}
                 />
               </div>
