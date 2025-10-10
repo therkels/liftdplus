@@ -29,8 +29,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-     return (
   <html lang="en">
     <head>
       {/* Google Analytics */}
