@@ -46,10 +46,11 @@ export default function RootLayout({
       </Script>
     </head>
 
-    <body className={`${inter.variable} antialiased min-h-screen bg-gray-50`}>
+       <body className={`${inter.variable} antialiased min-h-screen bg-gray-50`}>
       <ConditionalNavBar />
       <ConditionalMain>{children}</ConditionalMain>
       <ToastContainer />
     </body>
   </html>
-);
+  );
+}
