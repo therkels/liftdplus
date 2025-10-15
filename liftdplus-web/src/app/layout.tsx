@@ -1,13 +1,10 @@
-"use client";
-
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ConditionalNavBar from "@/components/site_core/ConditionalNavBar";
 import ConditionalMain from "@/components/site_core/ConditionalMain";
-import { ToastProvider } from "@/contexts/ToastContext";
-import ToastContainer from "@/components/site_core/ToastContainer";
 import Script from "next/script";
+import ClientProviders from "@/components/ClientProviders";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,8 +31,9 @@ export default function RootLayout({
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-NYZ84B03HS"
+          strategy="afterInteractive"
         />
-        <Script id="google-analytics">
+        <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -46,11 +44,10 @@ export default function RootLayout({
       </head>
 
       <body className={`${inter.variable} antialiased min-h-screen bg-gray-50`}>
-        <ToastProvider>
+        <ClientProviders>
           <ConditionalNavBar />
           <ConditionalMain>{children}</ConditionalMain>
-          <ToastContainer />
-        </ToastProvider>
+        </ClientProviders>
       </body>
     </html>
   );
