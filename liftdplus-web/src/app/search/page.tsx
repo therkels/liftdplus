@@ -281,7 +281,6 @@ export default function Search() {
                 post={content}
                 readTime={content.secondary_title || "5 min read"}
                 layout="horizontal"
-                onClick={() => openPostModal(content)}
               />
             ))
           ) : (
