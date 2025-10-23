@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { Post } from "@/utils/postTransformers";
 import { usePostInteractions } from "@/hooks/usePostInteractions";
+import { useRouter } from "next/navigation";
+
 
 interface CardProps {
   post: Post; // Changed from individual fields to full post object
@@ -25,6 +27,11 @@ const Card: React.FC<CardProps> = ({
     handleLike,
     handleArchive,
   } = usePostInteractions(post);
+  const router = useRouter();
+const goToPost = () => {
+  if (post?.slug) router.push(`/post/${post.slug}`);
+};
+
 
   // Guard clause to handle undefined post
   if (!post) {
@@ -69,9 +76,9 @@ const Card: React.FC<CardProps> = ({
     return (
       <>
         <div
-          className="w-full bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
-          onClick={onClick}
-        >
+  className="w-full bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
+  onClick={onClick ?? goToPost}
+>
           <div className="flex h-32">
             {/* Left side - Image */}
             <div className="relative w-32 h-32 flex-shrink-0">
@@ -189,8 +196,8 @@ const Card: React.FC<CardProps> = ({
         } bg-white rounded-lg shadow-lg overflow-hidden ${
           compact ? "m-0" : "m-2"
         } cursor-pointer md:transition-transform md:duration-200 md:hover:scale-105 md:hover:shadow-xl`}
-        onClick={onClick}
-      >
+         onClick={onClick ?? goToPost}
+>
         <div
           className={`relative ${
             compact ? "h-32 md:h-40" : "h-48 md:h-56"
