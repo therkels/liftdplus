@@ -1,5 +1,21 @@
 import { createClient } from "@/utils/supabase/server";
 
+type TopicRow = {
+  topic_id: string;
+  topic_display: string;
+  // posts can be any shape coming from the RPC; treat as unknown and narrow
+  posts?: unknown[];
+};
+
+function toSlug(title: unknown): string | null {
+  if (typeof title !== "string") return null;
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
 export async function GET() {
   const supabase = await createClient();
   const {
@@ -15,26 +31,17 @@ export async function GET() {
   }
 
   await supabase.from("event_logs").insert([
-    {
-      event_type: "get_feed",
-      details: {},
-      user_id: user.id,
-    },
+    { event_type: "get_feed", details: {}, user_id: user.id },
   ]);
   console.log("Feed API: Authenticated user:", user.id);
 
-  // Optional: get preferences (debug/info)
+  // Optional debug (keep or remove)
   const { data: preferences, error: prefError } = await supabase.rpc(
     "get_user_preferences",
     { user_id: user.id }
   );
   console.log("Feed API: User preferences:", preferences);
   console.log("Feed API: Preferences error:", prefError);
-
-  // Optional: peek at all posts (debug/info)
-  const { data: allPosts } = await supabase.rpc("get_all_published_posts");
-  console.log("Feed API: All published posts count:", allPosts?.length || 0);
-  console.log("Feed API: Sample posts:", allPosts?.slice(0, 3));
 
   // Build the feed
   const { data, error } = await supabase.rpc("get_user_feed", {
@@ -54,33 +61,25 @@ export async function GET() {
 
   console.log("Feed API: Returning feed with", data?.length || 0, "topics");
 
-  // Ensure each post has a slug (fallback derives one from title)
+  // Ensure each post has a slug (without using `any`)
   const transformedData =
-    data?.map(
-      (topic: {
-        topic_id: string;
-        topic_display: string;
-        posts?: any[];
-      }) => ({
-        topic_id: topic.topic_id,
-        topic_display: topic.topic_display,
-        posts: Array.isArray(topic.posts)
-          ? topic.posts.map((post) => ({
-              ...post,
-              slug:
-                post.slug ||
-                post.post_slug ||
-                (typeof post.title === "string"
-                  ? post.title
-                      .toLowerCase()
-                      .trim()
-                      .replace(/\s+/g, "-")
-                      .replace(/[^a-z0-9-]/g, "")
-                  : null),
-            }))
-          : [],
-      })
-    ) || [];
+    (data as TopicRow[] | null)?.map((topic) => ({
+      topic_id: topic.topic_id,
+      topic_display: topic.topic_display,
+      posts: Array.isArray(topic.posts)
+        ? topic.posts.map((raw) => {
+            // Treat each post as a loose record and safely read fields
+            const post = raw as Record<string, unknown>;
+            const slug =
+              (typeof post.slug === "string" && post.slug) ||
+              (typeof post.post_slug === "string" && post.post_slug) ||
+              toSlug(post.title);
+
+            return { ...post, slug };
+          })
+        : [],
+    })) ?? [];
+
   return new Response(JSON.stringify({ topics: transformedData }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
