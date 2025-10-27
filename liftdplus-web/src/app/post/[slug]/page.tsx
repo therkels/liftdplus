@@ -3,7 +3,7 @@ import Image from "next/image";
 import { createClient } from "@/utils/supabase/server";
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
-  const supabase = createClient();
+  const supabase = await createClient(); // 
 
   const { data: post } = await supabase
     .from("post")
