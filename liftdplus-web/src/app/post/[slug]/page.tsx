@@ -1,46 +1,74 @@
-import { notFound } from "next/navigation";
-import Image from "next/image";
+
+
 import { createClient } from "@/utils/supabase/server";
+import PostContent from "@/components/site_core/PostContent";
 
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const supabase = await createClient(); // 
+export const dynamic = "force-dynamic";
 
-  const { data: post } = await supabase
+type DbPost = Record<string, unknown>;
+
+function toSlug(title: unknown): string | null {
+  if (typeof title !== "string") return null;
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+async function fetchPostBySlug(slug: string): Promise<DbPost | null> {
+  const supabase = await createClient();
+
+  // ✅ Use your actual Supabase table name ("post")
+  const { data, error } = await supabase
     .from("post")
     .select("*")
-    .eq("slug", params.slug)
-    .eq("post_status", "publish")
-    .single();
+    .eq("slug", slug)
+    .maybeSingle();
 
-  if (!post) {
-    notFound();
+  if (error) {
+    console.error("Error fetching post by slug:", error);
+    return null;
   }
 
+  // If no exact slug found, try matching a slug generated from title
+  if (!data) {
+    const { data: allPosts } = await supabase.from("post").select("*");
+    const match = allPosts?.find((p: any) => toSlug(p.title) === slug);
+    return match ?? null;
+  }
+
+  return data ?? null;
+}
+
+export default async function Page({ params }: { params: { slug: string } }) {
+  const post = await fetchPostBySlug(params.slug);
+
+  if (!post) {
+    return (
+      <div className="container mx-auto px-4 md:px-0 py-10">
+        <h1 className="text-2xl font-semibold mb-2">Post not found</h1>
+        <p className="text-gray-600">
+          This link might be old or the post is unpublished.
+        </p>
+      </div>
+    );
+  }
+
+  // Ensure every post object has a slug (some components expect it)
+  const safePost = {
+    ...post,
+    slug:
+      (post as any).slug ||
+      toSlug((post as any).title) ||
+      "untitled-post",
+  };
+
   return (
-    <main className="max-w-3xl mx-auto p-6">
-      {post.cover_image_url && (
-        <div className="relative w-full h-64 mb-6">
-          <Image
-            src={post.cover_image_url}
-            alt={post.title}
-            fill
-            className="object-cover rounded-lg"
-          />
-        </div>
-      )}
-
-      <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
-      {post.secondary_title && (
-        <h2 className="text-lg text-gray-600 mb-4">{post.secondary_title}</h2>
-      )}
-
-      <p className="text-sm text-gray-500 mb-6">
-        {post.author_name} • {post.read_time_minutes ?? 5} min read
-      </p>
-
-      <article className="prose prose-lg max-w-none">
-        <div dangerouslySetInnerHTML={{ __html: post.content_html || "" }} />
-      </article>
-    </main>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 md:px-0 py-6">
+        <PostContent post={safePost as any} />
+      </div>
+    </div>
   );
 }
