@@ -3,7 +3,7 @@ import { Post } from "@/utils/postTransformers";
 import { usePostInteractions } from "@/hooks/usePostInteractions";
 
 interface CardProps {
-  post: Post; // Changed from individual fields to full post object
+  post: Post & { slug?: string }; // allow slug on the post used by cards
   onClick?: () => void;
   compact?: boolean;
   readTime?: string;
