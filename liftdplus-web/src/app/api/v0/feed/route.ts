@@ -23,37 +23,20 @@ export async function GET() {
   ]);
   console.log("Feed API: Authenticated user:", user.id);
 
-  // First, let's check user preferences using RPC
+  // Optional: get preferences (debug/info)
   const { data: preferences, error: prefError } = await supabase.rpc(
     "get_user_preferences",
     { user_id: user.id }
   );
-
   console.log("Feed API: User preferences:", preferences);
   console.log("Feed API: Preferences error:", prefError);
 
-  // Check if user has any topic preferences
-  const topicPreferences =
-    preferences?.filter(
-      (p: { tag?: { category?: string } }) => p.tag?.category === "topic"
-    ) || [];
-  console.log("Feed API: Topic preferences:", topicPreferences);
-
-  // Get all posts to see what's available using RPC
+  // Optional: peek at all posts (debug/info)
   const { data: allPosts } = await supabase.rpc("get_all_published_posts");
-
   console.log("Feed API: All published posts count:", allPosts?.length || 0);
   console.log("Feed API: Sample posts:", allPosts?.slice(0, 3));
 
-  // Check for posts with "sleep" related tags
-  const sleepPosts = allPosts?.filter(
-    (post: { topic_tags?: string }) =>
-      post.topic_tags?.toLowerCase().includes("sleep") ||
-      post.topic_tags?.toLowerCase().includes("rest")
-  );
-  console.log("Feed API: Sleep/rest related posts:", sleepPosts);
-
-  // Now call the feed function
+  // Build the feed
   const { data, error } = await supabase.rpc("get_user_feed", {
     user_id: user.id,
   });
@@ -71,20 +54,33 @@ export async function GET() {
 
   console.log("Feed API: Returning feed with", data?.length || 0, "topics");
 
-  // Transform the data to match expected format
+  // Ensure each post has a slug (fallback derives one from title)
   const transformedData =
     data?.map(
       (topic: {
         topic_id: string;
         topic_display: string;
-        posts?: unknown[];
+        posts?: any[];
       }) => ({
         topic_id: topic.topic_id,
         topic_display: topic.topic_display,
-        posts: Array.isArray(topic.posts) ? topic.posts : [],
+        posts: Array.isArray(topic.posts)
+          ? topic.posts.map((post) => ({
+              ...post,
+              slug:
+                post.slug ||
+                post.post_slug ||
+                (typeof post.title === "string"
+                  ? post.title
+                      .toLowerCase()
+                      .trim()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "")
+                  : null),
+            }))
+          : [],
       })
     ) || [];
-
   return new Response(JSON.stringify({ topics: transformedData }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
