@@ -17,6 +17,7 @@ import PostContent from "@/components/site_core/PostContent";
 import { Post } from "@/utils/postTransformers";
 import { usePostModal } from "@/utils/postHelpers";
 import { pageCache } from "@/utils/cache/PageCache";
+import Link from "next/link";
 
 interface Topic {
   topic_id: string;
@@ -513,31 +514,39 @@ export default function Home() {
           </div>
         )}
 
-        {/* Render feed data */}
-        {feedData.length > 0
-          ? feedData.map((topic) => (
-              <CardScroller key={topic.topic_id} title={topic.topic_display}>
-                {topic.posts.map((post) => (
-                  <Card
-                    key={post.post_id}
-                    post={post}
-                    onClick={() => openPostModal(post)}
-                    compact={true}
-                  />
-                ))}
-              </CardScroller>
-            ))
-          : !loading && (
-              <div className="container mx-auto px-4 md:px-0 py-8 text-center">
-                <p className="text-gray-600">
-                  No posts available at the moment.
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Try updating your interests in your profile to see
-                  personalized content.
-                </p>
-              </div>
-            )}
+{/* Render feed data */}
+{feedData.length > 0 ? (
+  feedData.map((topic) => (
+    <CardScroller key={topic.topic_id} title={topic.topic_display}>
+      {topic.posts.map((post) => {
+        const key = post.post_id;
+
+        return post.slug ? (
+          <Link key={key} href={`/post/${post.slug}`} className="block">
+            <Card post={post} compact={true} />
+          </Link>
+        ) : (
+          <Card
+            key={key}
+            post={post}
+            onClick={() => openPostModal(post)} // fallback if no slug
+            compact={true}
+          />
+        );
+      })}
+    </CardScroller>
+  ))
+) : (
+  !loading && (
+    <div className="container mx-auto px-4 md:px-0 py-8 text-center">
+      <p className="text-gray-600">No posts available at the moment.</p>
+      <p className="text-sm text-gray-500 mt-2">
+        Try updating your interests in your profile to see personalized content.
+      </p>
+    </div>
+  )
+)}
+
 
         <PostModal isOpen={isModalOpen} onClose={closePostModal}>
           {selectedPost && <PostContent post={selectedPost} />}

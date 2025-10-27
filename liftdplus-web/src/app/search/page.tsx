@@ -281,6 +281,8 @@ export default function Search() {
                 post={content}
                 readTime={content.secondary_title || "5 min read"}
                 layout="horizontal"
+                onClick={() => (content.slug ? router.push(`/post/${content.slug}`) : openPostModal(content))}
+
               />
             ))
           ) : (
