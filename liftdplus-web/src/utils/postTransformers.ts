@@ -18,6 +18,7 @@ export interface Post {
   content?: string;
   images?: string[];
   read_time_minutes?: number;
+  slug?: sting;
 }
 
 export interface CardProps {
