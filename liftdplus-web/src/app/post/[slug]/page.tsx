@@ -6,161 +6,122 @@ import { notFound } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 type DbPost = {
-  post_id: string;
-  slug: string | null;
+  id: number | string;
   title: string | null;
   secondary_title?: string | null;
   cover_image_url?: string | null;
-  author_name?: string | null;
-  author_photo?: string | null;
-  like_count?: number | null;
-  topic_tags?: string[] | null;
-  format_tags?: string[] | null;
-  audience_tags?: string[] | null;
-  user_liked?: boolean | null;
-  user_archived?: boolean | null;
-  content_type?: string | null;
-  content?: any;
-  images?: any;
-  read_time_minutes?: number | null;
+  post_template_id?: string | null;
+  author?: string | null;
+  contributor_name?: string | null;
+  source?: string | null;
+  post_status?: string | null;
+  markdown?: string | null;
+  config?: any;
+  created_at?: string | null;
   published_at?: string | null;
-  is_published?: boolean | null;
+  display_id?: string | null;
+  slug?: string | null;
 };
 
 const COLUMNS = `
-  post_id,
-  slug,
+  id,
   title,
   secondary_title,
   cover_image_url,
-  author_name,
-  author_photo,
-  like_count,
-  topic_tags,
-  format_tags,
-  audience_tags,
-  user_liked,
-  user_archived,
-  content_type,
-  content,
-  images,
-  read_time_minutes,
+  post_template_id,
+  author,
+  contributor_name,
+  source,
+  post_status,
+  markdown,
+  config,
+  created_at,
   published_at,
-  is_published
+  display_id,
+  slug
 `;
 
 function toSlug(title: unknown): string | null {
   if (typeof title !== "string") return null;
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+  return title.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
-/**
- * Fetch a post by its stored slug. If that misses, try a lightweight
- * fallback: pull only (post_id, title, slug), compute slugs from titles,
- * and match in-memory — without doing a full "*" table scan.
- */
-async function fetchPostBySlug(slug: string): Promise<DbPost | null> {
+async function fetchPostByParam(param: string): Promise<DbPost | null> {
   const supabase = await createClient();
 
-  // 1) Direct match on stored slug
-  const { data: direct, error: directErr } = await supabase
-    .from("post")
-    .select(COLUMNS)
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (directErr) {
-    console.error("Error fetching post by slug:", directErr);
-  }
-  if (direct) return direct;
-
-  // 2) Lightweight fallback: fetch minimal fields, compute slug from title
-  const { data: minimal, error: miniErr } = await supabase
-    .from("post")
-    .select("post_id, title, slug");
-
-  if (miniErr) {
-    console.error("Error in minimal fallback fetch:", miniErr);
-    return null;
+  // 1) Try by slug (most common)
+  {
+    const { data, error } = await supabase.from("post").select(COLUMNS).eq("slug", param).maybeSingle();
+    if (error) console.error("fetch by slug error:", error);
+    if (data) return data;
   }
 
-  const match = minimal?.find((p: any) => {
-    if (p?.slug === slug) return true;
-    const computed = toSlug(p?.title);
-    return computed === slug;
-  });
-
-  if (!match?.post_id) return null;
-
-  // 3) Fetch full record for the matched post_id
-  const { data: full, error: fullErr } = await supabase
-    .from("post")
-    .select(COLUMNS)
-    .eq("post_id", match.post_id)
-    .maybeSingle();
-
-  if (fullErr) {
-    console.error("Error fetching full post after minimal match:", fullErr);
-    return null;
+  // 2) Try by display_id (many apps link this instead of slug)
+  {
+    const { data, error } = await supabase.from("post").select(COLUMNS).eq("display_id", param).maybeSingle();
+    if (error) console.error("fetch by display_id error:", error);
+    if (data) return data;
   }
 
-  return full ?? null;
+  // 3) Try by numeric id (if someone linked /post/17)
+  if (/^\d+$/.test(param)) {
+    const numericId = Number(param);
+    const { data, error } = await supabase.from("post").select(COLUMNS).eq("id", numericId).maybeSingle();
+    if (error) console.error("fetch by numeric id error:", error);
+    if (data) return data;
+  }
+
+  // 4) Lightweight title-derived slug fallback
+  {
+    const { data: minimal, error } = await supabase.from("post").select("id, title, slug, display_id");
+    if (error) {
+      console.error("minimal fetch error:", error);
+      return null;
+    }
+    const match = minimal?.find((p: any) => {
+      if (p?.slug === param) return true;
+      if (p?.display_id === param) return true;
+      const computed = toSlug(p?.title ?? null);
+      return computed === param;
+    });
+    if (match?.id != null) {
+      const { data, error: fullErr } = await supabase.from("post").select(COLUMNS).eq("id", match.id).maybeSingle();
+      if (fullErr) console.error("full fetch after fallback error:", fullErr);
+      if (data) return data;
+    }
+  }
+
+  return null;
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const post = await fetchPostBySlug(params.slug);
-
-  const title =
-    (post?.title ?? "LIFTD+") + (post?.secondary_title ? ` — ${post.secondary_title}` : "");
-  const description =
-    post?.secondary_title ??
-    "Personalized, stigma-free cannabis education from LIFTD+.";
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const post = await fetchPostByParam(params.slug);
+  const title = (post?.title ?? "LIFTD+") + (post?.secondary_title ? ` — ${post?.secondary_title}` : "");
+  const description = post?.secondary_title ?? "Personalized, stigma-free cannabis education from LIFTD+.";
   const ogImage = post?.cover_image_url ?? "/liftd-og-default.png";
-
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      images: [{ url: ogImage }],
-      type: "article",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [ogImage],
-    },
+    openGraph: { title, description, images: [{ url: ogImage }], type: "article" },
+    twitter: { card: "summary_large_image", title, description, images: [ogImage] },
   };
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
-  const post = await fetchPostBySlug(params.slug);
+  const post = await fetchPostByParam(params.slug);
+  if (!post) notFound();
 
-  if (!post) {
-    // Proper 404 for broken/old links
-    notFound();
-  }
-
-  // Ensure a slug exists for downstream components
-  const safePost: DbPost & { slug: string } = {
-    ...(post as DbPost),
-    slug: post.slug ?? toSlug(post.title) ?? "untitled-post",
+  const normalized = {
+    ...post,
+    slug: post.slug ?? post.display_id ?? toSlug(post.title) ?? "untitled-post",
+    content: post.markdown ?? null,
+    author_name: post.contributor_name ?? post.author ?? null,
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 md:px-0 py-6">
-        <PostContent post={safePost as any} />
+        <PostContent post={normalized as any} />
       </div>
     </div>
   );
