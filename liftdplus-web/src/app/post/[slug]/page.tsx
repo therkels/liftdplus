@@ -1,5 +1,5 @@
 
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from "@/utils/supabase/server";
 import PostContent from "@/components/site_core/PostContent";
 
