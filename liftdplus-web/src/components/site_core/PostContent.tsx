@@ -1,3 +1,4 @@
+"use client";
 import PostContentBase from "./PostContentBase";
 import PostContentCarousel from "./PostContentCarousel";
 
