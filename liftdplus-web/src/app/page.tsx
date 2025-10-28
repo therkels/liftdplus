@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
-
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HiOutlineCog } from "react-icons/hi";
+
+import { createClient } from "@/utils/supabase/client";
 import Card from "@/components/site_core/Card";
 import InterestTags from "@/components/site_core/InterestTags";
 import InterestTagsSkeleton from "@/components/site_core/InterestTagsSkeleton";
@@ -17,7 +17,6 @@ import PostContent from "@/components/site_core/PostContent";
 import { Post } from "@/utils/postTransformers";
 import { usePostModal } from "@/utils/postHelpers";
 import { pageCache } from "@/utils/cache/PageCache";
-import Link from "next/link";
 
 interface Topic {
   topic_id: string;
@@ -34,6 +33,16 @@ interface Interest {
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
+/** Derive a URL-safe slug from a title if the record lacks one */
+function ensureSlug(input: unknown): string | null {
+  if (typeof input !== "string") return null;
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 }
 
 function InstallPrompt() {
@@ -214,8 +223,7 @@ export default function Home() {
       // Listen for auth state changes
       const {
         data: { subscription: authSubscription },
-      } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("Auth state changed:", event, session?.user);
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
         setUser(session?.user ?? null);
       });
 
@@ -279,7 +287,6 @@ export default function Home() {
           ...interest,
           isActive: preferencesArray.some(
             (pref: { tag?: { display_name?: string } }) =>
-              // Special case for "Cannabis 101" - match against "I'm Not Sure Yet" in database
               interest.id === "not-sure"
                 ? pref.tag?.display_name === "I'm Not Sure Yet"
                 : pref.tag?.display_name === interest.displayName
@@ -287,8 +294,8 @@ export default function Home() {
         }));
 
         setInterestsData(interests);
-      } catch (error) {
-        console.error("Error loading interests:", error);
+      } catch (e) {
+        console.error("Error loading interests:", e);
         setError("Failed to load user preferences");
       } finally {
         setInterestsLoading(false);
@@ -322,14 +329,14 @@ export default function Home() {
         }
         const data = await response.json();
 
-        // FIX: Extract topics array from the response
+        // Extract topics array from the response
         const topics = data.topics || data || [];
 
-        // Cache the topics before setting state
+        // Cache and set
         pageCache.set(cacheKey, topics);
         setFeedData(topics);
-      } catch (error) {
-        console.error("Error loading feed:", error);
+      } catch (e) {
+        console.error("Error loading feed:", e);
         setError("Failed to load personalized feed");
       } finally {
         setLoading(false);
@@ -514,39 +521,44 @@ export default function Home() {
           </div>
         )}
 
-{/* Render feed data */}
-{feedData.length > 0 ? (
-  feedData.map((topic) => (
-    <CardScroller key={topic.topic_id} title={topic.topic_display}>
-      {topic.posts.map((post) => {
-        const key = post.post_id;
+        {/* Render feed data */}
+        {feedData.length > 0 ? (
+          feedData.map((topic) => (
+            <CardScroller key={topic.topic_id} title={topic.topic_display}>
+              {topic.posts.map((post) => {
+                const key = post.post_id;
+                const slug =
+                  (post as any).slug ??
+                  (typeof (post as any).title === "string"
+                    ? ensureSlug((post as any).title)
+                    : null);
 
-        return post.slug ? (
-          <Link key={key} href={`/post/${post.slug}`} className="block">
-            <Card post={post} compact={true} />
-          </Link>
+                return slug ? (
+                  <Link key={key} href={`/post/${slug}`} className="block">
+                    <Card post={{ ...post, slug } as any} compact={true} />
+                  </Link>
+                ) : (
+                  <Card
+                    key={key}
+                    post={post}
+                    onClick={() => openPostModal(post)} // fallback if truly no slug
+                    compact={true}
+                  />
+                );
+              })}
+            </CardScroller>
+          ))
         ) : (
-          <Card
-            key={key}
-            post={post}
-            onClick={() => openPostModal(post)} // fallback if no slug
-            compact={true}
-          />
-        );
-      })}
-    </CardScroller>
-  ))
-) : (
-  !loading && (
-    <div className="container mx-auto px-4 md:px-0 py-8 text-center">
-      <p className="text-gray-600">No posts available at the moment.</p>
-      <p className="text-sm text-gray-500 mt-2">
-        Try updating your interests in your profile to see personalized content.
-      </p>
-    </div>
-  )
-)}
-
+          !loading && (
+            <div className="container mx-auto px-4 md:px-0 py-8 text-center">
+              <p className="text-gray-600">No posts available at the moment.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Try updating your interests in your profile to see personalized
+                content.
+              </p>
+            </div>
+          )
+        )}
 
         <PostModal isOpen={isModalOpen} onClose={closePostModal}>
           {selectedPost && <PostContent post={selectedPost} />}
