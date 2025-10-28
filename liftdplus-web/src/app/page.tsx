@@ -1,8 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
-
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { HiOutlineCog } from "react-icons/hi";
 
 import { createClient } from "@/utils/supabase/client";
+
 import Card from "@/components/site_core/Card";
 import InterestTags from "@/components/site_core/InterestTags";
 import InterestTagsSkeleton from "@/components/site_core/InterestTagsSkeleton";
@@ -17,6 +15,7 @@ import PostModal from "@/components/site_core/PostModal";
 import CardScroller from "@/components/site_core/CardScroller";
 import CardScrollerSkeleton from "@/components/site_core/CardScrollerSkeleton";
 import PostContent from "@/components/site_core/PostContent";
+
 import { Post } from "@/utils/postTransformers";
 import { usePostModal } from "@/utils/postHelpers";
 import { pageCache } from "@/utils/cache/PageCache";
