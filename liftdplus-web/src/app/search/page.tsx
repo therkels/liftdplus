@@ -12,6 +12,18 @@ import FilterContent from "@/components/site_core/FilterContent";
 import { HiOutlineAdjustments } from "react-icons/hi";
 import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
+import Link from "next/link";
+
+// fallback: derive a slug if missing
+function ensureSlug(input: unknown): string | null {
+  if (typeof input !== "string") return null;
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
 
 export default function Search() {
   const router = useRouter();
@@ -274,18 +286,31 @@ export default function Search() {
       {/* Content Cards */}
       {!loading && !error && (
         <div className="px-4 py-4 space-y-3">
-          {posts.length > 0 ? (
-            posts.map((content, index) => (
-              <Card
-                key={`search-post-${content.post_id || index}`}
-                post={content}
-                readTime={content.secondary_title || "5 min read"}
-                layout="horizontal"
-                onClick={() => (content.slug ? router.push(`/post/${content.slug}`) : openPostModal(content))}
+         {posts.length > 0 ? (
+  posts.map((content, index) => {
+    const key = `search-post-${content.post_id || index}`;
+    const slug = content.slug ?? ensureSlug((content as any).title);
 
-              />
-            ))
-          ) : (
+    return slug ? (
+      <Link key={key} href={`/post/${slug}`} className="block">
+        <Card
+          post={{ ...content, slug } as any}
+          readTime={content.secondary_title || "5 min read"}
+          layout="horizontal"
+        />
+      </Link>
+    ) : (
+      <Card
+        key={key}
+        post={content}
+        readTime={content.secondary_title || "5 min read"}
+        layout="horizontal"
+        onClick={() => openPostModal(content)} // fallback if truly no slug
+      />
+    );
+  })
+) : (
+
             <div className="text-center py-8">
               <p className="text-gray-600">
                 No posts found matching your filters.
