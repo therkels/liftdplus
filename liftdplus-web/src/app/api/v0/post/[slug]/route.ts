@@ -1,12 +1,27 @@
-// src/app/api/v0/post/[slug]/route.ts
+// liftdplus-web/src/app/api/v0/post/[slug]/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
-// We query the real columns that exist in your `post` table,
-// then map them to the UI shape your components expect.
-const TABLE = "post";
+export const dynamic = "force-dynamic";
 
-export const dynamic = "force-dynamic"; // ensure no caching
+const TABLE = "post";
+const COLUMNS = `
+  id,
+  slug,
+  title,
+  secondary_title,
+  cover_image_url,
+  post_template_id,
+  author,
+  contributor_name,
+  source,
+  post_status,
+  markdown,
+  config,
+  created_at,
+  published_at,
+  display_id
+`;
 
 export async function GET(
   _req: Request,
@@ -15,42 +30,48 @@ export async function GET(
   try {
     const supabase = await createClient();
 
-    // 1) Select ONLY real columns from your `post` table
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select(
-        `
-        id,
-        slug,
-        title,
-        secondary_title,
-        cover_image_url,
-        post_template_id,
-        author,
-        contributor_name,
-        source,
-        post_status,
-        markdown,
-        config,
-        created_at,
-        published_at
-        `
-      )
-      .eq("slug", params.slug)
-      .single();
+    // IMPORTANT: your tables live in the "private" schema
+    const postTable = supabase.schema("private").from(TABLE);
 
-    // 2) Handle not found / errors cleanly
-    if (error || !data) {
-      // PGRST116 = no rows; also handle null data
-      if ((error as any)?.code === "PGRST116") {
-        return NextResponse.json({ error: "Not found" }, { status: 404 });
-      }
-      console.error("Supabase error:", error);
-      return NextResponse.json({ error: "Server error" }, { status: 500 });
+    // 1) Try slug match
+    let { data, error } = await postTable
+      .select(COLUMNS)
+      .eq("slug", params.slug)
+      .maybeSingle();
+
+    // 2) Fallback: display_id match
+    if (!data && !error) {
+      const r = await postTable
+        .select(COLUMNS)
+        .eq("display_id", params.slug)
+        .maybeSingle();
+      data = r.data;
+      error = r.error;
     }
 
-    // 3) Map DB row -> UI shape expected by PostContent/Card/etc.
-    //    Safely pull optional bits from `config` if present.
+    // 3) Fallback: numeric id match
+    if (!data && !error && /^\d+$/.test(params.slug)) {
+      const r = await postTable
+        .select(COLUMNS)
+        .eq("id", Number(params.slug))
+        .maybeSingle();
+      data = r.data;
+      error = r.error;
+    }
+
+    // Return detailed error info so we can debug if it fails in prod
+    if (error || !data) {
+      const code = (error as any)?.code ?? "UNKNOWN";
+      const message = (error as any)?.message ?? (data ? "" : "No row");
+      const details = (error as any)?.details ?? null;
+      const hint = (error as any)?.hint ?? null;
+      const status = code === "PGRST116" || message === "No row" ? 404 : 500;
+      return NextResponse.json(
+        { error: "Supabase error", code, message, details, hint },
+        { status }
+      );
+    }
+
     const cfg = (data as any).config ?? {};
     const mapped = {
       // core identity
@@ -62,21 +83,21 @@ export async function GET(
       secondary_title: data.secondary_title,
       cover_image_url: data.cover_image_url,
 
-      // author-ish fields the UI expects
-      author_name: data.contributor_name ?? "LIFTD+",
+      // author-ish fields used by UI
+      author_name: data.contributor_name ?? data.author ?? "LIFTD+",
       author_photo: null as string | null,
 
-      // tags / counts (you can wire real values later)
+      // placeholders for now (wire real values later)
       like_count: 0,
       topic_tags: "",
       format_tags: "",
       audience_tags: "",
 
-      // user interaction flags (defaults)
+      // user flags
       user_liked: false,
       user_archived: false,
 
-      // content — prefer markdown; allow config overrides if you add them later
+      // content
       content_type: (cfg.content_type as "text" | "image") ?? "text",
       content: data.markdown ?? "",
       images: Array.isArray(cfg.images) ? cfg.images : [],
@@ -85,18 +106,21 @@ export async function GET(
       read_time_minutes:
         typeof cfg.read_time_minutes === "number" ? cfg.read_time_minutes : undefined,
 
-      // pass through raw fields you might want later
+      // passthrough
       post_template_id: data.post_template_id,
       source: data.source,
       post_status: data.post_status,
       created_at: data.created_at,
       published_at: data.published_at,
+      display_id: data.display_id ?? null,
       config: cfg,
     };
 
     return NextResponse.json({ post: mapped }, { status: 200 });
-  } catch (e) {
-    console.error("Route error:", e);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: "Route exception", message: e?.message ?? String(e) },
+      { status: 500 }
+    );
   }
 }
