@@ -1,59 +1,41 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { createClient } from "@/utils/supabase/server";
+import PostContent from "@/components/site_core/PostContent";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-const COLUMNS = `
-  id,
-  title,
-  secondary_title,
-  cover_image_url,
-  post_template_id,
-  author,
-  contributor_name,
-  source,
-  post_status,
-  markdown,
-  config,
-  created_at,
-  published_at,
-  display_id,
-  slug
-`;
+// Fetch the post from the API route (which we just verified works)
+async function getPost(slug: string) {
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+    "https://app.liftdplus.com";
+  const url = `${base}/api/v0/post/${encodeURIComponent(slug)}`;
 
-async function fetchPost(param: string) {
-  const supabase = await createClient();
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) return null;
 
-  // slug
-  {
-    const { data } = await supabase.from("post").select(COLUMNS).eq("slug", param).maybeSingle();
-    if (data) return data;
-  }
-  // display_id
-  {
-    const { data } = await supabase.from("post").select(COLUMNS).eq("display_id", param).maybeSingle();
-    if (data) return data;
-  }
-  // numeric id
-  if (/^\d+$/.test(param)) {
-    const { data } = await supabase.from("post").select(COLUMNS).eq("id", Number(param)).maybeSingle();
-    if (data) return data;
-  }
-  return null;
+  const json = await res.json().catch(() => null);
+  return json?.post ?? null;
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const post = await fetchPost(params.slug);
-  if (!post) notFound();
+export default async function Page({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const post = await getPost(params.slug);
+
+  if (!post) {
+    notFound();
+  }
+
+  // Ensure slug exists on the object for components that expect it
+  const safePost = { ...post, slug: post.slug || params.slug };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1>{post.title ?? "Untitled"}</h1>
-      {post.secondary_title && <p>{post.secondary_title}</p>}
-      <pre style={{ marginTop: 16, background: "#f6f6f6", padding: 12 }}>
-        {JSON.stringify({ id: post.id, slug: post.slug, display_id: post.display_id }, null, 2)}
-      </pre>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 md:px-0 py-6">
+        <PostContent post={safePost as any} />
+      </div>
     </div>
   );
 }
