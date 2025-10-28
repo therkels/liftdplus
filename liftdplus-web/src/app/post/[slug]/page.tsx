@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from "@/utils/supabase/server";
-import PostContent from "@/components/site_core/PostContent";
 import { notFound } from "next/navigation";
+import PostContent from "@/components/site_core/PostContent";
 
 export const dynamic = "force-dynamic";
 
@@ -46,36 +46,39 @@ function toSlug(title: unknown): string | null {
   return title.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
-async function fetchPostByParam(param: string): Promise<DbPost | null> {
+async function fetchPost(param: string): Promise<DbPost | null> {
   const supabase = await createClient();
 
-  // 1) Try by slug (most common)
+  // lookups will be done against schema "private"
+  const postTable = supabase.schema("private").from("post");
+
+  // 1) slug
   {
-    const { data, error } = await supabase.from("post").select(COLUMNS).eq("slug", param).maybeSingle();
-    if (error) console.error("fetch by slug error:", error);
-    if (data) return data;
+    const { data, error } = await postTable.select(COLUMNS).eq("slug", param).maybeSingle();
+    if (error) console.error("fetch by slug (private.post) error:", error);
+    if (data) return data as DbPost;
   }
 
-  // 2) Try by display_id (many apps link this instead of slug)
+  // 2) display_id
   {
-    const { data, error } = await supabase.from("post").select(COLUMNS).eq("display_id", param).maybeSingle();
-    if (error) console.error("fetch by display_id error:", error);
-    if (data) return data;
+    const { data, error } = await postTable.select(COLUMNS).eq("display_id", param).maybeSingle();
+    if (error) console.error("fetch by display_id (private.post) error:", error);
+    if (data) return data as DbPost;
   }
 
-  // 3) Try by numeric id (if someone linked /post/17)
+  // 3) numeric id
   if (/^\d+$/.test(param)) {
     const numericId = Number(param);
-    const { data, error } = await supabase.from("post").select(COLUMNS).eq("id", numericId).maybeSingle();
-    if (error) console.error("fetch by numeric id error:", error);
-    if (data) return data;
+    const { data, error } = await postTable.select(COLUMNS).eq("id", numericId).maybeSingle();
+    if (error) console.error("fetch by id (private.post) error:", error);
+    if (data) return data as DbPost;
   }
 
-  // 4) Lightweight title-derived slug fallback
+  // 4) lightweight fallback via title-derived slug
   {
-    const { data: minimal, error } = await supabase.from("post").select("id, title, slug, display_id");
+    const { data: minimal, error } = await postTable.select("id, title, slug, display_id");
     if (error) {
-      console.error("minimal fetch error:", error);
+      console.error("minimal fetch (private.post) error:", error);
       return null;
     }
     const match = minimal?.find((p: any) => {
@@ -84,10 +87,11 @@ async function fetchPostByParam(param: string): Promise<DbPost | null> {
       const computed = toSlug(p?.title ?? null);
       return computed === param;
     });
+
     if (match?.id != null) {
-      const { data, error: fullErr } = await supabase.from("post").select(COLUMNS).eq("id", match.id).maybeSingle();
-      if (fullErr) console.error("full fetch after fallback error:", fullErr);
-      if (data) return data;
+      const { data, error: fullErr } = await postTable.select(COLUMNS).eq("id", match.id).maybeSingle();
+      if (fullErr) console.error("full fetch after fallback (private.post) error:", fullErr);
+      if (data) return data as DbPost;
     }
   }
 
@@ -95,10 +99,11 @@ async function fetchPostByParam(param: string): Promise<DbPost | null> {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = await fetchPostByParam(params.slug);
+  const post = await fetchPost(params.slug);
   const title = (post?.title ?? "LIFTD+") + (post?.secondary_title ? ` — ${post?.secondary_title}` : "");
   const description = post?.secondary_title ?? "Personalized, stigma-free cannabis education from LIFTD+.";
   const ogImage = post?.cover_image_url ?? "/liftd-og-default.png";
+
   return {
     title,
     description,
@@ -108,7 +113,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
-  const post = await fetchPostByParam(params.slug);
+  const post = await fetchPost(params.slug);
   if (!post) notFound();
 
   const normalized = {
