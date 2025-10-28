@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -12,18 +13,6 @@ import FilterContent from "@/components/site_core/FilterContent";
 import { HiOutlineAdjustments } from "react-icons/hi";
 import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
-import Link from "next/link";
-
-// fallback: derive a slug if missing
-function ensureSlug(input: unknown): string | null {
-  if (typeof input !== "string") return null;
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-}
-
 
 export default function Search() {
   const router = useRouter();
@@ -93,19 +82,19 @@ export default function Search() {
         if (
           Array.isArray(data) &&
           data.length > 0 &&
-          data[0].posts &&
-          Array.isArray(data[0].posts)
+          (data as any)[0].posts &&
+          Array.isArray((data as any)[0].posts)
         ) {
           // Extract posts from nested structure: [{posts: [...]}]
-          postsData = data[0].posts;
+          postsData = (data as any)[0].posts;
         } else if (Array.isArray(data)) {
           // Direct array of posts
           postsData = data;
-        } else if (data.posts && Array.isArray(data.posts)) {
-          postsData = data.posts;
-        } else if (data.topics && Array.isArray(data.topics)) {
+        } else if ((data as any).posts && Array.isArray((data as any).posts)) {
+          postsData = (data as any).posts;
+        } else if ((data as any).topics && Array.isArray((data as any).topics)) {
           // If it's topic format, flatten the posts
-          postsData = data.topics.flatMap(
+          postsData = (data as any).topics.flatMap(
             (topic: { posts?: unknown[] }) => topic.posts || []
           );
         }
@@ -115,11 +104,11 @@ export default function Search() {
           (post, index) => ({
             ...post,
             post_id:
-              post.id?.toString() ||
-              post.post_id?.toString() ||
+              (post as any).id?.toString() ||
+              (post as any).post_id?.toString() ||
               index.toString(),
-            user_liked: Boolean(post.user_liked),
-            user_archived: Boolean(post.user_archived),
+            user_liked: Boolean((post as any).user_liked),
+            user_archived: Boolean((post as any).user_archived),
           })
         ) as Post[];
 
@@ -286,35 +275,40 @@ export default function Search() {
       {/* Content Cards */}
       {!loading && !error && (
         <div className="px-4 py-4 space-y-3">
-         {posts.length > 0 ? (
-  posts.map((content, index) => {
-    const key = `search-post-${content.post_id || index}`;
-    const slug = content.slug ?? ensureSlug((content as any).title);
+          {posts.length > 0 ? (
+            posts.map((content, index) => {
+              const key = `search-post-${content.post_id || index}`;
+              const slug =
+                content.slug ??
+                (typeof (content as any).title === "string"
+                  ? (content as any).title
+                      .toLowerCase()
+                      .trim()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "")
+                  : null);
 
-    return slug ? (
-      <Link key={key} href={`/post/${slug}`} className="block">
-        <Card
-          post={{ ...content, slug } as any}
-          readTime={content.secondary_title || "5 min read"}
-          layout="horizontal"
-        />
-      </Link>
-    ) : (
-      <Card
-        key={key}
-        post={content}
-        readTime={content.secondary_title || "5 min read"}
-        layout="horizontal"
-        onClick={() => openPostModal(content)} // fallback if truly no slug
-      />
-    );
-  })
-) : (
-
+              return slug ? (
+                <Link key={key} href={`/post/${slug}`} className="block">
+                  <Card
+                    post={{ ...content, slug } as any}
+                    readTime={content.secondary_title || "5 min read"}
+                    layout="horizontal"
+                  />
+                </Link>
+              ) : (
+                <Card
+                  key={key}
+                  post={content}
+                  readTime={content.secondary_title || "5 min read"}
+                  layout="horizontal"
+                  onClick={() => openPostModal(content)} // fallback if truly no slug
+                />
+              );
+            })
+          ) : (
             <div className="text-center py-8">
-              <p className="text-gray-600">
-                No posts found matching your filters.
-              </p>
+              <p className="text-gray-600">No posts found matching your filters.</p>
               <p className="text-sm text-gray-500 mt-2">
                 Try adjusting your search criteria.
               </p>
