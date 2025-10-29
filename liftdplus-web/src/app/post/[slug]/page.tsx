@@ -1,5 +1,4 @@
 // src/app/post/[slug]/page.tsx
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import PostContent from "@/components/site_core/PostContent";
 
@@ -29,24 +28,24 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
+  // ✅ Normalize for carousel posts (config.images) and fallback to markdown
+  const images =
+    Array.isArray(post.images)
+      ? post.images
+      : Array.isArray(post?.config?.images)
+        ? post.config.images
+        : [];
+
+  const safePost = {
+    ...post,
+    slug: post.slug ?? params.slug, // ensure slug always exists
+    images,                         // ensure carousels render correctly
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sticky Close Header */}
-      <div className="sticky top-0 z-10 -mx-4 px-4 py-3 border-b bg-white/80 backdrop-blur">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/explore"
-            className="text-sm font-medium hover:opacity-80"
-            aria-label="Close and go back"
-          >
-            × Close
-          </Link>
-        </div>
-      </div>
-
-      {/* Actual Content Renderer (supports carousels, text, etc.) */}
       <div className="container mx-auto px-4 md:px-0 py-6">
-        <PostContent post={post as any} />
+        <PostContent post={safePost as any} />
       </div>
     </div>
   );
