@@ -13,13 +13,15 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+
   const touchStartX = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 👉 Cover first, then all slides passed in
-  const allImages = [post.cover_image_url, ...(post.images || [])];
+  // IMPORTANT: do NOT auto-prepend the cover image.
+  const allImages = Array.isArray(post.images) ? post.images : [];
   const totalImages = allImages.length;
 
+  // ───────────────────────── Touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     if (totalImages <= 1) return;
     touchStartX.current = e.targetTouches[0].clientX;
@@ -31,13 +33,15 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
     const currentX = e.targetTouches[0].clientX;
     const diff = currentX - touchStartX.current;
 
+    // only allow valid directions
     if (currentImageIndex === 0 && diff > 0) return;
     if (currentImageIndex === totalImages - 1 && diff < 0) return;
 
+    // clamp to 80% width
     const containerWidth = containerRef.current?.offsetWidth || 1;
     const maxDrag = containerWidth * 0.8;
-    const clampedDiff = Math.max(-maxDrag, Math.min(maxDrag, diff));
-    setDragOffset(clampedDiff);
+    const clamped = Math.max(-maxDrag, Math.min(maxDrag, diff));
+    setDragOffset(clamped);
   };
 
   const handleTouchEnd = () => {
@@ -45,20 +49,22 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
     const threshold = 100;
 
     if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex((prev) => prev + 1);
+      setCurrentImageIndex((p) => p + 1);
     } else if (dragOffset > threshold && currentImageIndex > 0) {
-      setCurrentImageIndex((prev) => prev - 1);
+      setCurrentImageIndex((p) => p - 1);
     }
 
     setDragOffset(0);
     setIsDragging(false);
   };
 
+  // ───────────────────────── Mouse handlers (desktop)
   const handleMouseDown = (e: React.MouseEvent) => {
     if (totalImages <= 1) return;
     touchStartX.current = e.clientX;
     setIsDragging(true);
   };
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || totalImages <= 1) return;
     const currentX = e.clientX;
@@ -69,17 +75,18 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
 
     const containerWidth = containerRef.current?.offsetWidth || 1;
     const maxDrag = containerWidth * 0.8;
-    const clampedDiff = Math.max(-maxDrag, Math.min(maxDrag, diff));
-    setDragOffset(clampedDiff);
+    const clamped = Math.max(-maxDrag, Math.min(maxDrag, diff));
+    setDragOffset(clamped);
   };
+
   const handleMouseUp = () => {
     if (!isDragging || totalImages <= 1) return;
     const threshold = 100;
 
     if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex((prev) => prev + 1);
+      setCurrentImageIndex((p) => p + 1);
     } else if (dragOffset > threshold && currentImageIndex > 0) {
-      setCurrentImageIndex((prev) => prev - 1);
+      setCurrentImageIndex((p) => p - 1);
     }
 
     setDragOffset(0);
@@ -95,11 +102,12 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
     <div className="w-full">
       <PostMetadata post={post} />
 
+      {/* Image Carousel */}
       <div className="relative">
         <div
           ref={containerRef}
           className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100"
-          style={{ aspectRatio: "4 / 5" }}  // IG portrait
+          style={{ aspectRatio: "4 / 5" }} // IG portrait ratio
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -108,21 +116,23 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
+          {/* Slides container */}
           <div
             className={`flex h-full ${isDragging ? "" : "transition-transform duration-300 ease-out"}`}
             style={{
               transform: `translateX(${
-                -currentImageIndex * (100 / totalImages) +
-                (dragOffset / (containerRef.current?.offsetWidth || 1)) * (100 / totalImages)
+                -currentImageIndex * (100 / Math.max(totalImages, 1)) +
+                (dragOffset / (containerRef.current?.offsetWidth || 1)) *
+                  (100 / Math.max(totalImages, 1))
               }%)`,
-              width: `${totalImages * 100}%`,
+              width: `${Math.max(totalImages, 1) * 100}%`,
             }}
           >
             {allImages.map((image, index) => (
               <div
-                key={index}
-                className="relative flex-shrink-0 bg-black"
-                style={{ width: `${100 / totalImages}%`, height: "100%" }}
+                key={`${image}-${index}`}
+                className="relative flex-shrink-0 bg-gray-100"
+                style={{ width: `${100 / Math.max(totalImages, 1)}%`, height: "100%" }}
               >
                 <Image
                   src={image}
@@ -133,9 +143,17 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
                 />
               </div>
             ))}
+
+            {/* If no images, keep layout stable */}
+            {totalImages === 0 && (
+              <div className="flex items-center justify-center w-full h-full text-sm text-gray-500">
+                No images to display.
+              </div>
+            )}
           </div>
         </div>
 
+        {/* Dots */}
         {totalImages > 1 && (
           <div className="flex justify-center space-x-2 p-4">
             {allImages.map((_, index) => (
