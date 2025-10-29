@@ -20,49 +20,54 @@ export interface PostData {
   content?: string | null;
   cover_image_url?: string | null;
   images?: string[];
-  config?: any;
+  config?: any; // may be object or stringified JSON
 }
 
 interface PostContentProps {
-  // Some APIs return { post: {...} }, others just {...}
+  // Your API returns { post: {...} }, but other codepaths might pass {...} directly
   post: PostData | { post: PostData };
 }
 
-const PostContent: React.FC<PostContentProps> = ({ post }) => {
-  // If wrapped in "post", unwrap it
-  const data = (post as any).post ?? post;
+function normalizeConfigImages(cfg: any): string[] {
+  if (!cfg) return [];
+  try {
+    const parsed = typeof cfg === "string" ? JSON.parse(cfg) : cfg;
+    const arr = Array.isArray(parsed?.images) ? parsed.images : [];
+    return arr
+      .filter(Boolean)
+      .map((s: unknown) => (typeof s === "string" ? s.trim() : ""))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
 
-  // Handle text posts
+export default function PostContent({ post }: PostContentProps) {
+  // unwrap if shape is { post: {...} }
+  const data: PostData = (post as any)?.post ?? (post as any);
+
   if (data.content_type === "text") {
     return <PostContentBase post={data} />;
   }
 
-  // Handle image carousels
   if (data.content_type === "image") {
-    let images: string[] = [];
+    // Prefer top-level images first (your API already provides this)
+    let images: string[] = Array.isArray(data.images) ? data.images : [];
 
-    // 1️⃣ Prefer flattened top-level images array
-    if (Array.isArray(data.images) && data.images.length > 0) {
-      images = data.images;
-    }
+    // Trim & sanitize
+    images = images
+      .filter(Boolean)
+      .map((s) => (typeof s === "string" ? s.trim() : ""))
+      .filter(Boolean);
 
-    // 2️⃣ Otherwise, check for config.images (object or string)
-    else if (data.config) {
-      try {
-        const raw = typeof data.config === "string" ? JSON.parse(data.config) : data.config;
-        if (Array.isArray(raw?.images)) {
-          images = raw.images;
-        }
-      } catch (err) {
-        console.warn("Error parsing config.images:", err);
-      }
+    // Fallback to config.images if top-level empty
+    if (!images.length) {
+      images = normalizeConfigImages(data.config);
     }
 
     return <PostContentCarousel post={{ ...data, images }} />;
   }
 
-  // Fallback
+  // Fallback: render as text
   return <PostContentBase post={data} />;
-};
-
-export default PostContent;
+}
