@@ -4,10 +4,11 @@ import PostContent from "@/components/site_core/PostContent";
 
 export const dynamic = "force-dynamic";
 
-// Try to get the post JSON via API route (works in both Preview and Production)
 async function getPost(slug: string) {
   const urls = [
+    // same deployment (Preview or Prod)
     `/api/v0/post/${encodeURIComponent(slug)}`,
+    // hard fallback to Production API
     `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(slug)}`,
   ];
 
@@ -28,24 +29,20 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // ✅ Normalize for carousel posts (config.images) and fallback to markdown
-  const images =
-    Array.isArray(post.images)
-      ? post.images
-      : Array.isArray(post?.config?.images)
-        ? post.config.images
-        : [];
+  // ---- normalize for carousels ----
+  const imagesFromConfig =
+    post?.config && Array.isArray(post.config.images) ? post.config.images : [];
 
-  const safePost = {
+  const normalized = {
     ...post,
-    slug: post.slug ?? params.slug, // ensure slug always exists
-    images,                         // ensure carousels render correctly
+    // ensure PostContentCarousel receives images
+    images: imagesFromConfig,
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 md:px-0 py-6">
-        <PostContent post={safePost as any} />
+        <PostContent post={normalized as any} />
       </div>
     </div>
   );
