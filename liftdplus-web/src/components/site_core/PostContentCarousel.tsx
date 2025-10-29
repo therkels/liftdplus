@@ -1,109 +1,143 @@
 "use client";
 
-import React, { useRef, useState } from "react";
-import type { PostData } from "./PostContent";
+import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
 
-interface PostContentCarouselProps {
-  post: PostData & { images: string[] };
+type PostData = {
+  title?: string | null;
+  images?: string[];
+};
+
+interface Props {
+  post: PostData;
 }
 
-/**
- * Minimal, predictable 4:5 carousel:
- * - each slide is 100% width of the container
- * - translateX(-index * 100%)
- * - touch + mouse drag
- * - images use object-contain so your designed art isn’t cropped
- */
-const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
-  const images = Array.isArray(post.images) ? post.images : [];
-  const total = images.length;
+export default function PostContentCarousel({ post }: Props) {
+  // Normalize and trim again at the edge (defensive)
+  const allImages = Array.isArray(post.images)
+    ? post.images
+        .filter(Boolean)
+        .map((s) => (typeof s === "string" ? s.trim() : ""))
+        .filter(Boolean)
+    : [];
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [index, setIndex] = useState(0);
+  console.log("Carousel received images:", allImages);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const startX = useRef(0);
-  const deltaX = useRef(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
 
-  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+  const total = allImages.length;
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (total <= 1) return;
-    setDragging(true);
-    startX.current = e.touches[0].clientX;
-    deltaX.current = 0;
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (!dragging || total <= 1) return;
-    deltaX.current = e.touches[0].clientX - startX.current;
-    // We only use delta at end; visual “rubber band” is optional
-  };
-
-  const onTouchEnd = () => {
-    if (!dragging || total <= 1) return;
-    setDragging(false);
-    const threshold = 60; // px
-    if (deltaX.current <= -threshold && index < total - 1) setIndex((i) => i + 1);
-    else if (deltaX.current >= threshold && index > 0) setIndex((i) => i - 1);
-    deltaX.current = 0;
-  };
-
-  const onMouseDown = (e: React.MouseEvent) => {
-    if (total <= 1) return;
-    setDragging(true);
-    startX.current = e.clientX;
-    deltaX.current = 0;
-  };
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!dragging || total <= 1) return;
-    deltaX.current = e.clientX - startX.current;
-  };
-  const onMouseUp = () => onTouchEnd();
-  const onMouseLeave = () => {
-    if (dragging) onTouchEnd();
-  };
-
-  if (total === 0) {
+  // Early empty state (this is what you’re seeing now)
+  if (!total) {
     return (
-      <div
-        className="w-full bg-gray-50 flex items-center justify-center rounded-md"
-        style={{ aspectRatio: "4 / 5" }}
-      >
-        <p className="text-gray-400">No images to display.</p>
+      <div className="w-full bg-gray-50 border rounded-2xl aspect-[4/3] flex items-center justify-center text-gray-400">
+        No images to display.
       </div>
     );
   }
 
+  // Touch handlers
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (!total) return;
+    touchStartX.current = e.touches[0].clientX;
+    setDragging(true);
+    setDragOffset(0);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!dragging || touchStartX.current == null) return;
+    const current = e.touches[0].clientX;
+    setDragOffset(current - touchStartX.current);
+  };
+
+  const onTouchEnd = () => {
+    if (!dragging) return;
+    const threshold = 60;
+    if (dragOffset > threshold && currentIndex > 0) {
+      setCurrentIndex((i) => i - 1);
+    } else if (dragOffset < -threshold && currentIndex < total - 1) {
+      setCurrentIndex((i) => i + 1);
+    }
+    setDragging(false);
+    setDragOffset(0);
+  };
+
+  // Mouse (desktop) drag
+  const onMouseDown = (e: React.MouseEvent) => {
+    touchStartX.current = e.clientX;
+    setDragging(true);
+    setDragOffset(0);
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!dragging || touchStartX.current == null) return;
+    setDragOffset(e.clientX - touchStartX.current);
+  };
+
+  const onMouseUp = () => {
+    if (!dragging) return;
+    const threshold = 80;
+    if (dragOffset > threshold && currentIndex > 0) {
+      setCurrentIndex((i) => i - 1);
+    } else if (dragOffset < -threshold && currentIndex < total - 1) {
+      setCurrentIndex((i) => i + 1);
+    }
+    setDragging(false);
+    setDragOffset(0);
+  };
+
+  // Keyboard arrows
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" && currentIndex > 0) setCurrentIndex((i) => i - 1);
+      if (e.key === "ArrowRight" && currentIndex < total - 1) setCurrentIndex((i) => i + 1);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [currentIndex, total]);
+
+  const translatePct =
+    (-100 * currentIndex) + (dragging && containerRef.current ? (dragOffset / containerRef.current.clientWidth) * 100 : 0);
+
   return (
     <div className="w-full">
-      {/* Aspect-ratio wrapper */}
+      {/* Carousel viewport */}
       <div
         ref={containerRef}
-        className="relative w-full overflow-hidden rounded-md bg-white select-none"
-        style={{ aspectRatio: "4 / 5" }}
+        className="relative w-full overflow-hidden rounded-2xl bg-gray-100 select-none"
+        style={{ aspectRatio: "4 / 3" }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
-        onMouseLeave={onMouseLeave}
+        onMouseLeave={onMouseUp}
       >
         {/* Track */}
         <div
-          className="flex h-full transition-transform duration-300 ease-out"
+          className="flex h-full"
           style={{
             width: `${100 * total}%`,
-            transform: `translateX(-${(clamp(index, 0, total - 1) * 100) / total}%)`,
+            transform: `translateX(${translatePct}%)`,
+            transition: dragging ? "none" : "transform 300ms ease",
           }}
         >
-          {images.map((src, i) => (
-            <div key={i} className="h-full shrink-0" style={{ width: `${100 / total}%` }}>
-              <img
+          {allImages.map((src, idx) => (
+            <div key={`${src}-${idx}`} className="flex-shrink-0 w-full h-full" style={{ width: `${100 / total}%` }}>
+              {/* Use next/image for better perf; object-contain avoids cropping your designed slides */}
+              <Image
                 src={src}
-                alt={`${post.title ?? "Image"} — slide ${i + 1}`}
-                className="w-full h-full object-contain pointer-events-none select-none"
-                draggable={false}
+                alt={`${post.title ?? "Image"} — ${idx + 1}`}
+                fill
+                className="object-contain pointer-events-none"
+                sizes="(max-width: 768px) 100vw, 800px"
+                priority={idx === 0}
+                unoptimized
               />
             </div>
           ))}
@@ -112,21 +146,17 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
 
       {/* Dots */}
       {total > 1 && (
-        <div className="flex justify-center gap-1.5 mt-3">
-          {images.map((_, i) => (
+        <div className="flex justify-center gap-2 mt-3">
+          {Array.from({ length: total }).map((_, i) => (
             <button
               key={i}
-              aria-label={`Go to slide ${i + 1}`}
-              onClick={() => setIndex(i)}
-              className={`h-2 rounded-full transition-all ${
-                i === index ? "w-6 bg-gray-900" : "w-2 bg-gray-300"
-              }`}
+              onClick={() => setCurrentIndex(i)}
+              className={`h-2 rounded-full transition-all ${i === currentIndex ? "w-6 bg-gray-800" : "w-2 bg-gray-300"}`}
+              aria-label={`Go to image ${i + 1}`}
             />
           ))}
         </div>
       )}
     </div>
   );
-};
-
-export default PostContentCarousel;
+}
