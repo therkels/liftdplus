@@ -1,124 +1,170 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import PostMetadata from "./PostMetadata";
 import { PostData } from "./PostContent";
 
-type Props = {
-  post: PostData & { images?: string[] };
-};
-
-// ✅ Rule: 
-// - cover_image_url = always slide 1 (title slide)
-// - images[] (from JSON) starts at slide 2
-// - prevent showing the cover twice if it’s already the first image in images[]
-function getSlides(post: Props["post"]): string[] {
-  const imgs = Array.isArray(post.images) ? post.images.filter(Boolean) : [];
-  const cover = post.cover_image_url;
-  if (!cover) return imgs;
-  if (imgs.length === 0) return [cover];
-  if (imgs[0] === cover) return imgs;
-  return [cover, ...imgs];
+interface PostContentCarouselProps {
+  post: PostData & {
+    images?: string[]; // from config.images
+    cover_image_url?: string | null;
+  };
 }
 
-export default function PostContentCarousel({ post }: Props) {
-  const slides = getSlides(post);
-  const total = slides.length;
+const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
+  // ---- state/refs -----------------------------------------------------------
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0); // px
+  const [isDragging, setIsDragging] = useState(false);
 
-  const [index, setIndex] = useState(0);
-  const [dragPx, setDragPx] = useState(0);
-  const [dragging, setDragging] = useState(false);
-  const startX = useRef(0);
-  const viewportRef = useRef<HTMLDivElement>(null);
+  const startXRef = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const begin = (x: number) => {
+  // ---- images (cover first, then config.images) -----------------------------
+  // You said you’re fine keeping cover as slide 1 manually — this matches that.
+  const allImages = [
+    post.cover_image_url ?? undefined,
+    ...(Array.isArray(post.images) ? post.images : []),
+  ].filter(Boolean) as string[];
+
+  const total = allImages.length;
+
+  // ---- helpers --------------------------------------------------------------
+  const endDrag = () => {
+    if (!isDragging || total <= 1) return;
+    const w = containerRef.current?.offsetWidth || 1;
+    const threshold = Math.max(60, w * 0.15); // 15% of width (min 60px)
+
+    if (dragOffset <= -threshold && currentImageIndex < total - 1) {
+      setCurrentImageIndex((i) => i + 1);
+    } else if (dragOffset >= threshold && currentImageIndex > 0) {
+      setCurrentImageIndex((i) => i - 1);
+    }
+
+    setDragOffset(0);
+    setIsDragging(false);
+  };
+
+  // ---- touch events ---------------------------------------------------------
+  const handleTouchStart = (e: React.TouchEvent) => {
     if (total <= 1) return;
-    startX.current = x;
-    setDragging(true);
+    startXRef.current = e.touches[0].clientX;
+    setIsDragging(true);
   };
 
-  const move = (x: number) => {
-    if (!dragging || total <= 1) return;
-    const vw = viewportRef.current?.offsetWidth || 1;
-    const delta = x - startX.current;
-    const max = vw * 0.8;
-    const clamped = Math.max(-max, Math.min(max, delta));
-    if (index === 0 && clamped > 0) return;
-    if (index === total - 1 && clamped < 0) return;
-    setDragPx(clamped);
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || total <= 1) return;
+    const diff = e.touches[0].clientX - startXRef.current;
+
+    // block dragging beyond first/last
+    if ((currentImageIndex === 0 && diff > 0) || (currentImageIndex === total - 1 && diff < 0)) return;
+
+    // clamp to 80% of container
+    const w = containerRef.current?.offsetWidth || 1;
+    const max = w * 0.8;
+    setDragOffset(Math.max(-max, Math.min(max, diff)));
   };
 
-  const end = () => {
-    if (!dragging || total <= 1) return;
-    const threshold = 80;
-    if (dragPx < -threshold && index < total - 1) setIndex((i) => i + 1);
-    else if (dragPx > threshold && index > 0) setIndex((i) => i - 1);
-    setDragPx(0);
-    setDragging(false);
+  const handleTouchEnd = () => endDrag();
+
+  // ---- mouse events (desktop drag) -----------------------------------------
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (total <= 1) return;
+    startXRef.current = e.clientX;
+    setIsDragging(true);
   };
 
-  const vw = viewportRef.current?.offsetWidth || 1;
-  const dragPct = (dragPx / vw) * 100;
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || total <= 1) return;
+    const diff = e.clientX - startXRef.current;
+
+    if ((currentImageIndex === 0 && diff > 0) || (currentImageIndex === total - 1 && diff < 0)) return;
+
+    const w = containerRef.current?.offsetWidth || 1;
+    const max = w * 0.8;
+    setDragOffset(Math.max(-max, Math.min(max, diff)));
+  };
+
+  const handleMouseUp = () => endDrag();
+  const handleMouseLeave = () => endDrag();
+
+  // ---- nav helpers ----------------------------------------------------------
+  const goTo = (i: number) => {
+    setCurrentImageIndex(i);
+    setDragOffset(0);
+  };
+
+  // % offset for CSS transform
+  const dragPercent =
+    (dragOffset / (containerRef.current?.offsetWidth || 1)) * 100;
 
   return (
     <div className="w-full">
       <PostMetadata post={post} />
 
-      {/* VIEWPORT */}
-      <div
-        ref={viewportRef}
-        className="relative w-full overflow-hidden bg-black cursor-grab active:cursor-grabbing"
-        style={{ aspectRatio: "4 / 5", touchAction: "pan-y" as any }}
-        onMouseDown={(e) => begin(e.clientX)}
-        onMouseMove={(e) => move(e.clientX)}
-        onMouseUp={end}
-        onMouseLeave={end}
-        onTouchStart={(e) => begin(e.touches[0].clientX)}
-        onTouchMove={(e) => move(e.touches[0].clientX)}
-        onTouchEnd={end}
-      >
-        {/* TRACK */}
+      {/* Carousel */}
+      <div className="relative">
         <div
-          className={`flex h-full ${dragging ? "" : "transition-transform duration-300 ease-out"}`}
-          style={{
-            width: `${total * 100}%`,
-            transform: `translateX(calc(${-index * 100}% + ${dragPct}%))`,
-          }}
+          ref={containerRef}
+          className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100"
+          style={{ aspectRatio: "4 / 5" }} // IG-style portrait frame
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
         >
-          {slides.map((src, i) => (
-            <div key={i} className="relative h-full min-w-full shrink-0 bg-black">
-              <Image
-                src={src}
-                alt={`${post.title ?? "Slide"} ${i + 1}`}
-                fill
-                className="object-contain pointer-events-none"
-                draggable={false}
-                priority={i === 0}
-              />
-            </div>
-          ))}
+          {/* Track */}
+          <div
+            className={`flex h-full ${
+              isDragging ? "" : "transition-transform duration-300 ease-out"
+            }`}
+            style={{
+              width: `${total * 100}%`,
+              transform: `translateX(calc(${-currentImageIndex * 100}% + ${dragPercent}%))`,
+            }}
+          >
+            {allImages.map((src, i) => (
+              <div
+                key={i}
+                className="relative flex-shrink-0 bg-white"
+                style={{ width: "100%", height: "100%" }}
+              >
+                <Image
+                  src={src}
+                  alt={`${post.title ?? "Post"} — Image ${i + 1}`}
+                  fill
+                  className="object-contain pointer-events-none"
+                  draggable={false}
+                  // priority only on first slide for perf
+                  priority={i === 0}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* DOTS */}
-      {total > 1 && (
-        <div className="flex justify-center gap-2 p-4">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setIndex(i);
-                setDragPx(0);
-              }}
-              className={`h-2.5 w-2.5 rounded-full transition-all ${
-                i === index ? "bg-white" : "bg-zinc-500 hover:bg-zinc-400"
-              }`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
-      )}
+        {/* Dots */}
+        {total > 1 && (
+          <div className="flex justify-center gap-2 p-4">
+            {allImages.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                aria-label={`Go to image ${i + 1}`}
+                className={`h-2 w-2 rounded-full transition-all ${
+                  i === currentImageIndex ? "w-6 bg-gray-900" : "bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default PostContentCarousel;
