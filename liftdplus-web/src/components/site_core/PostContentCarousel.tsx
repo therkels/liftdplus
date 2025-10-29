@@ -1,190 +1,124 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import PostMetadata from "./PostMetadata";
 import { PostData } from "./PostContent";
 
-interface PostContentCarouselProps {
-  post: PostData & {
-    images?: string[] | string | null;
-  };
+type Props = {
+  post: PostData & { images?: string[] };
+};
+
+// ✅ Rule: 
+// - cover_image_url = always slide 1 (title slide)
+// - images[] (from JSON) starts at slide 2
+// - prevent showing the cover twice if it’s already the first image in images[]
+function getSlides(post: Props["post"]): string[] {
+  const imgs = Array.isArray(post.images) ? post.images.filter(Boolean) : [];
+  const cover = post.cover_image_url;
+  if (!cover) return imgs;
+  if (imgs.length === 0) return [cover];
+  if (imgs[0] === cover) return imgs;
+  return [cover, ...imgs];
 }
 
-/** Normalize images into a clean string[] */
-function normalizeImages(input: PostContentCarouselProps["post"]["images"]): string[] {
-  try {
-    if (!input) return [];
-    if (Array.isArray(input)) return input.filter((s): s is string => typeof s === "string" && s.trim().length > 0);
-    if (typeof input === "string") {
-      const maybeJson = input.trim();
-      if (maybeJson.startsWith("[") && maybeJson.endsWith("]")) {
-        const arr = JSON.parse(maybeJson);
-        if (Array.isArray(arr)) {
-          return arr.filter((s): s is string => typeof s === "string" && s.trim().length > 0);
-        }
-      }
-      return [maybeJson].filter((s) => s.length > 0);
-    }
-    return [];
-  } catch {
-    return [];
-  }
-}
+export default function PostContentCarousel({ post }: Props) {
+  const slides = getSlides(post);
+  const total = slides.length;
 
-const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [index, setIndex] = useState(0);
+  const [dragPx, setDragPx] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startX = useRef(0);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
-  const startXRef = useRef<number>(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const extraImages = normalizeImages(post.images);
-  const allImages = [
-    typeof post.cover_image_url === "string" ? post.cover_image_url : null,
-    ...extraImages,
-  ].filter((s): s is string => typeof s === "string" && s.trim().length > 0);
-
-  const totalImages = allImages.length;
-
-  if (totalImages === 0) {
-    return (
-      <div className="w-full">
-        <PostMetadata post={post} />
-        <div className="mt-4 text-sm text-gray-500">No images available.</div>
-      </div>
-    );
-  }
-
-  const beginDrag = (x: number) => {
-    if (totalImages <= 1) return;
-    startXRef.current = x;
-    setIsDragging(true);
+  const begin = (x: number) => {
+    if (total <= 1) return;
+    startX.current = x;
+    setDragging(true);
   };
 
-  const moveDrag = (x: number) => {
-    if (!isDragging || totalImages <= 1) return;
-    const diff = x - startXRef.current;
-    if (currentImageIndex === 0 && diff > 0) return;
-    if (currentImageIndex === totalImages - 1 && diff < 0) return;
-    const containerWidth = containerRef.current?.offsetWidth || 1;
-    const maxDrag = containerWidth * 0.8;
-    const clamped = Math.max(-maxDrag, Math.min(maxDrag, diff));
-    setDragOffset(clamped);
+  const move = (x: number) => {
+    if (!dragging || total <= 1) return;
+    const vw = viewportRef.current?.offsetWidth || 1;
+    const delta = x - startX.current;
+    const max = vw * 0.8;
+    const clamped = Math.max(-max, Math.min(max, delta));
+    if (index === 0 && clamped > 0) return;
+    if (index === total - 1 && clamped < 0) return;
+    setDragPx(clamped);
   };
 
-  const endDrag = () => {
-    if (!isDragging || totalImages <= 1) return;
+  const end = () => {
+    if (!dragging || total <= 1) return;
     const threshold = 80;
-    if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex((i) => i + 1);
-    } else if (dragOffset > threshold && currentImageIndex > 0) {
-      setCurrentImageIndex((i) => i - 1);
-    }
-    setDragOffset(0);
-    setIsDragging(false);
+    if (dragPx < -threshold && index < total - 1) setIndex((i) => i + 1);
+    else if (dragPx > threshold && index > 0) setIndex((i) => i - 1);
+    setDragPx(0);
+    setDragging(false);
   };
 
-  useEffect(() => {
-    const onUp = () => endDrag();
-    window.addEventListener("mouseup", onUp);
-    return () => window.removeEventListener("mouseup", onUp);
-  }, [isDragging, dragOffset, currentImageIndex, totalImages]);
-
-  const onTouchStart: React.TouchEventHandler<HTMLDivElement> = (e) => {
-    if (totalImages <= 1) return;
-    beginDrag(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove: React.TouchEventHandler<HTMLDivElement> = (e) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    moveDrag(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd: React.TouchEventHandler<HTMLDivElement> = () => endDrag();
-  const onMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => beginDrag(e.clientX);
-  const onMouseMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    if (!isDragging) return;
-    moveDrag(e.clientX);
-  };
-  const onMouseUp: React.MouseEventHandler<HTMLDivElement> = () => endDrag();
-  const onMouseLeave: React.MouseEventHandler<HTMLDivElement> = () => endDrag();
-
-  const goToImage = (index: number) => {
-    setCurrentImageIndex(index);
-    setDragOffset(0);
-  };
+  const vw = viewportRef.current?.offsetWidth || 1;
+  const dragPct = (dragPx / vw) * 100;
 
   return (
     <div className="w-full">
       <PostMetadata post={post} />
 
-      {/* Image Carousel */}
-      <div className="relative">
+      {/* VIEWPORT */}
+      <div
+        ref={viewportRef}
+        className="relative w-full overflow-hidden bg-black cursor-grab active:cursor-grabbing"
+        style={{ aspectRatio: "4 / 5", touchAction: "pan-y" as any }}
+        onMouseDown={(e) => begin(e.clientX)}
+        onMouseMove={(e) => move(e.clientX)}
+        onMouseUp={end}
+        onMouseLeave={end}
+        onTouchStart={(e) => begin(e.touches[0].clientX)}
+        onTouchMove={(e) => move(e.touches[0].clientX)}
+        onTouchEnd={end}
+      >
+        {/* TRACK */}
         <div
-          ref={containerRef}
-          className="relative w-full overflow-hidden select-none cursor-grab active:cursor-grabbing bg-black"
+          className={`flex h-full ${dragging ? "" : "transition-transform duration-300 ease-out"}`}
           style={{
-            aspectRatio: "4 / 5",
-            touchAction: "pan-y",
+            width: `${total * 100}%`,
+            transform: `translateX(calc(${-index * 100}% + ${dragPct}%))`,
           }}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseLeave}
         >
-          <div
-            className={`flex h-full ${isDragging ? "" : "transition-transform duration-300 ease-out"}`}
-            style={{
-              transform: `translateX(${
-                -currentImageIndex * (100 / totalImages) +
-                (dragOffset / (containerRef.current?.offsetWidth || 1)) * (100 / totalImages)
-              }%)`,
-              width: `${totalImages * 100}%`,
-            }}
-          >
-            {allImages.map((src, i) => (
-              <div
-                key={`${src}-${i}`}
-                className="relative flex-shrink-0 bg-black"
-                style={{ width: `${100 / totalImages}%`, height: "100%" }}
-              >
-                <Image
-                  src={src}
-                  alt={`${post.title ?? "Post"} - Image ${i + 1}`}
-                  fill
-                  className="object-contain pointer-events-none"
-                  draggable={false}
-                  sizes="(max-width: 768px) 100vw, 700px"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Dot navigation */}
-        {totalImages > 1 && (
-          <div className="flex justify-center space-x-2 p-4">
-            {allImages.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goToImage(i)}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                  i === currentImageIndex ? "bg-blue-500" : "bg-gray-300 hover:bg-gray-400"
-                }`}
-                aria-label={`Go to image ${i + 1}`}
+          {slides.map((src, i) => (
+            <div key={i} className="relative h-full min-w-full shrink-0 bg-black">
+              <Image
+                src={src}
+                alt={`${post.title ?? "Slide"} ${i + 1}`}
+                fill
+                className="object-contain pointer-events-none"
+                draggable={false}
+                priority={i === 0}
               />
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* DOTS */}
+      {total > 1 && (
+        <div className="flex justify-center gap-2 p-4">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setIndex(i);
+                setDragPx(0);
+              }}
+              className={`h-2.5 w-2.5 rounded-full transition-all ${
+                i === index ? "bg-white" : "bg-zinc-500 hover:bg-zinc-400"
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
-};
-
-export default PostContentCarousel;
+}
