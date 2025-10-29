@@ -1,105 +1,116 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import PostMetadata from "./PostMetadata";
 import { PostData } from "./PostContent";
 
 interface PostContentCarouselProps {
   post: PostData & {
-    images: string[];
+    images?: string[] | string | null;
   };
+}
+
+/** Normalize images into a clean string[] */
+function normalizeImages(input: PostContentCarouselProps["post"]["images"]): string[] {
+  try {
+    if (!input) return [];
+    if (Array.isArray(input)) return input.filter((s): s is string => typeof s === "string" && s.trim().length > 0);
+    if (typeof input === "string") {
+      const maybeJson = input.trim();
+      if (maybeJson.startsWith("[") && maybeJson.endsWith("]")) {
+        const arr = JSON.parse(maybeJson);
+        if (Array.isArray(arr)) {
+          return arr.filter((s): s is string => typeof s === "string" && s.trim().length > 0);
+        }
+      }
+      return [maybeJson].filter((s) => s.length > 0);
+    }
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const touchStartX = useRef<number>(0);
+
+  const startXRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const allImages = [post.cover_image_url, ...post.images];
+  const extraImages = normalizeImages(post.images);
+  const allImages = [
+    typeof post.cover_image_url === "string" ? post.cover_image_url : null,
+    ...extraImages,
+  ].filter((s): s is string => typeof s === "string" && s.trim().length > 0);
+
   const totalImages = allImages.length;
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  if (totalImages === 0) {
+    return (
+      <div className="w-full">
+        <PostMetadata post={post} />
+        <div className="mt-4 text-sm text-gray-500">No images available.</div>
+      </div>
+    );
+  }
+
+  const beginDrag = (x: number) => {
     if (totalImages <= 1) return;
-    touchStartX.current = e.targetTouches[0].clientX;
+    startXRef.current = x;
     setIsDragging(true);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const moveDrag = (x: number) => {
     if (!isDragging || totalImages <= 1) return;
-
-    const currentX = e.targetTouches[0].clientX;
-    const diff = currentX - touchStartX.current;
-
-    // Only allow dragging in valid directions
-    if (currentImageIndex === 0 && diff > 0) return; // Can't drag right on first image
-    if (currentImageIndex === totalImages - 1 && diff < 0) return; // Can't drag left on last image
-
-    // Limit drag offset to maximum of 80% to prevent showing multiple images
-    const containerWidth = containerRef.current?.offsetWidth || 1;
-    const maxDrag = containerWidth * 0.8; // Only allow 80% drag
-    const clampedDiff = Math.max(-maxDrag, Math.min(maxDrag, diff));
-
-    setDragOffset(clampedDiff);
-  };
-
-  const handleTouchEnd = () => {
-    if (!isDragging || totalImages <= 1) return;
-
-    const threshold = 100;
-
-    if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      // Dragged left - go to next image
-      setCurrentImageIndex((prev) => prev + 1);
-    } else if (dragOffset > threshold && currentImageIndex > 0) {
-      // Dragged right - go to previous image
-      setCurrentImageIndex((prev) => prev - 1);
-    }
-
-    setDragOffset(0);
-    setIsDragging(false);
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (totalImages <= 1) return;
-    touchStartX.current = e.clientX;
-    setIsDragging(true);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || totalImages <= 1) return;
-
-    const currentX = e.clientX;
-    const diff = currentX - touchStartX.current;
-
-    // Only allow dragging in valid directions
+    const diff = x - startXRef.current;
     if (currentImageIndex === 0 && diff > 0) return;
     if (currentImageIndex === totalImages - 1 && diff < 0) return;
-
-    // Limit drag offset to maximum of 80% to prevent showing multiple images
     const containerWidth = containerRef.current?.offsetWidth || 1;
-    const maxDrag = containerWidth * 0.8; // Only allow 80% drag
-    const clampedDiff = Math.max(-maxDrag, Math.min(maxDrag, diff));
-
-    setDragOffset(clampedDiff);
+    const maxDrag = containerWidth * 0.8;
+    const clamped = Math.max(-maxDrag, Math.min(maxDrag, diff));
+    setDragOffset(clamped);
   };
 
-  const handleMouseUp = () => {
+  const endDrag = () => {
     if (!isDragging || totalImages <= 1) return;
-
-    const threshold = 100;
-
+    const threshold = 80;
     if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex((prev) => prev + 1);
+      setCurrentImageIndex((i) => i + 1);
     } else if (dragOffset > threshold && currentImageIndex > 0) {
-      setCurrentImageIndex((prev) => prev - 1);
+      setCurrentImageIndex((i) => i - 1);
     }
-
     setDragOffset(0);
     setIsDragging(false);
   };
+
+  useEffect(() => {
+    const onUp = () => endDrag();
+    window.addEventListener("mouseup", onUp);
+    return () => window.removeEventListener("mouseup", onUp);
+  }, [isDragging, dragOffset, currentImageIndex, totalImages]);
+
+  const onTouchStart: React.TouchEventHandler<HTMLDivElement> = (e) => {
+    if (totalImages <= 1) return;
+    beginDrag(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove: React.TouchEventHandler<HTMLDivElement> = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    moveDrag(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd: React.TouchEventHandler<HTMLDivElement> = () => endDrag();
+  const onMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => beginDrag(e.clientX);
+  const onMouseMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    if (!isDragging) return;
+    moveDrag(e.clientX);
+  };
+  const onMouseUp: React.MouseEventHandler<HTMLDivElement> = () => endDrag();
+  const onMouseLeave: React.MouseEventHandler<HTMLDivElement> = () => endDrag();
 
   const goToImage = (index: number) => {
     setCurrentImageIndex(index);
@@ -114,61 +125,59 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
       <div className="relative">
         <div
           ref={containerRef}
-          className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100"
-          style={{ aspectRatio: "4/5" }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
+          className="relative w-full overflow-hidden select-none cursor-grab active:cursor-grabbing bg-black"
+          style={{
+            aspectRatio: "4 / 5",
+            touchAction: "pan-y",
+          }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseLeave}
         >
-          {/* Image Container */}
           <div
-            className={`flex h-full ${
-              isDragging ? "" : "transition-transform duration-300 ease-out"
-            }`}
+            className={`flex h-full ${isDragging ? "" : "transition-transform duration-300 ease-out"}`}
             style={{
               transform: `translateX(${
                 -currentImageIndex * (100 / totalImages) +
-                (dragOffset / (containerRef.current?.offsetWidth || 1)) *
-                  (100 / totalImages)
+                (dragOffset / (containerRef.current?.offsetWidth || 1)) * (100 / totalImages)
               }%)`,
               width: `${totalImages * 100}%`,
             }}
           >
-            {allImages.map((image, index) => (
+            {allImages.map((src, i) => (
               <div
-                key={index}
-                className="relative flex-shrink-0 bg-gray-100"
+                key={`${src}-${i}`}
+                className="relative flex-shrink-0 bg-black"
                 style={{ width: `${100 / totalImages}%`, height: "100%" }}
               >
                 <Image
-                  src={image}
-                  alt={`${post.title} - Image ${index + 1}`}
+                  src={src}
+                  alt={`${post.title ?? "Post"} - Image ${i + 1}`}
                   fill
                   className="object-contain pointer-events-none"
                   draggable={false}
+                  sizes="(max-width: 768px) 100vw, 700px"
                 />
               </div>
             ))}
           </div>
         </div>
 
-        {/* Dot Navigation */}
+        {/* Dot navigation */}
         {totalImages > 1 && (
           <div className="flex justify-center space-x-2 p-4">
-            {allImages.map((_, index) => (
+            {allImages.map((_, i) => (
               <button
-                key={index}
-                onClick={() => goToImage(index)}
+                key={i}
+                onClick={() => goToImage(i)}
                 className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                  index === currentImageIndex
-                    ? "bg-blue-500"
-                    : "bg-gray-300 hover:bg-gray-400"
+                  i === currentImageIndex ? "bg-blue-500" : "bg-gray-300 hover:bg-gray-400"
                 }`}
-                aria-label={`Go to image ${index + 1}`}
+                aria-label={`Go to image ${i + 1}`}
               />
             ))}
           </div>
