@@ -6,7 +6,7 @@ import PostContentCarousel from "./PostContentCarousel";
 export type PostContentType = "text" | "image";
 
 export interface PostData {
-  post_id?: string | number;
+  post_id: string | number;
   cover_image_url?: string | null;
   title: string;
   secondary_title?: string | null;
@@ -17,40 +17,42 @@ export interface PostData {
   user_archived?: boolean;
   tags?: string[];
   content_type: PostContentType;
-  content?: string | null;        // markdown (for blog posts)
-  images?: string[];              // flattened list from API
-  config?: { images?: string[] } | null; // raw JSON fallback for carousels
+  content?: string | null;        // markdown for blog posts
+  images?: string[];              // we will pass an ordered, ready-to-render array here
+  // allow passthrough for legacy shapes
+  [key: string]: any;
 }
 
 interface PostContentProps {
   post: PostData;
 }
 
-/** Build the image list for carousels (cover first, then images; no dupes). */
-function buildCarouselSlides(post: PostData): string[] {
-  const apiImages = Array.isArray(post.images) ? post.images : [];
-  const cfgImages =
-    !apiImages.length && post.config && Array.isArray(post.config.images)
-      ? post.config.images
-      : [];
-
-  const slides = [
-    ...(post.cover_image_url ? [post.cover_image_url] : []),
-    ...(apiImages.length ? apiImages : cfgImages),
-  ];
-
-  // de-dupe and drop empties
-  return slides.filter(Boolean).filter((url, i, arr) => arr.indexOf(url) === i);
-}
-
 const PostContent: React.FC<PostContentProps> = ({ post }) => {
+  // Text/blog posts
   if (post.content_type === "text") {
     return <PostContentBase post={post} />;
   }
 
-  // default: image/carousel
-  const slides = buildCarouselSlides(post);
-  return <PostContentCarousel post={{ ...post, images: slides }} />;
+  // Image/carousel posts
+  if (post.content_type === "image") {
+    // Prefer API-flattened images, else fall back to config.images
+    const apiImages = Array.isArray((post as any).images) ? ((post as any).images as string[]) : [];
+    const cfgImages =
+      !apiImages.length && Array.isArray((post as any).config?.images)
+        ? ((post as any).config.images as string[])
+        : [];
+
+    // Build the exact slide order ONCE (cover first, then the rest)
+    const slides: string[] = [
+      ...(post.cover_image_url ? [post.cover_image_url] : []),
+      ...(apiImages.length ? apiImages : cfgImages),
+    ].filter(Boolean) as string[];
+
+    return <PostContentCarousel post={{ ...(post as any), images: slides }} />;
+  }
+
+  // Fallback (shouldn't normally hit)
+  return <PostContentBase post={post} />;
 };
 
 export default PostContent;
