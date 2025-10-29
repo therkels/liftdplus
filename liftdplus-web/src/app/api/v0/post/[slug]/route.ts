@@ -9,16 +9,19 @@ const COLUMNS = `
   title,
   secondary_title,
   cover_image_url,
+  post_template_id,
   author,
   contributor_name,
-  post_template_id,
+  source,
+  post_status,
   markdown,
-  config,          -- JSONB (may be null)
+  config,
   created_at,
   published_at,
   display_id,
   slug
 `;
+
 
 function safeParseJSON(input: unknown) {
   if (!input) return null;
