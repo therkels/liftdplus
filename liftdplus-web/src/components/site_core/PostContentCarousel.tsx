@@ -6,22 +6,21 @@ import PostContentCarousel from "./PostContentCarousel";
 export type PostContentType = "text" | "image";
 
 export interface PostData {
-  post_id: string;
-  cover_image_url: string;
+  post_id: string | number;
   title: string;
-  secondary_title: string;
-  author_name: string;
+  secondary_title?: string;
+  author_name?: string;
   author_photo?: string;
-  like_count: number;
-  user_liked: boolean;
-  user_archived: boolean;
-  tags: string[];
+  like_count?: number;
+  user_liked?: boolean;
+  user_archived?: boolean;
+  tags?: string[];
   content_type: PostContentType;
-  content?: string;        // markdown (for text posts)
-  images?: string[];       // for image posts
-  // keep config in case some records still store slides there
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config?: any;
+  content?: string | null;           // markdown for text posts
+  cover_image_url?: string | null;   // not auto-used by carousel
+  images?: string[];                 // preferred source for carousels
+  // optional raw config coming from API (we only read config.images if images missing)
+  config?: { images?: string[] };
 }
 
 interface PostContentProps {
@@ -29,34 +28,26 @@ interface PostContentProps {
 }
 
 const PostContent: React.FC<PostContentProps> = ({ post }) => {
-  // Text/blog posts
+  // Text article
   if (post.content_type === "text") {
     return <PostContentBase post={post} />;
   }
 
-  // Image/carousel posts — build slides safely:
-  // 1) prefer `post.images`
-  // 2) else `post.config.images`
-  // 3) else, if nothing at all, fall back to a single slide using the cover (to avoid blanks)
+  // Image carousel
   if (post.content_type === "image") {
-    const apiImages = Array.isArray((post as any).images)
-      ? ((post as any).images as string[]).filter(Boolean)
-      : [];
+    // Pass through exactly what we have. If API didn't flatten, fall back to config.images.
+    const images =
+      Array.isArray(post.images) && post.images.length > 0
+        ? post.images
+        : Array.isArray(post.config?.images)
+        ? (post.config!.images as string[])
+        : [];
 
-    const cfgImages = Array.isArray((post as any).config?.images)
-      ? ((post as any).config.images as string[]).filter(Boolean)
-      : [];
-
-    let slides = apiImages.length ? apiImages : cfgImages;
-
-    if (!slides.length && post.cover_image_url) {
-      slides = [post.cover_image_url]; // only as a last resort; we are NOT auto-prepending
-    }
-
-    return <PostContentCarousel post={{ ...(post as any), images: slides }} />;
+    return <PostContentCarousel post={{ ...post, images }} />;
   }
 
-  return null;
+  // Fallback (shouldn't happen)
+  return <PostContentBase post={post} />;
 };
 
 export default PostContent;
