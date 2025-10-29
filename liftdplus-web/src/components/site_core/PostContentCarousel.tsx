@@ -1,176 +1,62 @@
 "use client";
 
-import { useState, useRef } from "react";
-import Image from "next/image";
-import PostMetadata from "./PostMetadata";
-import { PostData } from "./PostContent";
+import PostContentBase from "./PostContentBase";
+import PostContentCarousel from "./PostContentCarousel";
 
-interface PostContentCarouselProps {
-  post: PostData & { images: string[] };
+export type PostContentType = "text" | "image";
+
+export interface PostData {
+  post_id: string;
+  cover_image_url: string;
+  title: string;
+  secondary_title: string;
+  author_name: string;
+  author_photo?: string;
+  like_count: number;
+  user_liked: boolean;
+  user_archived: boolean;
+  tags: string[];
+  content_type: PostContentType;
+  content?: string;        // markdown (for text posts)
+  images?: string[];       // for image posts
+  // keep config in case some records still store slides there
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config?: any;
 }
 
-const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+interface PostContentProps {
+  post: PostData;
+}
 
-  const touchStartX = useRef<number>(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+const PostContent: React.FC<PostContentProps> = ({ post }) => {
+  // Text/blog posts
+  if (post.content_type === "text") {
+    return <PostContentBase post={post} />;
+  }
 
-  // IMPORTANT: do NOT auto-prepend the cover image.
-  const allImages = Array.isArray(post.images) ? post.images : [];
-  const totalImages = allImages.length;
+  // Image/carousel posts — build slides safely:
+  // 1) prefer `post.images`
+  // 2) else `post.config.images`
+  // 3) else, if nothing at all, fall back to a single slide using the cover (to avoid blanks)
+  if (post.content_type === "image") {
+    const apiImages = Array.isArray((post as any).images)
+      ? ((post as any).images as string[]).filter(Boolean)
+      : [];
 
-  // ───────────────────────── Touch handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (totalImages <= 1) return;
-    touchStartX.current = e.targetTouches[0].clientX;
-    setIsDragging(true);
-  };
+    const cfgImages = Array.isArray((post as any).config?.images)
+      ? ((post as any).config.images as string[]).filter(Boolean)
+      : [];
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || totalImages <= 1) return;
-    const currentX = e.targetTouches[0].clientX;
-    const diff = currentX - touchStartX.current;
+    let slides = apiImages.length ? apiImages : cfgImages;
 
-    // only allow valid directions
-    if (currentImageIndex === 0 && diff > 0) return;
-    if (currentImageIndex === totalImages - 1 && diff < 0) return;
-
-    // clamp to 80% width
-    const containerWidth = containerRef.current?.offsetWidth || 1;
-    const maxDrag = containerWidth * 0.8;
-    const clamped = Math.max(-maxDrag, Math.min(maxDrag, diff));
-    setDragOffset(clamped);
-  };
-
-  const handleTouchEnd = () => {
-    if (!isDragging || totalImages <= 1) return;
-    const threshold = 100;
-
-    if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex((p) => p + 1);
-    } else if (dragOffset > threshold && currentImageIndex > 0) {
-      setCurrentImageIndex((p) => p - 1);
+    if (!slides.length && post.cover_image_url) {
+      slides = [post.cover_image_url]; // only as a last resort; we are NOT auto-prepending
     }
 
-    setDragOffset(0);
-    setIsDragging(false);
-  };
+    return <PostContentCarousel post={{ ...(post as any), images: slides }} />;
+  }
 
-  // ───────────────────────── Mouse handlers (desktop)
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (totalImages <= 1) return;
-    touchStartX.current = e.clientX;
-    setIsDragging(true);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || totalImages <= 1) return;
-    const currentX = e.clientX;
-    const diff = currentX - touchStartX.current;
-
-    if (currentImageIndex === 0 && diff > 0) return;
-    if (currentImageIndex === totalImages - 1 && diff < 0) return;
-
-    const containerWidth = containerRef.current?.offsetWidth || 1;
-    const maxDrag = containerWidth * 0.8;
-    const clamped = Math.max(-maxDrag, Math.min(maxDrag, diff));
-    setDragOffset(clamped);
-  };
-
-  const handleMouseUp = () => {
-    if (!isDragging || totalImages <= 1) return;
-    const threshold = 100;
-
-    if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex((p) => p + 1);
-    } else if (dragOffset > threshold && currentImageIndex > 0) {
-      setCurrentImageIndex((p) => p - 1);
-    }
-
-    setDragOffset(0);
-    setIsDragging(false);
-  };
-
-  const goToImage = (index: number) => {
-    setCurrentImageIndex(index);
-    setDragOffset(0);
-  };
-
-  return (
-    <div className="w-full">
-      <PostMetadata post={post} />
-
-      {/* Image Carousel */}
-      <div className="relative">
-        <div
-          ref={containerRef}
-          className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100"
-          style={{ aspectRatio: "4 / 5" }} // IG portrait ratio
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          {/* Slides container */}
-          <div
-            className={`flex h-full ${isDragging ? "" : "transition-transform duration-300 ease-out"}`}
-            style={{
-              transform: `translateX(${
-                -currentImageIndex * (100 / Math.max(totalImages, 1)) +
-                (dragOffset / (containerRef.current?.offsetWidth || 1)) *
-                  (100 / Math.max(totalImages, 1))
-              }%)`,
-              width: `${Math.max(totalImages, 1) * 100}%`,
-            }}
-          >
-            {allImages.map((image, index) => (
-              <div
-                key={`${image}-${index}`}
-                className="relative flex-shrink-0 bg-gray-100"
-                style={{ width: `${100 / Math.max(totalImages, 1)}%`, height: "100%" }}
-              >
-                <Image
-                  src={image}
-                  alt={`${post.title} - Image ${index + 1}`}
-                  fill
-                  className="object-contain pointer-events-none"
-                  draggable={false}
-                />
-              </div>
-            ))}
-
-            {/* If no images, keep layout stable */}
-            {totalImages === 0 && (
-              <div className="flex items-center justify-center w-full h-full text-sm text-gray-500">
-                No images to display.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Dots */}
-        {totalImages > 1 && (
-          <div className="flex justify-center space-x-2 p-4">
-            {allImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToImage(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                  index === currentImageIndex ? "bg-blue-500" : "bg-gray-300 hover:bg-gray-400"
-                }`}
-                aria-label={`Go to image ${index + 1}`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return null;
 };
 
-export default PostContentCarousel;
+export default PostContent;
