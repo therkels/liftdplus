@@ -1,3 +1,4 @@
+import UnregisterSW from "@/components/dev/UnregisterSW";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -48,6 +49,8 @@ export default function RootLayout({
           <ConditionalNavBar />
           <ConditionalMain>{children}</ConditionalMain>
         </ClientProviders>
+        <UnregisterSW />{/* TEMP: clears old SW + caches */}
+  {children}
       </body>
     </html>
   );
