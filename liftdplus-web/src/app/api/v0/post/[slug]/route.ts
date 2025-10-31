@@ -43,7 +43,12 @@ async function fetchOne(supabase: any, column: string, value: string | number) {
 }
 
 function looksLikeUuid(s: string | null | undefined) {
-  return !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);
+  return (
+    !!s &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      s
+    )
+  );
 }
 
 export async function GET(_: Request, { params }: { params: { slug: string } }) {
@@ -66,24 +71,33 @@ export async function GET(_: Request, { params }: { params: { slug: string } }) 
     const isCarousel = row?.post_template_id === "carousel_block";
     const images = Array.isArray(cfg?.images) ? cfg.images : [];
 
-    // Resolve author name + photo
-    let author_name: string | null = row?.contributor_name ?? row?.author ?? null;
+    // ----------------------------------------------------
+    // Resolve author name + photo (author is UUID FK to users)
+    // ----------------------------------------------------
+    let author_name: string | null = row?.contributor_name ?? null;
     let author_photo: string | null = null;
 
-    if (looksLikeUuid(row?.author)) {
-      const { data: user } = await supabase
+    if (row?.author) {
+      const { data: user, error } = await supabase
         .schema("private")
         .from("users")
-        .select("profile_icon_url, username")
+        .select("username, profile_icon_url")
         .eq("id", row.author)
         .maybeSingle();
 
       if (user) {
+        // Prefer contributor_name if set, otherwise fallback to username
+        author_name = author_name ?? user.username ?? null;
         author_photo = user.profile_icon_url ?? null;
-        if (!row?.contributor_name && user.username) author_name = user.username;
       }
     }
 
+    // Validate URL to ensure it's a usable image
+    const sanitizeUrl = (u: unknown) =>
+      typeof u === "string" && /^https?:\/\//i.test(u) ? u : null;
+    author_photo = sanitizeUrl(author_photo);
+
+    // Determine post content type
     const content_type: "text" | "image" = isCarousel ? "image" : "text";
 
     const post = {
@@ -92,16 +106,16 @@ export async function GET(_: Request, { params }: { params: { slug: string } }) 
       secondary_title: row.secondary_title,
       cover_image_url: row.cover_image_url ?? null,
       author_name,
-      author_photo,               // <-- important for avatars
+      author_photo, // now correctly fetched from users.profile_icon_url
       post_template_id: row.post_template_id,
       content_type,
       content: isCarousel ? null : row.markdown ?? null,
-      images,                     // <-- important for carousels
+      images, // for carousel posts
       created_at: row.created_at,
       published_at: row.published_at,
       display_id: row.display_id ?? null,
       slug: row.slug ?? null,
-      config: cfg ?? null,        // kept for future use
+      config: cfg ?? null,
     };
 
     return NextResponse.json({ post });
