@@ -1,4 +1,4 @@
-// /src/app/post/[slug]/page.tsx
+// src/app/post/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import PostContent from "@/components/site_core/PostContent";
 
@@ -24,36 +24,23 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // Prefer root-level images; else fall back to config.images
-const fromDb =
-  Array.isArray(post.images) && post.images.length > 0
-    ? post.images
-    : Array.isArray(post?.config?.images)
-    ? post.config.images
-    : [];
+  // 👇 accept images from either top-level or config
+  const bodyImages =
+    Array.isArray(post.images)
+      ? post.images
+      : Array.isArray(post?.config?.images)
+      ? post.config.images
+      : [];
 
-// Ensure slide 1 is the cover automatically.
-// Do NOT include the cover inside config.images in Supabase.
-const images =
-  post.cover_image_url
-    ? [post.cover_image_url, ...fromDb.filter((u: string) => u !== post.cover_image_url)]
-    : fromDb;
+  // 👇 put cover first (slide 1), then the rest (avoid dupes)
+  const allImages = [
+    post.cover_image_url,
+    ...bodyImages.filter((u: string) => u && u !== post.cover_image_url),
+  ];
 
-
-  // Preserve author fields; map common alternates just in case.
   const normalized = {
     ...post,
-    images,
-    author_name:
-      post.author_name ??
-      post.author?.username ??
-      post.username ??
-      "LIFTD+",
-    author_photo:
-      post.author_photo ??
-      post.author?.profile_icon_url ??
-      post.profile_icon_url ??
-      null,
+    images: allImages,
   };
 
   return (
