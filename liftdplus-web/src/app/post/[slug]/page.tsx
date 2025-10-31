@@ -29,15 +29,19 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // --- normalize images (prefer API `images`, fallback to `config.images`) ---
-  const apiImages = Array.isArray(post.images) ? post.images : [];
-  const cfgImages = Array.isArray(post.config?.images) ? post.config.images : [];
-  const normalizedImages = apiImages.length ? apiImages : cfgImages;
+  // ---- normalize for carousels ----
+const imagesFromApi = Array.isArray(post?.images) ? post.images : [];
+const imagesFromConfig =
+  post?.config && Array.isArray(post.config.images) ? post.config.images : [];
 
-  const normalized = {
-    ...post,
-    images: normalizedImages,
-  };
+// Prefer the explicit API field if present; otherwise use config.images
+const mergedImages = imagesFromApi.length ? imagesFromApi : imagesFromConfig;
+
+const normalized = {
+  ...post,
+  images: mergedImages, // <-- this is what PostContentCarousel will render
+};
+
 
   if (process.env.NODE_ENV !== "production") {
     console.log(
