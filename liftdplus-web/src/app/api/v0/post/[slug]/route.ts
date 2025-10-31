@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+// NOTE: no inline comments inside this string (PostgREST will error)
 const COLUMNS = `
   id,
   title,
@@ -20,7 +21,6 @@ const COLUMNS = `
   slug
 `;
 
-
 function safeParseJSON(input: unknown) {
   if (!input) return null;
   if (typeof input === "object") return input as any;
@@ -31,7 +31,11 @@ function safeParseJSON(input: unknown) {
   }
 }
 
-async function fetchOne(supabase: any, column: string, value: string | number) {
+async function fetchOne(
+  supabase: any,
+  column: string,
+  value: string | number
+) {
   const { data, error } = await supabase
     .schema("private")
     .from("post")
@@ -43,43 +47,44 @@ async function fetchOne(supabase: any, column: string, value: string | number) {
   return data;
 }
 
-function looksLikeUuid(s: string | null | undefined) {
-  return (
-    !!s &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      s
-    )
-  );
-}
-
-export async function GET(_: Request, { params }: { params: { slug: string } }) {
+export async function GET(
+  _req: Request,
+  { params }: { params: { slug: string } }
+) {
   try {
     const supabase = await createClient();
     const key = params.slug;
 
-    // Find by slug, display_id, or numeric id
-    const row =
-      (await fetchOne(supabase, "slug", key)) ||
-      (await fetchOne(supabase, "display_id", key)) ||
-      (/^\d+$/.test(key) ? await fetchOne(supabase, "id", Number(key)) : null);
+    // 1) Try by slug (text)
+    let row =
+      (await fetchOne(supabase, "slug", key)) || null;
+
+    // 2) Only if key is numeric, try display_id then id
+    if (!row && /^\d+$/.test(key)) {
+      const num = Number(key);
+      row = (await fetchOne(supabase, "display_id", num)) ||
+            (await fetchOne(supabase, "id", num)) ||
+            null;
+    }
 
     if (!row) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    // Parse config for carousel
+    // Parse config (e.g., for carousels)
     const cfg = safeParseJSON(row?.config);
     const isCarousel = row?.post_template_id === "carousel_block";
     const images = Array.isArray(cfg?.images) ? cfg.images : [];
 
-    // ----------------------------------------------------
-    // Resolve author name + photo (author is UUID FK to users)
-    // ----------------------------------------------------
+    // -------------------------------
+    // Resolve author name + photo
+    // (author is a UUID FK to private.users.id)
+    // -------------------------------
     let author_name: string | null = row?.contributor_name ?? null;
     let author_photo: string | null = null;
 
     if (row?.author) {
-      const { data: user, error } = await supabase
+      const { data: user } = await supabase
         .schema("private")
         .from("users")
         .select("username, profile_icon_url")
@@ -87,18 +92,17 @@ export async function GET(_: Request, { params }: { params: { slug: string } }) 
         .maybeSingle();
 
       if (user) {
-        // Prefer contributor_name if set, otherwise fallback to username
+        // prefer contributor_name when present; otherwise fallback to username
         author_name = author_name ?? user.username ?? null;
         author_photo = user.profile_icon_url ?? null;
       }
     }
 
-    // Validate URL to ensure it's a usable image
+    // only return valid http(s) URLs
     const sanitizeUrl = (u: unknown) =>
       typeof u === "string" && /^https?:\/\//i.test(u) ? u : null;
     author_photo = sanitizeUrl(author_photo);
 
-    // Determine post content type
     const content_type: "text" | "image" = isCarousel ? "image" : "text";
 
     const post = {
@@ -107,7 +111,7 @@ export async function GET(_: Request, { params }: { params: { slug: string } }) 
       secondary_title: row.secondary_title,
       cover_image_url: row.cover_image_url ?? null,
       author_name,
-      author_photo, // now correctly fetched from users.profile_icon_url
+      author_photo, // <- populated from users.profile_icon_url
       post_template_id: row.post_template_id,
       content_type,
       content: isCarousel ? null : row.markdown ?? null,
