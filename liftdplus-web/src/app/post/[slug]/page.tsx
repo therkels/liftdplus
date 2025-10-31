@@ -24,14 +24,21 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // Prefer root-level images if your API already returns them;
-  // otherwise fall back to config.images. Never synthesize the cover here.
-  const images =
-    Array.isArray(post.images) && post.images.length > 0
-      ? post.images
-      : Array.isArray(post?.config?.images)
-      ? post.config.images
-      : [];
+  // Prefer root-level images; else fall back to config.images
+const fromDb =
+  Array.isArray(post.images) && post.images.length > 0
+    ? post.images
+    : Array.isArray(post?.config?.images)
+    ? post.config.images
+    : [];
+
+// Ensure slide 1 is the cover automatically.
+// Do NOT include the cover inside config.images in Supabase.
+const images =
+  post.cover_image_url
+    ? [post.cover_image_url, ...fromDb.filter((u: string) => u !== post.cover_image_url)]
+    : fromDb;
+
 
   // Preserve author fields; map common alternates just in case.
   const normalized = {
