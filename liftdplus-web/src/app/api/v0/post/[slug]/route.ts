@@ -57,8 +57,7 @@ export async function GET(
     const key = params.slug;
 
     // 1) Try by slug (text)
-    let row =
-      (await fetchOne(supabase, "slug", key)) || null;
+    let row = (await fetchOne(supabase, "slug", key)) || null;
 
     // 2) Only if key is numeric, try display_id then id
     if (!row && /^\d+$/.test(key)) {
@@ -88,6 +87,7 @@ export async function GET(
     if (row?.author) {
       // Use admin client ONLY for this lookup so we can read profile_icon_url safely
       const { data: user } = await supabaseAdmin
+        .schema("private")
         .from("users")
         .select("username, profile_icon_url")
         .eq("id", row.author)
@@ -125,7 +125,15 @@ export async function GET(
       config: cfg ?? null,
     };
 
-    return NextResponse.json({ post });
+    // 🔎 TEMP DEBUG so we can see if the env var is loaded and the lookup ran
+    return NextResponse.json({
+      post,
+      _debug: {
+        adminKeyLoaded: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+        authorIdSeen: Boolean(row?.author),
+        authorLookupUsed: true,
+      },
+    });
   } catch (e: any) {
     return NextResponse.json(
       {
