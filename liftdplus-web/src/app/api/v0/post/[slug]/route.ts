@@ -71,14 +71,18 @@ export async function GET(
     const isCarousel = row?.post_template_id === "carousel_block";
     const images = Array.isArray(cfg?.images) ? cfg.images : [];
 
-    // Resolve author name + photo (author is UUID FK to users.id)
+    // Resolve author name + photo (author is UUID FK to private.users.id)
     let author_name: string | null = row?.contributor_name ?? null;
     let author_photo: string | null = null;
 
+    let userDebug: any = null;
+
     if (row?.author) {
+      // IMPORTANT: your users table is in the private schema
       const { data: user, error: userError } = await supabaseAdmin
+        .schema("private")
         .from("users")
-        .select("username, profile_icon_url")
+        .select("id, username, profile_icon_url")
         .eq("id", row.author)
         .maybeSingle();
 
@@ -86,6 +90,15 @@ export async function GET(
         // eslint-disable-next-line no-console
         console.error("User lookup error:", userError);
       }
+
+      userDebug = {
+        exists: Boolean(user),
+        id: user?.id ?? null,
+        username: user?.username ?? null,
+        photoSample: user?.profile_icon_url
+          ? String(user.profile_icon_url).slice(0, 60) + "..."
+          : null,
+      };
 
       if (user) {
         author_name = author_name ?? user.username ?? null;
@@ -123,8 +136,10 @@ export async function GET(
       post,
       _debug: {
         adminKeyLoaded: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || null,
         authorIdSeen: Boolean(row?.author),
-        authorLookupUsed: true,
+        authorId: row?.author ?? null,
+        userDebug,
       },
     });
   } catch (e: any) {
