@@ -16,9 +16,9 @@ export interface PostData {
   user_liked: boolean;
   user_archived: boolean;
   tags: string[];
-  content_type: PostContentType;
-  content?: string;    // Markdown
-  images?: string[];   // already in the right order from the page fetch
+  content_type: PostContentType;   // 'text' | 'image'
+  content?: string;                // Markdown for text posts
+  images?: string[];               // for carousel posts
 }
 
 interface PostContentProps {
@@ -31,12 +31,14 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
   }
 
   if (post.content_type === "image") {
-    // We assume `post.images` ALREADY includes the cover as index 0.
-    const slides = Array.isArray(post.images) ? post.images : [];
-    return <PostContentCarousel post={{ ...post, images: slides }} />;
+    const postWithImages = {
+      ...post,
+      images: post.images ?? [],
+    };
+    return <PostContentCarousel post={postWithImages} />;
   }
 
-  return null;
+  return <PostContentBase post={post} />;
 };
 
 export default PostContent;
