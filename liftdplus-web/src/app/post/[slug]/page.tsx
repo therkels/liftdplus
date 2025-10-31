@@ -29,15 +29,23 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // ---- normalize for carousels ----
-  const imagesFromConfig =
-    post?.config && Array.isArray(post.config.images) ? post.config.images : [];
+  // --- normalize images (prefer API `images`, fallback to `config.images`) ---
+  const apiImages = Array.isArray(post.images) ? post.images : [];
+  const cfgImages = Array.isArray(post.config?.images) ? post.config.images : [];
+  const normalizedImages = apiImages.length ? apiImages : cfgImages;
 
   const normalized = {
     ...post,
-    // ensure PostContentCarousel receives images
-    images: imagesFromConfig,
+    images: normalizedImages,
   };
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      "[page.tsx] normalized images length:",
+      normalizedImages.length,
+      normalizedImages
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
