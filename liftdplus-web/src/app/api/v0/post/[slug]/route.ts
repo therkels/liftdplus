@@ -9,16 +9,17 @@ const COLUMNS = `
   title,
   secondary_title,
   cover_image_url,
-  author,              -- may be uuid or name
+  author,
   contributor_name,
   post_template_id,
   markdown,
-  config,              -- keep so page can read other opts if needed
+  config,
   created_at,
   published_at,
   display_id,
   slug
 `;
+
 
 function safeParseJSON(input: unknown) {
   if (!input) return null;
