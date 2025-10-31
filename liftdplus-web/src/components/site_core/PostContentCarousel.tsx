@@ -6,85 +6,55 @@ import PostMetadata from "./PostMetadata";
 import { PostData } from "./PostContent";
 
 interface PostContentCarouselProps {
-  post: PostData & { images: string[] };
+  post: PostData & { images: string[]; author_name?: string; author_photo?: string };
 }
 
 const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
   const allImages = Array.isArray(post.images) ? post.images : [];
-  const totalImages = allImages.length;
+  const total = allImages.length;
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const touchStartX = useRef<number>(0);
+  const [idx, setIdx] = useState(0);
+  const [drag, setDrag] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startX = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (totalImages <= 1) return;
-    touchStartX.current = e.targetTouches[0].clientX;
-    setIsDragging(true);
+  const begin = (x: number) => {
+    if (total <= 1) return;
+    startX.current = x;
+    setDragging(true);
   };
+  const move = (x: number) => {
+    if (!dragging || total <= 1) return;
+    const diff = x - startX.current;
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || totalImages <= 1) return;
-    const currentX = e.targetTouches[0].clientX;
-    const diff = currentX - touchStartX.current;
+    if (idx === 0 && diff > 0) return;
+    if (idx === total - 1 && diff < 0) return;
 
-    if (currentImageIndex === 0 && diff > 0) return;
-    if (currentImageIndex === totalImages - 1 && diff < 0) return;
-
-    const containerWidth = containerRef.current?.offsetWidth || 1;
-    const maxDrag = containerWidth * 0.8;
-    const clampedDiff = Math.max(-maxDrag, Math.min(maxDrag, diff));
-    setDragOffset(clampedDiff);
+    const w = containerRef.current?.offsetWidth || 1;
+    const max = w * 0.8;
+    const clamped = Math.max(-max, Math.min(max, diff));
+    setDrag(clamped);
   };
-
-  const handleTouchEnd = () => {
-    if (!isDragging || totalImages <= 1) return;
+  const end = () => {
+    if (!dragging || total <= 1) return;
     const threshold = 100;
-    if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex((prev) => prev + 1);
-    } else if (dragOffset > threshold && currentImageIndex > 0) {
-      setCurrentImageIndex((prev) => prev - 1);
-    }
-    setDragOffset(0);
-    setIsDragging(false);
+    if (drag < -threshold && idx < total - 1) setIdx((i) => i + 1);
+    else if (drag > threshold && idx > 0) setIdx((i) => i - 1);
+    setDrag(0);
+    setDragging(false);
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (totalImages <= 1) return;
-    touchStartX.current = e.clientX;
-    setIsDragging(true);
-  };
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || totalImages <= 1) return;
-    const currentX = e.clientX;
-    const diff = currentX - touchStartX.current;
-
-    if (currentImageIndex === 0 && diff > 0) return;
-    if (currentImageIndex === totalImages - 1 && diff < 0) return;
-
-    const containerWidth = containerRef.current?.offsetWidth || 1;
-    const maxDrag = containerWidth * 0.8;
-    const clampedDiff = Math.max(-maxDrag, Math.min(maxDrag, diff));
-    setDragOffset(clampedDiff);
-  };
-  const handleMouseUp = () => {
-    if (!isDragging || totalImages <= 1) return;
-    const threshold = 100;
-    if (dragOffset < -threshold && currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex((prev) => prev + 1);
-    } else if (dragOffset > threshold && currentImageIndex > 0) {
-      setCurrentImageIndex((prev) => prev - 1);
-    }
-    setDragOffset(0);
-    setIsDragging(false);
-  };
-
-  const goToImage = (index: number) => {
-    setCurrentImageIndex(index);
-    setDragOffset(0);
-  };
+  if (total === 0) {
+    return (
+      <div className="w-full">
+        <PostMetadata post={post} />
+        <div className="w-full bg-gray-100 rounded-xl aspect-[4/5] flex items-center justify-center text-gray-400">
+          No images to display.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -93,62 +63,54 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
       <div className="relative">
         <div
           ref={containerRef}
-          className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100"
+          className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100 rounded-xl"
           style={{ aspectRatio: "4 / 5" }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
+          onTouchStart={(e) => begin(e.targetTouches[0].clientX)}
+          onTouchMove={(e) => move(e.targetTouches[0].clientX)}
+          onTouchEnd={end}
+          onMouseDown={(e) => begin(e.clientX)}
+          onMouseMove={(e) => move(e.clientX)}
+          onMouseUp={end}
+          onMouseLeave={end}
         >
           <div
-            className={`flex h-full ${isDragging ? "" : "transition-transform duration-300 ease-out"}`}
+            className={`flex h-full ${dragging ? "" : "transition-transform duration-300 ease-out"}`}
             style={{
               transform: `translateX(${
-                -currentImageIndex * 100 +
-                (dragOffset / (containerRef.current?.offsetWidth || 1)) * 100
+                -idx * 100 + (drag / (containerRef.current?.offsetWidth || 1)) * 100
               }%)`,
-              width: `${Math.max(totalImages, 1) * 100}%`,
+              width: `${total * 100}%`,
             }}
           >
-            {totalImages === 0 ? (
-              <div className="flex-shrink-0 w-full h-full flex items-center justify-center text-gray-400">
-                No images to display.
+            {allImages.map((src, i) => (
+              <div
+                key={`${src}-${i}`}
+                className="relative flex-shrink-0 bg-white"
+                style={{ width: `${100 / total}%`, height: "100%" }}
+              >
+                <Image
+                  src={src}
+                  alt={`${post.title} - Slide ${i + 1}`}
+                  fill
+                  className="object-contain pointer-events-none"
+                  draggable={false}
+                  sizes="(max-width: 768px) 100vw, 800px"
+                />
               </div>
-            ) : (
-              allImages.map((image, index) => (
-                <div
-                  key={`${image}-${index}`}
-                  className="relative flex-shrink-0 bg-white"
-                  style={{ width: `${100 / totalImages}%`, height: "100%" }}
-                >
-                  <Image
-                    src={image}
-                    alt={`${post.title} - Image ${index + 1}`}
-                    fill
-                    className="object-contain pointer-events-none"
-                    draggable={false}
-                    unoptimized
-                    sizes="(max-width: 768px) 100vw, 800px"
-                  />
-                </div>
-              ))
-            )}
+            ))}
           </div>
         </div>
 
-        {totalImages > 1 && (
+        {total > 1 && (
           <div className="flex justify-center space-x-2 p-4">
-            {allImages.map((_, index) => (
+            {allImages.map((_, i) => (
               <button
-                key={index}
-                onClick={() => goToImage(index)}
+                key={i}
+                onClick={() => setIdx(i)}
                 className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                  index === currentImageIndex ? "bg-blue-500" : "bg-gray-300 hover:bg-gray-400"
+                  i === idx ? "bg-blue-500" : "bg-gray-300 hover:bg-gray-400"
                 }`}
-                aria-label={`Go to image ${index + 1}`}
+                aria-label={`Go to slide ${i + 1}`}
               />
             ))}
           </div>
