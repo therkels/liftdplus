@@ -75,10 +75,16 @@ export async function GET(
     let author_name: string | null = row?.contributor_name ?? null;
     let author_photo: string | null = null;
 
-    let userDebug: any = null;
+    // --- strict user lookup in private schema + rich debug ---
+    let userDebug: {
+      exists: boolean;
+      id: string | null;
+      username: string | null;
+      photoSample: string | null;
+      error?: string | null;
+    } = { exists: false, id: null, username: null, photoSample: null, error: null };
 
     if (row?.author) {
-      // IMPORTANT: your users table is in the private schema
       const { data: user, error: userError } = await supabaseAdmin
         .schema("private")
         .from("users")
@@ -87,22 +93,17 @@ export async function GET(
         .maybeSingle();
 
       if (userError) {
-        // eslint-disable-next-line no-console
-        console.error("User lookup error:", userError);
+        userDebug.error = userError.message ?? String(userError);
       }
 
-      userDebug = {
-        exists: Boolean(user),
-        id: user?.id ?? null,
-        username: user?.username ?? null,
-        photoSample: user?.profile_icon_url
-          ? String(user.profile_icon_url).slice(0, 60) + "..."
-          : null,
-      };
-
       if (user) {
+        userDebug.exists = true;
+        userDebug.id = user.id ?? null;
+        userDebug.username = user.username ?? null;
+        userDebug.photoSample = typeof user.profile_icon_url === "string" ? user.profile_icon_url.slice(0, 80) : null;
+
         author_name = author_name ?? user.username ?? null;
-        author_photo = user.profile_icon_url ?? null;
+        author_photo = typeof user.profile_icon_url === "string" ? user.profile_icon_url : null;
       }
     }
 
@@ -131,14 +132,14 @@ export async function GET(
       config: cfg ?? null,
     };
 
-    // TEMP DEBUG: remove after confirming avatars work
+    // TEMP DEBUG (remove once fixed)
     return NextResponse.json({
       post,
       _debug: {
         adminKeyLoaded: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || null,
         authorIdSeen: Boolean(row?.author),
-        authorId: row?.author ?? null,
+        authorLookupUsed: true,
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || null,
         userDebug,
       },
     });
