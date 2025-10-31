@@ -1,10 +1,11 @@
 // src/app/api/v0/post/[slug]/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-// NOTE: no inline comments inside this string (PostgREST will error)
+// NOTE: no inline comments in this string (PostgREST will error on "--")
 const COLUMNS = `
   id,
   title,
@@ -62,9 +63,10 @@ export async function GET(
     // 2) Only if key is numeric, try display_id then id
     if (!row && /^\d+$/.test(key)) {
       const num = Number(key);
-      row = (await fetchOne(supabase, "display_id", num)) ||
-            (await fetchOne(supabase, "id", num)) ||
-            null;
+      row =
+        (await fetchOne(supabase, "display_id", num)) ||
+        (await fetchOne(supabase, "id", num)) ||
+        null;
     }
 
     if (!row) {
@@ -84,8 +86,8 @@ export async function GET(
     let author_photo: string | null = null;
 
     if (row?.author) {
-      const { data: user } = await supabase
-        .schema("private")
+      // Use admin client ONLY for this lookup so we can read profile_icon_url safely
+      const { data: user } = await supabaseAdmin
         .from("users")
         .select("username, profile_icon_url")
         .eq("id", row.author)
@@ -111,7 +113,7 @@ export async function GET(
       secondary_title: row.secondary_title,
       cover_image_url: row.cover_image_url ?? null,
       author_name,
-      author_photo, // <- populated from users.profile_icon_url
+      author_photo, // populated from users.profile_icon_url via admin client
       post_template_id: row.post_template_id,
       content_type,
       content: isCarousel ? null : row.markdown ?? null,
