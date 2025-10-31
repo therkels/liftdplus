@@ -17,10 +17,8 @@ export interface PostData {
   user_archived: boolean;
   tags: string[];
   content_type: PostContentType;
-  content?: string;             // Markdown (for text posts)
-  images?: string[];            // Slides from API (for image posts)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config?: any;                 // Optional JSONB with { images: string[] }
+  content?: string;    // Markdown
+  images?: string[];   // already in the right order from the page fetch
 }
 
 interface PostContentProps {
@@ -32,16 +30,13 @@ const PostContent: React.FC<PostContentProps> = ({ post }) => {
     return <PostContentBase post={post} />;
   }
 
-  // --- Normalize slides (no reordering, no auto-inject cover) ---
-  const apiImages = Array.isArray(post.images) ? post.images : [];
-  const cfgImages = Array.isArray(post.config?.images) ? post.config.images : [];
-  const slides = apiImages.length ? apiImages : (cfgImages.length ? cfgImages : (post.cover_image_url ? [post.cover_image_url] : []));
-
-  if (process.env.NODE_ENV !== "production") {
-    console.log("PostContent normalized images:", slides.length, slides);
+  if (post.content_type === "image") {
+    // We assume `post.images` ALREADY includes the cover as index 0.
+    const slides = Array.isArray(post.images) ? post.images : [];
+    return <PostContentCarousel post={{ ...post, images: slides }} />;
   }
 
-  return <PostContentCarousel post={{ ...(post as any), images: slides }} />;
+  return null;
 };
 
 export default PostContent;
