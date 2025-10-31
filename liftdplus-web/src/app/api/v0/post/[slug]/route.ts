@@ -9,19 +9,16 @@ const COLUMNS = `
   title,
   secondary_title,
   cover_image_url,
-  post_template_id,
-  author,
+  author,              -- may be uuid or name
   contributor_name,
-  source,
-  post_status,
+  post_template_id,
   markdown,
-  config,
+  config,              -- keep so page can read other opts if needed
   created_at,
   published_at,
   display_id,
   slug
 `;
-
 
 function safeParseJSON(input: unknown) {
   if (!input) return null;
@@ -33,35 +30,7 @@ function safeParseJSON(input: unknown) {
   }
 }
 
-function shapePost(row: any) {
-  const cfg = safeParseJSON(row?.config);
-  const isCarousel = row?.post_template_id === "carousel_block";
-
-  // IMPORTANT: do NOT include cover in images here.
-  const images = Array.isArray(cfg?.images) ? cfg.images : [];
-
-  // old PostContent expects either 'text' (markdown) or 'image' (carousel)
-  const content_type = isCarousel ? "image" : "text";
-
-  return {
-    id: row.id,
-    title: row.title,
-    secondary_title: row.secondary_title,
-    cover_image_url: row.cover_image_url ?? null,
-    author_name: row.contributor_name ?? row.author ?? null,
-    post_template_id: row.post_template_id,
-    content_type,
-    content: isCarousel ? null : row.markdown ?? null,
-    images, // ⬅️ what the carousel needs
-    created_at: row.created_at,
-    published_at: row.published_at,
-    display_id: row.display_id ?? null,
-    slug: row.slug ?? null,
-  };
-}
-
 async function fetchOne(supabase: any, column: string, value: string | number) {
-  // read from the private schema (your grants already allow anon/authenticated SELECT)
   const { data, error } = await supabase
     .schema("private")
     .from("post")
@@ -73,24 +42,68 @@ async function fetchOne(supabase: any, column: string, value: string | number) {
   return data;
 }
 
+function looksLikeUuid(s: string | null | undefined) {
+  return !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);
+}
+
 export async function GET(_: Request, { params }: { params: { slug: string } }) {
   try {
     const supabase = await createClient();
     const key = params.slug;
 
-    let row =
+    // Find by slug, display_id, or numeric id
+    const row =
       (await fetchOne(supabase, "slug", key)) ||
       (await fetchOne(supabase, "display_id", key)) ||
       (/^\d+$/.test(key) ? await fetchOne(supabase, "id", Number(key)) : null);
 
     if (!row) {
-      return NextResponse.json(
-        { error: "Supabase error", code: "UNKNOWN", message: "No row" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const post = shapePost(row);
+    // Parse config for carousel
+    const cfg = safeParseJSON(row?.config);
+    const isCarousel = row?.post_template_id === "carousel_block";
+    const images = Array.isArray(cfg?.images) ? cfg.images : [];
+
+    // Resolve author name + photo
+    let author_name: string | null = row?.contributor_name ?? row?.author ?? null;
+    let author_photo: string | null = null;
+
+    if (looksLikeUuid(row?.author)) {
+      const { data: user } = await supabase
+        .schema("private")
+        .from("users")
+        .select("profile_icon_url, username")
+        .eq("id", row.author)
+        .maybeSingle();
+
+      if (user) {
+        author_photo = user.profile_icon_url ?? null;
+        if (!row?.contributor_name && user.username) author_name = user.username;
+      }
+    }
+
+    const content_type: "text" | "image" = isCarousel ? "image" : "text";
+
+    const post = {
+      id: row.id,
+      title: row.title,
+      secondary_title: row.secondary_title,
+      cover_image_url: row.cover_image_url ?? null,
+      author_name,
+      author_photo,               // <-- important for avatars
+      post_template_id: row.post_template_id,
+      content_type,
+      content: isCarousel ? null : row.markdown ?? null,
+      images,                     // <-- important for carousels
+      created_at: row.created_at,
+      published_at: row.published_at,
+      display_id: row.display_id ?? null,
+      slug: row.slug ?? null,
+      config: cfg ?? null,        // kept for future use
+    };
+
     return NextResponse.json({ post });
   } catch (e: any) {
     return NextResponse.json(
