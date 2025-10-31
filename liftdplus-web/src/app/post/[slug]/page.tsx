@@ -6,16 +6,21 @@ export const dynamic = "force-dynamic";
 
 async function getPost(slug: string) {
   const urls = [
+    // Same deployment (Preview or Prod)
     `/api/v0/post/${encodeURIComponent(slug)}`,
+    // Hard fallback to Production API
     `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(slug)}`,
   ];
+
   for (const url of urls) {
     try {
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) continue;
       const json = await res.json().catch(() => null);
       if (json?.post) return json.post;
-    } catch {}
+    } catch {
+      // try next URL
+    }
   }
   return null;
 }
@@ -24,23 +29,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // 👇 accept images from either top-level or config
-  const bodyImages =
-    Array.isArray(post.images)
-      ? post.images
-      : Array.isArray(post?.config?.images)
-      ? post.config.images
-      : [];
+  // ---- normalize for carousels ----
+  const cfgImages =
+    post?.config && Array.isArray(post.config.images) ? post.config.images : [];
 
-  // 👇 put cover first (slide 1), then the rest (avoid dupes)
-  const allImages = [
-    post.cover_image_url,
-    ...bodyImages.filter((u: string) => u && u !== post.cover_image_url),
-  ];
-
+  // Slide 1 should be cover, followed by config.images
   const normalized = {
     ...post,
-    images: allImages,
+    images: [
+      ...(post?.cover_image_url ? [post.cover_image_url] : []),
+      ...cfgImages,
+    ],
   };
 
   return (
