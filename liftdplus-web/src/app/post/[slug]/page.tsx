@@ -1,25 +1,25 @@
 // src/app/post/[slug]/page.tsx
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import PostContent from "@/components/site_core/PostContent";
 
 export const dynamic = "force-dynamic";
 
 async function getPost(slug: string) {
   const urls = [
-    // Same deployment (Preview or Prod)
-    `/api/v0/post/${encodeURIComponent(slug)}`,
-    // Hard fallback to Production API
-    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(slug)}`,
-  ];
+    `/api/v0/post/${slug}`, // same-origin
+    process.env.NEXT_PUBLIC_SITE_URL
+      ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/v0/post/${slug}`
+      : null,
+  ].filter(Boolean) as string[];
 
   for (const url of urls) {
     try {
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) continue;
-      const json = await res.json().catch(() => null);
+      const json = await res.json();
       if (json?.post) return json.post;
     } catch {
-      // try next URL
+      // try next url
     }
   }
   return null;
@@ -27,24 +27,14 @@ async function getPost(slug: string) {
 
 export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
-  if (!post) notFound();
+  if (!post) redirect("/explore");
 
-  // ---- normalize for carousels ----
-  const cfgImages =
-    post?.config && Array.isArray(post.config.images) ? post.config.images : [];
-
-  // Slide 1 should be cover, followed by config.images
-  const normalized = {
-    ...post,
-    images: [
-      ...(post?.cover_image_url ? [post.cover_image_url] : []),
-      ...cfgImages,
-    ],
-  };
+  // IMPORTANT: do NOT overwrite images/author_photo here.
+  const normalized = post;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 md:px-0 py-6">
+      <div className="container mx-auto px-4 py-6">
         <PostContent post={normalized as any} />
       </div>
     </div>
