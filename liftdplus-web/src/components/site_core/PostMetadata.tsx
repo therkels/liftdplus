@@ -10,6 +10,8 @@ interface PostMetadataProps {
 }
 
 const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
+  console.log("META author", { name: post.author_name, photo: post.author_photo });
+
   const {
     isLiked,
     isArchived,
@@ -18,6 +20,7 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
     handleLike,
     handleArchive,
   } = usePostInteractions(post);
+
 
   // Guard clause to handle undefined post
   if (!post) {
