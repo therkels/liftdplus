@@ -6,10 +6,8 @@ export const dynamic = "force-dynamic";
 
 async function getPost(slug: string) {
   const urls = [
-    // same deployment (Preview or Prod)
-    `/api/v0/post/${encodeURIComponent(slug)}`,
-    // hard fallback to Production API
-    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(slug)}`,
+    `/api/v0/post/${encodeURIComponent(slug)}`,                // same env (preview/prod)
+    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(slug)}`, // hard fallback
   ];
 
   for (const url of urls) {
@@ -29,27 +27,34 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // ---- normalize for carousels ----
-const imagesFromApi = Array.isArray(post?.images) ? post.images : [];
-const imagesFromConfig =
-  post?.config && Array.isArray(post.config.images) ? post.config.images : [];
+  // ------- Normalize for detail page components -------
+  // images: cover first, then any additional slides from config.images
+  const cfgImages = Array.isArray(post?.config?.images) ? post.config.images : [];
+  const images = [
+    ...(post?.cover_image_url ? [post.cover_image_url] : []),
+    ...cfgImages,
+  ];
 
-// Prefer the explicit API field if present; otherwise use config.images
-const mergedImages = imagesFromApi.length ? imagesFromApi : imagesFromConfig;
+  // unify author fields so PostMetadata always has what it needs
+  const author_photo =
+    post?.contributor_photo ??
+    post?.author_photo ??
+    post?.author?.photo ??
+    post?.author?.avatar_url ??
+    "/liftd-icon.svg";
 
-const normalized = {
-  ...post,
-  images: mergedImages, // <-- this is what PostContentCarousel will render
-};
+  const author_name =
+    post?.contributor_name ??
+    post?.author_name ??
+    post?.source ??
+    "LIFTD+";
 
-
-  if (process.env.NODE_ENV !== "production") {
-    console.log(
-      "[page.tsx] normalized images length:",
-      normalizedImages.length,
-      normalizedImages
-    );
-  }
+  const normalized = {
+    ...post,
+    images,
+    author_photo,
+    author_name,
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
