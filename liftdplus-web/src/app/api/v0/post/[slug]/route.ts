@@ -5,7 +5,6 @@ import { supabaseAdmin } from "@/utils/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-// NOTE: no inline comments in this string (PostgREST will error on "--")
 const COLUMNS = `
   id,
   title,
@@ -32,18 +31,13 @@ function safeParseJSON(input: unknown) {
   }
 }
 
-async function fetchOne(
-  supabase: any,
-  column: string,
-  value: string | number
-) {
+async function fetchOne(supabase: any, column: string, value: string | number) {
   const { data, error } = await supabase
     .schema("private")
     .from("post")
     .select(COLUMNS)
     .eq(column, value)
     .maybeSingle();
-
   if (error) throw error;
   return data;
 }
@@ -59,7 +53,7 @@ export async function GET(
     // 1) Try by slug (text)
     let row = (await fetchOne(supabase, "slug", key)) || null;
 
-    // 2) Only if key is numeric, try display_id then id
+    // 2) If key is numeric, try display_id then id
     if (!row && /^\d+$/.test(key)) {
       const num = Number(key);
       row =
@@ -77,30 +71,29 @@ export async function GET(
     const isCarousel = row?.post_template_id === "carousel_block";
     const images = Array.isArray(cfg?.images) ? cfg.images : [];
 
-    // -------------------------------
-    // Resolve author name + photo
-    // (author is a UUID FK to private.users.id)
-    // -------------------------------
+    // Resolve author name + photo (author is UUID FK to users.id)
     let author_name: string | null = row?.contributor_name ?? null;
     let author_photo: string | null = null;
 
     if (row?.author) {
-      // Use admin client ONLY for this lookup so we can read profile_icon_url safely
-      const { data: user } = await supabaseAdmin
-        .schema("private")
+      const { data: user, error: userError } = await supabaseAdmin
         .from("users")
         .select("username, profile_icon_url")
         .eq("id", row.author)
         .maybeSingle();
 
+      if (userError) {
+        // eslint-disable-next-line no-console
+        console.error("User lookup error:", userError);
+      }
+
       if (user) {
-        // prefer contributor_name when present; otherwise fallback to username
         author_name = author_name ?? user.username ?? null;
         author_photo = user.profile_icon_url ?? null;
       }
     }
 
-    // only return valid http(s) URLs
+    // Only return valid http(s) URLs
     const sanitizeUrl = (u: unknown) =>
       typeof u === "string" && /^https?:\/\//i.test(u) ? u : null;
     author_photo = sanitizeUrl(author_photo);
@@ -113,11 +106,11 @@ export async function GET(
       secondary_title: row.secondary_title,
       cover_image_url: row.cover_image_url ?? null,
       author_name,
-      author_photo, // populated from users.profile_icon_url via admin client
+      author_photo,
       post_template_id: row.post_template_id,
       content_type,
       content: isCarousel ? null : row.markdown ?? null,
-      images, // for carousel posts
+      images,
       created_at: row.created_at,
       published_at: row.published_at,
       display_id: row.display_id ?? null,
@@ -125,7 +118,7 @@ export async function GET(
       config: cfg ?? null,
     };
 
-    // 🔎 TEMP DEBUG so we can see if the env var is loaded and the lookup ran
+    // TEMP DEBUG: remove after confirming avatars work
     return NextResponse.json({
       post,
       _debug: {
