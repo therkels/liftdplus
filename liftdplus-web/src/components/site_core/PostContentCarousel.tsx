@@ -1,23 +1,24 @@
+// /src/components/site_core/PostContentCarousel.tsx
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import PostMetadata from "./PostMetadata";
 import { PostData } from "./PostContent";
 
-interface PostContentCarouselProps {
-  post: PostData & { images: string[]; author_name?: string; author_photo?: string };
+interface Props {
+  post: PostData & { images?: string[] };
 }
 
-const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
-  const allImages = Array.isArray(post.images) ? post.images : [];
-  const total = allImages.length;
+export default function PostContentCarousel({ post }: Props) {
+  const images = Array.isArray(post.images) ? post.images : [];
+  const total = images.length;
 
   const [idx, setIdx] = useState(0);
   const [drag, setDrag] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const startX = useRef<number>(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const startX = useRef(0);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   const begin = (x: number) => {
     if (total <= 1) return;
@@ -26,35 +27,25 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
   };
   const move = (x: number) => {
     if (!dragging || total <= 1) return;
-    const diff = x - startX.current;
+    const delta = x - startX.current;
 
-    if (idx === 0 && diff > 0) return;
-    if (idx === total - 1 && diff < 0) return;
-
-    const w = containerRef.current?.offsetWidth || 1;
-    const max = w * 0.8;
-    const clamped = Math.max(-max, Math.min(max, diff));
-    setDrag(clamped);
+    // clamp so you can't pull past first/last
+    if ((idx === 0 && delta > 0) || (idx === total - 1 && delta < 0)) {
+      const w = boxRef.current?.offsetWidth || 1;
+      setDrag(Math.max(-w * 0.2, Math.min(w * 0.2, delta * 0.3)));
+      return;
+    }
+    setDrag(delta);
   };
   const end = () => {
     if (!dragging || total <= 1) return;
-    const threshold = 100;
-    if (drag < -threshold && idx < total - 1) setIdx((i) => i + 1);
-    else if (drag > threshold && idx > 0) setIdx((i) => i - 1);
+    const w = boxRef.current?.offsetWidth || 1;
+    const threshold = Math.min(100, w * 0.15); // 100px or 15% width
+    if (drag < -threshold && idx < total - 1) setIdx((v) => v + 1);
+    else if (drag > threshold && idx > 0) setIdx((v) => v - 1);
     setDrag(0);
     setDragging(false);
   };
-
-  if (total === 0) {
-    return (
-      <div className="w-full">
-        <PostMetadata post={post} />
-        <div className="w-full bg-gray-100 rounded-xl aspect-[4/5] flex items-center justify-center text-gray-400">
-          No images to display.
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full">
@@ -62,8 +53,8 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
 
       <div className="relative">
         <div
-          ref={containerRef}
-          className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100 rounded-xl"
+          ref={boxRef}
+          className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing bg-gray-100"
           style={{ aspectRatio: "4 / 5" }}
           onTouchStart={(e) => begin(e.targetTouches[0].clientX)}
           onTouchMove={(e) => move(e.targetTouches[0].clientX)}
@@ -73,28 +64,24 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
           onMouseUp={end}
           onMouseLeave={end}
         >
+          {/* Track: translate by -idx*100% plus the drag delta as a percentage of width */}
           <div
             className={`flex h-full ${dragging ? "" : "transition-transform duration-300 ease-out"}`}
             style={{
-              transform: `translateX(${
-                -idx * 100 + (drag / (containerRef.current?.offsetWidth || 1)) * 100
-              }%)`,
-              width: `${total * 100}%`,
+              transform: `translateX(calc(${-idx * 100}% + ${
+                (drag / (boxRef.current?.offsetWidth || 1)) * 100
+              }%))`,
             }}
           >
-            {allImages.map((src, i) => (
-              <div
-                key={`${src}-${i}`}
-                className="relative flex-shrink-0 bg-white"
-                style={{ width: `${100 / total}%`, height: "100%" }}
-              >
+            {images.map((src, i) => (
+              <div key={`${src}-${i}`} className="min-w-full h-full flex-shrink-0 bg-black">
                 <Image
                   src={src}
-                  alt={`${post.title} - Slide ${i + 1}`}
+                  alt={`${post.title} – slide ${i + 1}`}
                   fill
-                  className="object-contain pointer-events-none"
-                  draggable={false}
+                  className="object-contain pointer-events-none bg-white"
                   sizes="(max-width: 768px) 100vw, 800px"
+                  draggable={false}
                 />
               </div>
             ))}
@@ -102,12 +89,12 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
         </div>
 
         {total > 1 && (
-          <div className="flex justify-center space-x-2 p-4">
-            {allImages.map((_, i) => (
+          <div className="flex justify-center gap-2 p-4">
+            {images.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setIdx(i)}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                className={`w-3 h-3 rounded-full transition-all ${
                   i === idx ? "bg-blue-500" : "bg-gray-300 hover:bg-gray-400"
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
@@ -115,9 +102,11 @@ const PostContentCarousel: React.FC<PostContentCarouselProps> = ({ post }) => {
             ))}
           </div>
         )}
+
+        {total === 0 && (
+          <div className="p-6 text-center text-gray-500">No images to display.</div>
+        )}
       </div>
     </div>
   );
-};
-
-export default PostContentCarousel;
+}
