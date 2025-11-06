@@ -49,8 +49,9 @@ export default function RootLayout({
           <ConditionalNavBar />
           <ConditionalMain>{children}</ConditionalMain>
         </ClientProviders>
-        <UnregisterSW />{/* TEMP: clears old SW + caches */}
-  {children}
+
+        {/* Keep this outside providers if you like; just don't render children again */}
+        <UnregisterSW />
       </body>
     </html>
   );
