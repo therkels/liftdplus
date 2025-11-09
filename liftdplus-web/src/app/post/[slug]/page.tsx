@@ -5,21 +5,36 @@ import PostContent from "@/components/site_core/PostContent";
 export const dynamic = "force-dynamic";
 
 async function getPost(slug: string) {
+  // 1) Try PRODUCTION first (has the complete data), then Preview
   const urls = [
-    // Same deployment (Preview or Prod)
-    `/api/v0/post/${encodeURIComponent(slug)}`,
-    // Hard fallback to Production API
-    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(slug)}`,
+    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(slug)}`, // PROD
+    `/api/v0/post/${encodeURIComponent(slug)}`,                          // PREVIEW
   ];
 
   for (const url of urls) {
     try {
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) continue;
+
       const json = await res.json().catch(() => null);
-      if (json?.post) return json.post;
+      if (!json?.post) continue;
+
+      const p = json.post;
+
+      // Normalize/collect potential author photo fields
+      const author_photo =
+        p.author_photo ??
+        p.author_photo_url ??
+        p.author?.photo ??
+        p.author?.photo_url ??
+        null;
+
+      // If this source doesn't include an author photo, try next URL
+      if (!author_photo) continue;
+
+      return { ...p, author_photo };
     } catch {
-      // try next URL
+      // try the next URL
     }
   }
   return null;
@@ -29,11 +44,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // ---- normalize for carousels ----
+  // Normalize carousel images: [cover, ...config.images]
   const cfgImages =
     post?.config && Array.isArray(post.config.images) ? post.config.images : [];
 
-  // Slide 1 should be cover, followed by config.images
   const normalized = {
     ...post,
     images: [

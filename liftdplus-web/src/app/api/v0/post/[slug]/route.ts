@@ -1,6 +1,7 @@
 // src/app/api/v0/post/[slug]/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -9,11 +10,9 @@ const COLUMNS = `
   title,
   secondary_title,
   cover_image_url,
-  post_template_id,
   author,
   contributor_name,
-  source,
-  post_status,
+  post_template_id,
   markdown,
   config,
   created_at,
@@ -21,7 +20,6 @@ const COLUMNS = `
   display_id,
   slug
 `;
-
 
 function safeParseJSON(input: unknown) {
   if (!input) return null;
@@ -33,65 +31,118 @@ function safeParseJSON(input: unknown) {
   }
 }
 
-function shapePost(row: any) {
-  const cfg = safeParseJSON(row?.config);
-  const isCarousel = row?.post_template_id === "carousel_block";
-
-  // IMPORTANT: do NOT include cover in images here.
-  const images = Array.isArray(cfg?.images) ? cfg.images : [];
-
-  // old PostContent expects either 'text' (markdown) or 'image' (carousel)
-  const content_type = isCarousel ? "image" : "text";
-
-  return {
-    id: row.id,
-    title: row.title,
-    secondary_title: row.secondary_title,
-    cover_image_url: row.cover_image_url ?? null,
-    author_name: row.contributor_name ?? row.author ?? null,
-    post_template_id: row.post_template_id,
-    content_type,
-    content: isCarousel ? null : row.markdown ?? null,
-    images, // ⬅️ what the carousel needs
-    created_at: row.created_at,
-    published_at: row.published_at,
-    display_id: row.display_id ?? null,
-    slug: row.slug ?? null,
-  };
-}
-
 async function fetchOne(supabase: any, column: string, value: string | number) {
-  // read from the private schema (your grants already allow anon/authenticated SELECT)
   const { data, error } = await supabase
     .schema("private")
     .from("post")
     .select(COLUMNS)
     .eq(column, value)
     .maybeSingle();
-
   if (error) throw error;
   return data;
 }
 
-export async function GET(_: Request, { params }: { params: { slug: string } }) {
+export async function GET(
+  _req: Request,
+  { params }: { params: { slug: string } }
+) {
   try {
     const supabase = await createClient();
     const key = params.slug;
 
-    let row =
-      (await fetchOne(supabase, "slug", key)) ||
-      (await fetchOne(supabase, "display_id", key)) ||
-      (/^\d+$/.test(key) ? await fetchOne(supabase, "id", Number(key)) : null);
+    // 1) Try by slug (text)
+    let row = (await fetchOne(supabase, "slug", key)) || null;
 
-    if (!row) {
-      return NextResponse.json(
-        { error: "Supabase error", code: "UNKNOWN", message: "No row" },
-        { status: 404 }
-      );
+    // 2) If key is numeric, try display_id then id
+    if (!row && /^\d+$/.test(key)) {
+      const num = Number(key);
+      row =
+        (await fetchOne(supabase, "display_id", num)) ||
+        (await fetchOne(supabase, "id", num)) ||
+        null;
     }
 
-    const post = shapePost(row);
-    return NextResponse.json({ post });
+    if (!row) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    // Parse config (e.g., for carousels)
+    const cfg = safeParseJSON(row?.config);
+    const isCarousel = row?.post_template_id === "carousel_block";
+    const images = Array.isArray(cfg?.images) ? cfg.images : [];
+
+    // Resolve author name + photo (author is UUID FK to private.users.id)
+    let author_name: string | null = row?.contributor_name ?? null;
+    let author_photo: string | null = null;
+
+    // --- strict user lookup in private schema + rich debug ---
+    let userDebug: {
+      exists: boolean;
+      id: string | null;
+      username: string | null;
+      photoSample: string | null;
+      error?: string | null;
+    } = { exists: false, id: null, username: null, photoSample: null, error: null };
+
+    if (row?.author) {
+      const { data: user, error: userError } = await supabaseAdmin
+        .schema("private")
+        .from("users")
+        .select("id, username, profile_icon_url")
+        .eq("id", row.author)
+        .maybeSingle();
+
+      if (userError) {
+        userDebug.error = userError.message ?? String(userError);
+      }
+
+      if (user) {
+        userDebug.exists = true;
+        userDebug.id = user.id ?? null;
+        userDebug.username = user.username ?? null;
+        userDebug.photoSample = typeof user.profile_icon_url === "string" ? user.profile_icon_url.slice(0, 80) : null;
+
+        author_name = author_name ?? user.username ?? null;
+        author_photo = typeof user.profile_icon_url === "string" ? user.profile_icon_url : null;
+      }
+    }
+
+    // Only return valid http(s) URLs
+    const sanitizeUrl = (u: unknown) =>
+      typeof u === "string" && /^https?:\/\//i.test(u) ? u : null;
+    author_photo = sanitizeUrl(author_photo);
+
+    const content_type: "text" | "image" = isCarousel ? "image" : "text";
+
+    const post = {
+      id: row.id,
+      title: row.title,
+      secondary_title: row.secondary_title,
+      cover_image_url: row.cover_image_url ?? null,
+      author_name,
+      author_photo,
+      post_template_id: row.post_template_id,
+      content_type,
+      content: isCarousel ? null : row.markdown ?? null,
+      images,
+      created_at: row.created_at,
+      published_at: row.published_at,
+      display_id: row.display_id ?? null,
+      slug: row.slug ?? null,
+      config: cfg ?? null,
+    };
+
+    // TEMP DEBUG (remove once fixed)
+    return NextResponse.json({
+      post,
+      _debug: {
+        adminKeyLoaded: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+        authorIdSeen: Boolean(row?.author),
+        authorLookupUsed: true,
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || null,
+        userDebug,
+      },
+    });
   } catch (e: any) {
     return NextResponse.json(
       {
