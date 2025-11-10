@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -16,51 +16,22 @@ import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
 import { usePostModal } from "@/utils/postHelpers";
 
-/* ------------------------ prod-first fetch with fallback ------------------------ */
-async function fetchJSONFromProdFirst(paths: string[]) {
-  // Try each path against prod first, then same-origin
-  for (const path of paths) {
-    const urls = [
-      `https://app.liftdplus.com${path}`, // prod
-      path, // same-origin (works on preview or prod)
-    ];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) continue;
-        return await res.json();
-      } catch {
-        /* try next */
-      }
+/* ------------------------ small helper: prod-first fetch ------------------------ */
+async function fetchJSONFromProdFirst(url: string) {
+  const urls = [
+    `https://app.liftdplus.com${url}`, // prod
+    url, // same-origin (works on preview or prod too)
+  ];
+  for (const u of urls) {
+    try {
+      const res = await fetch(u, { cache: "no-store" });
+      if (!res.ok) continue;
+      return await res.json();
+    } catch {
+      // try next
     }
   }
   return null;
-}
-
-/* ----------------------- tolerant post extraction helper ----------------------- */
-function extractPostsFromUnknown(payload: any): any[] {
-  if (!payload) return [];
-
-  // Direct array
-  if (Array.isArray(payload)) return payload;
-
-  // { posts: [...] }
-  if (Array.isArray(payload?.posts)) return payload.posts;
-
-  // { data: [...] } (some APIs use data)
-  if (Array.isArray(payload?.data)) return payload.data;
-
-  // { topics: [{ posts: [...] }, ...] }
-  if (Array.isArray(payload?.topics)) {
-    return payload.topics.flatMap((t: any) => Array.isArray(t?.posts) ? t.posts : []);
-  }
-
-  // Deeply nested common edge cases
-  // e.g. { result: { posts: [...] } }
-  if (Array.isArray(payload?.result?.posts)) return payload.result.posts;
-
-  // If nothing matches, return empty
-  return [];
 }
 
 /* ---------------------------------- Types ---------------------------------- */
@@ -69,6 +40,12 @@ type CurrentFilters = {
   audience: string[];
   category: string[];
 };
+
+/* ------------------------------ tiny utils ------------------------------ */
+const safeSlugFromTitle = (t: unknown) =>
+  typeof t === "string"
+    ? t.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+    : undefined;
 
 /* --------------------------------- Page ---------------------------------- */
 export default function Search() {
@@ -93,7 +70,7 @@ export default function Search() {
   // filter modal
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  // post modal (shared helper fetches full content safely)
+  // post modal (shared helper)
   const { selectedPost, isModalOpen, openPostModal, closePostModal } = usePostModal();
 
   /* ------------------------------ Auth bootstrap ------------------------------ */
@@ -103,13 +80,11 @@ export default function Search() {
     const initAuth = async () => {
       const supabase = await createClient();
 
-      // 1) initial user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      // initial user
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user ?? null);
 
-      // 2) live updates with safe cleanup
+      // updates (guard unsubscribe)
       const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
         pageCache.invalidate("search:");
@@ -118,6 +93,7 @@ export default function Search() {
     };
 
     initAuth();
+
     return () => {
       if (subscription && typeof subscription.unsubscribe === "function") {
         subscription.unsubscribe();
@@ -131,6 +107,7 @@ export default function Search() {
 
     const loadPosts = async () => {
       try {
+        // cache key ties to user & filters
         const cacheKey = `search:${JSON.stringify(currentFilters)}:${user.id}`;
         const cached = pageCache.get(cacheKey) as Post[] | null;
         if (cached) {
@@ -143,42 +120,50 @@ export default function Search() {
         setError(null);
 
         const queryParams = buildPostsQueryParams(currentFilters);
+        const data = await fetchJSONFromProdFirst(`/api/v0/posts?${queryParams}`);
+        if (!data) throw new Error("Failed to fetch posts");
 
-        // Try /posts first, then fallback to /feed (flatten topics → posts)
-        const data = await fetchJSONFromProdFirst([
-          `/api/v0/posts?${queryParams}`,
-          `/api/v0/feed`,
-        ]);
-
-        const extracted = extractPostsFromUnknown(data);
-
-        // Debug once so we can see what's coming back in prod
-        if (typeof window !== "undefined") {
-          // eslint-disable-next-line no-console
-          console.debug("Search API debug", {
-            queryParams,
-            returnedType: data === null ? "null" : Array.isArray(data) ? "array" : typeof data,
-            extractedCount: extracted.length,
-            sample: extracted[0] ?? null,
-          });
+        // Accept several shapes: [], {posts:[...]}, {topics:[{posts:[]}]}
+        let postsData: unknown[] = [];
+        if (Array.isArray(data)) {
+          postsData = data;
+        } else if (Array.isArray((data as any)?.posts)) {
+          postsData = (data as any).posts;
+        } else if (Array.isArray((data as any)?.topics)) {
+          postsData = (data as any).topics.flatMap(
+            (t: { posts?: unknown[] }) => t.posts || []
+          );
         }
 
-        // Normalize for <Card />
-        const normalized = (extracted as Record<string, unknown>[])
-          .map((post, index) => ({
-            ...(post as any),
-            post_id:
-              (post as any).id?.toString?.() ||
-              (post as any).post_id?.toString?.() ||
-              String(index),
-            user_liked: Boolean((post as any).user_liked),
-            user_archived: Boolean((post as any).user_archived),
-          })) as Post[];
+        // Normalize WITHOUT inventing fake post_id values
+        const normalized = (postsData as Record<string, unknown>[]).map((raw) => {
+          const slug =
+            (raw as any).slug ??
+            safeSlugFromTitle((raw as any).title) ??
+            undefined;
 
-        pageCache.set(cacheKey, normalized);
-        setPosts(normalized);
+          const realId =
+            (raw as any).post_id ??
+            (raw as any).id ??
+            undefined;
+
+          return {
+            ...(raw as any),
+            slug,                                  // prefer slug routing
+            post_id: realId ? String(realId) : undefined, // no "0" or index fallback
+            user_liked: Boolean((raw as any).user_liked),
+            user_archived: Boolean((raw as any).user_archived),
+          } as Post;
+        });
+
+        // Optional: drop items with neither slug nor title
+        const safe = normalized.filter(
+          (p: any) => p?.slug || typeof p?.title === "string"
+        );
+
+        pageCache.set(cacheKey, safe);
+        setPosts(safe);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error("Error loading posts:", err);
         setError("Failed to load posts. Please try again.");
       } finally {
@@ -332,16 +317,8 @@ export default function Search() {
         <div className="px-4 py-4">
           {posts.length > 0 ? (
             posts.map((content, index) => {
-              const key = `search-post-${(content as any).post_id || index}`;
-              const slug =
-                (content as any).slug ??
-                (typeof (content as any).title === "string"
-                  ? (content as any).title
-                      .toLowerCase()
-                      .trim()
-                      .replace(/\s+/g, "-")
-                      .replace(/[^a-z0-9-]/g, "")
-                  : null);
+              const key = `search-post-${(content as any).post_id ?? (content as any).slug ?? index}`;
+              const slug = (content as any).slug;
 
               return slug ? (
                 <Link key={key} href={`/post/${slug}`} className="block">
@@ -363,11 +340,8 @@ export default function Search() {
             })
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-600">No posts found.</p>
-              <p className="text-sm text-gray-500 mt-2">
-                Try different filters—or check the console “Search API debug”
-                line to confirm the API response shape.
-              </p>
+              <p className="text-gray-600">No posts found matching your filters.</p>
+              <p className="text-sm text-gray-500 mt-2">Try adjusting your search criteria.</p>
             </div>
           )}
         </div>
