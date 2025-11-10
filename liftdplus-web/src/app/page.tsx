@@ -72,7 +72,8 @@ function InstallPrompt() {
     );
 
     // remember dismissal during this session
-    const wasDismissed = sessionStorage.getItem("installBannerDismissed") === "true";
+    const wasDismissed =
+      sessionStorage.getItem("installBannerDismissed") === "true";
     setIsDismissed(wasDismissed);
 
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -82,7 +83,10 @@ function InstallPrompt() {
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
     };
   }, []);
 
@@ -95,7 +99,7 @@ function InstallPrompt() {
   };
 
   // Only show on mobile, not installed, not dismissed
-  if (isMobile && (isStandalone || (!isIOS && !deferredPrompt)) || isDismissed) {
+  if ((isMobile && (isStandalone || (!isIOS && !deferredPrompt))) || isDismissed) {
     return null;
   }
 
@@ -144,8 +148,18 @@ function InstallPrompt() {
             className="p-1 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Close"
           >
-            <svg className="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6l12 12M18 6L6 18" />
+            <svg
+              className="w-5 h-5 text-gray-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 6l12 12M18 6L6 18"
+              />
             </svg>
           </button>
         </div>
@@ -206,7 +220,8 @@ export default function Home() {
     user_metadata?: { name?: string; avatar_url?: string };
   } | null>(null);
 
-  const { selectedPost, isModalOpen, openPostModal, closePostModal } = usePostModal();
+  const { selectedPost, isModalOpen, openPostModal, closePostModal } =
+    usePostModal();
 
   /* -------------------------- Sign in with Google -------------------------- */
   const handleGoogleSignIn = useCallback(async () => {
@@ -224,30 +239,40 @@ export default function Home() {
     }
   }, []);
 
-  /* -------------------------- Auth bootstrap & listen -------------------------- */
+  /* --------------------- Auth bootstrap & listener (fixed) --------------------- */
   useEffect(() => {
-    let subscription: { unsubscribe: () => void } | null = null;
+    let sub: { unsubscribe: () => void } | null = null;
 
     const initAuth = async () => {
       const supabase = await createClient();
 
       // initial user
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user ?? null);
 
       // subscribe to auth changes
-      const { data: authSubscription } = supabase.auth.onAuthStateChange(
-        async (_event, session) => {
-          setUser(session?.user ?? null);
-        }
-      );
-      subscription = authSubscription;
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+
+      // Supabase v2 returns { data: { subscription } } — normalize safely
+      // @ts-ignore tolerate older typings
+      const maybeSub = data?.subscription ?? data;
+      if (maybeSub && typeof maybeSub.unsubscribe === "function") {
+        sub = maybeSub;
+      }
     };
 
     initAuth();
 
     return () => {
-      if (subscription) subscription.unsubscribe();
+      try {
+        if (sub && typeof sub.unsubscribe === "function") sub.unsubscribe();
+      } catch {
+        /* no-op */
+      }
     };
   }, []);
 
@@ -341,7 +366,13 @@ export default function Home() {
           {/* Header with logo */}
           <div className="flex flex-col items-center justify-center mb-12">
             <div className="mb-8">
-              <Image src="/liftd-text.svg" alt="Liftd+ Logo" width={200} height={60} className="h-12 w-auto" />
+              <Image
+                src="/liftd-text.svg"
+                alt="Liftd+ Logo"
+                width={200}
+                height={60}
+                className="h-12 w-auto"
+              />
             </div>
 
             <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-full md:w-1/2">
@@ -358,10 +389,22 @@ export default function Home() {
               >
                 {/* Google G icon */}
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.21-2.25H12v4.26h5.92c-.26 1.16-.99 2.15-2.08 2.83v2.35h3.36c1.96-1.81 3.1-4.47 3.1-7.19z"/>
-                  <path fill="#34A853" d="M12 23c2.7 0 4.97-.9 6.63-2.43l-3.36-2.35c-.93.62-2.12.99-3.27.99-2.52 0-4.67-1.7-5.43-3.98H3.13v2.5C4.79 20.98 8.17 23 12 23z"/>
-                  <path fill="#FBBC05" d="M6.57 15.23A6.99 6.99 0 015.99 12c0-1.12.27-2.17.58-3.23V6.27H3.13A10.006 10.006 0 002 12c0 1.61.38 3.13 1.13 4.48l3.44-1.25z"/>
-                  <path fill="#EA4335" d="M12 4.74c1.47 0 2.79.5 3.83 1.48l2.87-2.87C16.97 1.14 14.7 0 12 0 8.17 0 4.79 2.02 3.13 5.27l3.44 2.5C7.33 6.44 9.48 4.74 12 4.74z"/>
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.21-2.25H12v4.26h5.92c-.26 1.16-.99 2.15-2.08 2.83v2.35h3.36c1.96-1.81 3.1-4.47 3.1-7.19z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.7 0 4.97-.9 6.63-2.43l-3.36-2.35c-.93.62-2.12.99-3.27.99-2.52 0-4.67-1.7-5.43-3.98H3.13v2.5C4.79 20.98 8.17 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M6.57 15.23A6.99 6.99 0 015.99 12c0-1.12.27-2.17.58-3.23V6.27H3.13A10.006 10.006 0 002 12c0 1.61.38 3.13 1.13 4.48l3.44-1.25z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.74c1.47 0 2.79.5 3.83 1.48l2.87-2.87C16.97 1.14 14.7 0 12 0 8.17 0 4.79 2.02 3.13 5.27l3.44 2.5C7.33 6.44 9.48 4.74 12 4.74z"
+                  />
                 </svg>
                 Continue with Google
               </button>
@@ -374,24 +417,34 @@ export default function Home() {
 
   /* ------------------------------ Signed-in UI ------------------------------ */
   const displayName =
-    user.user_metadata?.name ||
-    user.email?.split("@")[0] ||
-    "there";
+    user.user_metadata?.name || user.email?.split("@")[0] || "there";
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 md:px-0 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold text-gray-800">Hello, {displayName}</h1>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Hello, {displayName}
+          </h1>
           <div className="flex items-center space-x-3">
             <button
               onClick={() => router.push("/search")}
               className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Search"
             >
-              <svg className="w-6 h-6 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+              <svg
+                className="w-6 h-6 text-gray-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+                />
               </svg>
             </button>
             <button
@@ -399,8 +452,18 @@ export default function Home() {
               className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Favorites"
             >
-              <svg className="w-6 h-6 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 21l7-5 7 5V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16z"/>
+              <svg
+                className="w-6 h-6 text-gray-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 21l7-5 7 5V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16z"
+                />
               </svg>
             </button>
             <button
@@ -420,7 +483,9 @@ export default function Home() {
         {/* Interests */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">Your Interests</h2>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Your Interests
+            </h2>
             <button
               onClick={() => router.push("/profile")}
               className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
@@ -441,7 +506,11 @@ export default function Home() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-400 mr-3" viewBox="0 0 20 20" fill="currentColor">
+              <svg
+                className="w-5 h-5 text-red-400 mr-3"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 102 0V7zm-1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
@@ -474,11 +543,10 @@ export default function Home() {
           ))
         ) : (
           <div className="container mx-auto px-4 md:px-0 py-8 text-center">
-            <p className="text-gray-600">
-              No posts available at the moment.
-            </p>
+            <p className="text-gray-600">No posts available at the moment.</p>
             <p className="text-sm text-gray-500 mt-2">
-              Try updating your interests in your profile to see personalized content.
+              Try updating your interests in your profile to see personalized
+              content.
             </p>
           </div>
         )}
