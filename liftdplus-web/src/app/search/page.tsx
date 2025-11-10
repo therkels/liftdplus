@@ -45,7 +45,7 @@ type CurrentFilters = {
 export default function Search() {
   const router = useRouter();
 
-  // auth
+  // auth (OPTIONAL for this page)
   const [user, setUser] = useState<{
     id: string;
     user_metadata?: { avatar_url?: string };
@@ -65,38 +65,35 @@ export default function Search() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const { selectedPost, isModalOpen, openPostModal, closePostModal } = usePostModal();
 
-  // just for guarding double-runs in strict mode logs
   const mountedRef = useRef(false);
 
-  /* ------------------------------ Auth bootstrap ------------------------------ */
+  /* ------------------------------ Auth bootstrap (no blocking) ------------------------------ */
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null;
 
     const initAuth = async () => {
-      const supabase = await createClient();
+      try {
+        const supabase = await createClient();
 
-      // initial user (no refresh needed)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user ?? null);
-      console.log("[Search] auth bootstrap -> user:", !!user ? user.id : null);
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setUser(user ?? null);
+        console.log("[Search] auth bootstrap -> user:", user?.id || null);
 
-      // live updates with proper cleanup
-      const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
-        const u = session?.user ?? null;
-        console.log("[Search] onAuthStateChange -> user:", u?.id || null);
-        setUser(u);
-        // nuke any stale search cache on auth change
-        pageCache.invalidate("search:");
-      });
-
-      subscription = authSub;
+        const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
+          const u = session?.user ?? null;
+          console.log("[Search] onAuthStateChange -> user:", u?.id || null);
+          setUser(u);
+          pageCache.invalidate("search:");
+        });
+        subscription = authSub;
+      } catch (e) {
+        console.warn("[Search] auth init error (non-fatal):", e);
+      }
     };
 
-    // nuke stale cache on mount
     pageCache.invalidate("search:");
-
     initAuth();
 
     return () => {
@@ -108,20 +105,14 @@ export default function Search() {
 
   /* ------------------------------ Load posts ------------------------------ */
   const loadPosts = useCallback(async () => {
-    if (!user) {
-      console.log("[Search] loadPosts skipped: user is null");
-      return;
-    }
-
     const query = buildPostsQueryParams(currentFilters);
     const url = `/api/v0/posts?${query}`;
-    console.log("[Search] fetching:", url);
+    console.log("[Search] fetching:", url, "as user:", user?.id || "anon");
 
     try {
       setLoading(true);
       setError(null);
 
-      // TEMP: bypass local cache to ensure we always hit the API while debugging
       const data = await fetchJSONFromProdFirst(url);
       if (!data) throw new Error("No data returned from /api/v0/posts");
 
@@ -157,13 +148,10 @@ export default function Search() {
     } finally {
       setLoading(false);
     }
-  }, [user, currentFilters]);
+  }, [currentFilters, user?.id]); // user.id only affects logs/cache keys, not required
 
   useEffect(() => {
-    // avoid double log spam in Strict Mode, but still call loadPosts on updates
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-    }
+    if (!mountedRef.current) mountedRef.current = true;
     loadPosts();
   }, [loadPosts]);
 
@@ -177,23 +165,6 @@ export default function Search() {
   };
 
   /* ----------------------------------- UI ----------------------------------- */
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Sign In Required</h2>
-          <p className="text-gray-600 mb-4">Please sign in to search and discover content.</p>
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
-          >
-            Go to Home
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -244,27 +215,18 @@ export default function Search() {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-gray-600">Current filters:</span>
 
-          {/* Sort */}
           <div className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
             {getSortDisplayName(currentFilters.sortBy)}
           </div>
 
-          {/* Audience */}
           {currentFilters.audience.map((a) => (
-            <div
-              key={a}
-              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-            >
+            <div key={a} className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
               {a}
             </div>
           ))}
 
-          {/* Category */}
           {currentFilters.category.map((c) => (
-            <div
-              key={c}
-              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-            >
+            <div key={c} className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
               {c}
             </div>
           ))}
