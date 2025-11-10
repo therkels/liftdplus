@@ -2,25 +2,20 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
-import PostModal from "@/components/site_core/PostModal";
-import PostContent from "@/components/site_core/PostContent";
 import Card from "@/components/site_core/Card";
-import FilterContent from "@/components/site_core/FilterContent";
-import { HiOutlineAdjustments } from "react-icons/hi";
 import { buildPostsQueryParams, getSortDisplayName } from "@/utils/tagMapper";
 import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
-import { usePostModal } from "@/utils/postHelpers";
 
-/* ------------------------ small helper: prod-first fetch ------------------------ */
+/** Prod-first fetch to avoid preview-origin auth/cors cache weirdness */
 async function fetchJSONFromProdFirst(url: string) {
   const urls = [
-    `https://app.liftdplus.com${url}`, // prod
-    url, // same-origin (works on preview or prod too)
+    `https://app.liftdplus.com${url}`, // prod first
+    url,                               // same-origin fallback
   ];
   for (const u of urls) {
     try {
@@ -28,30 +23,18 @@ async function fetchJSONFromProdFirst(url: string) {
       if (!res.ok) continue;
       return await res.json();
     } catch {
-      // try the next one
+      /* try next */
     }
   }
   return null;
 }
 
-/* ---------------------------------- Types ---------------------------------- */
 type CurrentFilters = {
   sortBy: string;
   audience: string[];
   category: string[];
 };
 
-/* ------------------------------- slug helper ------------------------------- */
-function slugify(input: unknown): string | null {
-  if (typeof input !== "string") return null;
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-}
-
-/* --------------------------------- Page ---------------------------------- */
 export default function Search() {
   const router = useRouter();
 
@@ -61,7 +44,7 @@ export default function Search() {
     user_metadata?: { avatar_url?: string };
   } | null>(null);
 
-  // filters + data
+  // ui/state
   const [currentFilters, setCurrentFilters] = useState<CurrentFilters>({
     sortBy: "popular",
     audience: [],
@@ -71,45 +54,34 @@ export default function Search() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // filter modal
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
-  // post modal (reuse shared helper so it fetches full content safely)
-  const { selectedPost, isModalOpen, openPostModal, closePostModal } = usePostModal();
-
-  /* ------------------------------ Auth bootstrap ------------------------------ */
+  /** Auth bootstrap (no risky modules here) */
   useEffect(() => {
     let subscription: { unsubscribe?: () => void } | null = null;
 
-    const initAuth = async () => {
+    (async () => {
       const supabase = await createClient();
 
-      // initial user
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user ?? null);
 
-      // live updates (with safe cleanup)
       const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
         pageCache.invalidate("search:");
       });
       subscription = authSub;
-    };
-
-    initAuth();
+    })();
 
     return () => {
       if (subscription?.unsubscribe) subscription.unsubscribe();
     };
   }, []);
 
-  /* ------------------------------ Load posts ------------------------------ */
+  /** Load posts with very defensive parsing */
   useEffect(() => {
-    if (!user) return; // wait until we know the user
+    if (!user) return;
 
-    const loadPosts = async () => {
+    const load = async () => {
       try {
-        // cache key ties to user & filters
         const cacheKey = `search:${JSON.stringify(currentFilters)}:${user.id}`;
         const cached = pageCache.get(cacheKey) as Post[] | null;
         if (cached) {
@@ -121,95 +93,55 @@ export default function Search() {
         setLoading(true);
         setError(null);
 
-        const queryParams = buildPostsQueryParams(currentFilters); // includes sort_by
-        const raw = await fetchJSONFromProdFirst(`/api/v0/posts?${queryParams}`);
-        if (raw == null) throw new Error("Failed to fetch posts");
+        const qs = buildPostsQueryParams(currentFilters);
+        const data = await fetchJSONFromProdFirst(`/api/v0/posts?${qs}`);
 
-        // Accept several shapes: [], {posts:[...]}, {topics:[{posts:[]}]}
-        let rows: unknown[] = [];
-        if (Array.isArray(raw)) {
-          rows = raw;
-        } else if (Array.isArray((raw as any)?.posts)) {
-          rows = (raw as any).posts;
-        } else if (Array.isArray((raw as any)?.topics)) {
-          rows = (raw as any).topics.flatMap((t: any) => t?.posts ?? []);
+        if (!data) {
+          setPosts([]);
+          setError("No data returned from server.");
+          setLoading(false);
+          return;
         }
 
-        // DEBUG: peek at the payload so we know what came back
-        console.debug(
-          "[Search] /api/v0/posts payload",
-          { length: rows.length, first: rows[0] }
-        );
+        // Accept several shapes: [], {posts:[...]}, {topics:[{posts:[]}]}
+        let raw: unknown[] = [];
+        if (Array.isArray(data)) {
+          raw = data;
+        } else if (Array.isArray((data as any)?.posts)) {
+          raw = (data as any).posts;
+        } else if (Array.isArray((data as any)?.topics)) {
+          raw = (data as any).topics.flatMap((t: any) => Array.isArray(t?.posts) ? t.posts : []);
+        } else {
+          // unexpected shape – don’t crash UI
+          console.warn("Unexpected /posts shape:", data);
+          raw = [];
+        }
 
-        // Normalize for <Card />
-        const normalized = (rows as any[]).map((p, i) => {
-          const id =
-            p?.id ?? p?.post_id ?? i;
-
-          // Try to get some kind of title
-          const title =
-            p?.title ??
-            p?.secondary_title ??
-            (typeof p?.slug === "string" ? p.slug.replace(/-/g, " ") : undefined) ??
-            "Untitled";
-
-          // Slug: prefer existing; else build from title
-          const slug =
-            p?.slug ??
-            slugify(p?.title) ??
-            slugify(p?.secondary_title) ??
-            null;
-
-          return {
-            // identity
-            post_id: String(id),
-
-            // presentation
-            title,
-            secondary_title: p?.secondary_title ?? "",
-            cover_image_url: p?.cover_image_url ?? null,
-
-            // author-ish
-            author_name: p?.author_name ?? p?.contributor_name ?? "LIFTD+",
-            author_photo: p?.author_photo ?? null,
-
-            // tags / counts (safe defaults)
-            like_count: Number(p?.like_count ?? 0),
-            user_liked: Boolean(p?.user_liked),
-            user_archived: Boolean(p?.user_archived),
-
-            // routing
-            slug,
-
-            // pass-through so Card has access if it uses more
-            ...p,
-          } as Post;
-        });
+        const normalized = (raw as Record<string, unknown>[])
+          .map((p, i) => ({
+            ...(p as any),
+            post_id:
+              (p as any)?.id?.toString?.() ||
+              (p as any)?.post_id?.toString?.() ||
+              String(i),
+            user_liked: Boolean((p as any)?.user_liked),
+            user_archived: Boolean((p as any)?.user_archived),
+          })) as Post[];
 
         pageCache.set(cacheKey, normalized);
         setPosts(normalized);
-      } catch (err) {
-        console.error("Error loading posts:", err);
-        setError("Failed to load posts. Please try again.");
+      } catch (e: any) {
+        console.error("Search load error:", e);
+        setError(e?.message || "Failed to load posts.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadPosts();
+    load();
   }, [user, currentFilters]);
 
-  /* --------------------------- Filter change handler --------------------------- */
-  const handleFiltersUpdate = (newFilters: Record<string, unknown>) => {
-    // Invalidate any search cache on filter change
-    pageCache.invalidate("search:");
-    setCurrentFilters((prev) => ({
-      ...prev,
-      ...(newFilters as CurrentFilters),
-    }));
-  };
-
-  /* --------------------------- Not signed-in fallback -------------------------- */
+  /** Not signed in -> gentle prompt */
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -227,166 +159,134 @@ export default function Search() {
     );
   }
 
-  /* ----------------------------------- UI ----------------------------------- */
+  /** UI */
   return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
-          <div className="flex items-center justify-between">
-            <h1
-              style={{
-                width: "262px",
-                height: "34px",
-                fontWeight: 700,
-                fontStyle: "normal",
-                fontSize: "40px",
-                letterSpacing: "0.3%",
-                verticalAlign: "middle",
-                textTransform: "capitalize",
-                color: "var(--foreground)",
-              }}
-            >
-              Search
-            </h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header (kept simple; no icon packages) */}
+      <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
+        <div className="flex items-center justify-between">
+          <h1
+            style={{
+              width: "262px",
+              height: "34px",
+              fontWeight: 700,
+              fontStyle: "normal",
+              fontSize: "40px",
+              letterSpacing: "0.3%",
+              verticalAlign: "middle",
+              textTransform: "capitalize",
+              color: "var(--foreground)",
+            }}
+          >
+            Search
+          </h1>
 
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setIsFilterModalOpen(true)}
-                className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <HiOutlineAdjustments className="w-5 h-5 text-gray-600" />
-                <span className="text-gray-700 font-medium">Filters</span>
-              </button>
+          <button
+            onClick={() => router.push("/profile")}
+            className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
+            aria-label="Go to profile"
+          >
+            <img
+              src={user?.user_metadata?.avatar_url || "/man.jpg"}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          </button>
+        </div>
+      </div>
 
-              <button
-                onClick={() => router.push("/profile")}
-                className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
-                aria-label="Go to profile"
-              >
-                <img
-                  src={user?.user_metadata?.avatar_url || "/man.jpg"}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </button>
+      {/* Filter summary (read-only for now to avoid modal import) */}
+      <div className="bg-[#f9fafb] px-4 md:px-0 py-3 border-b border-gray-200">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600">Current filters:</span>
+          <div className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
+            {getSortDisplayName(currentFilters.sortBy)}
+          </div>
+          {currentFilters.audience.map((a) => (
+            <div key={a} className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
+              {a}
             </div>
+          ))}
+          {currentFilters.category.map((c) => (
+            <div key={c} className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
+              {c}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="px-4 md:px-0 py-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p>{error}</p>
+            <button onClick={() => location.reload()} className="mt-2 text-sm underline">
+              Try again
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Filter Summary */}
-        <div className="bg-[#f9fafb] px-4 md:px-0 py-3 border-b border-gray-200">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-gray-600">Current filters:</span>
-
-            {/* Sort */}
-            <div className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
-              {getSortDisplayName(currentFilters.sortBy)}
-            </div>
-
-            {/* Audience */}
-            {currentFilters.audience.map((a) => (
-              <div
-                key={a}
-                className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-              >
-                {a}
-              </div>
-            ))}
-
-            {/* Category */}
-            {currentFilters.category.map((c) => (
-              <div
-                key={c}
-                className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-              >
-                {c}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Error State */}
-        {error && (
-          <div className="px-4 md:px-0 py-4">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              <p>{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="mt-2 text-sm underline"
-              >
-                Try again
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="px-4 py-4 space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="flex space-x-4">
-                  <div className="w-20 h-20 bg-gray-300 rounded"></div>
-                  <div className="flex-1 space-y-1">
-                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                    <div className="h-4 bg-gray-300 rounded w-1/4"></div>
-                  </div>
+      {/* Loading */}
+      {loading && (
+        <div className="px-4 py-4 space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="flex space-x-4">
+                <div className="w-20 h-20 bg-gray-300 rounded" />
+                <div className="flex-1 space-y-1">
+                  <div className="h-4 bg-gray-300 rounded w-3/4" />
+                  <div className="h-4 bg-gray-300 rounded w-1/2" />
+                  <div className="h-4 bg-gray-300 rounded w-1/4" />
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
+      )}
 
-        {/* Results */}
-        {!loading && !error && (
-          <div className="px-4 py-4">
-            {posts.length > 0 ? (
-              posts.map((content, index) => {
-                const key = `search-post-${(content as any).post_id || index}`;
-                const slug = (content as any).slug;
+      {/* Results */}
+      {!loading && !error && (
+        <div className="px-4 py-4">
+          {posts.length > 0 ? (
+            posts.map((content, index) => {
+              const key = `search-post-${(content as any).post_id || index}`;
+              const slug =
+                (content as any).slug ??
+                (typeof (content as any).title === "string"
+                  ? (content as any).title
+                      .toLowerCase()
+                      .trim()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "")
+                  : null);
 
-                return slug ? (
-                  <Link key={key} href={`/post/${slug}`} className="block">
-                    <Card
-                      post={{ ...(content as any), slug } as any}
-                      readTime={(content as any).secondary_title || "5 min read"}
-                      layout="horizontal"
-                    />
-                  </Link>
-                ) : (
+              // If we have a slug, link to the canonical /post/[slug]
+              return slug ? (
+                <Link key={key} href={`/post/${slug}`} className="block">
                   <Card
-                    key={key}
-                    post={content}
+                    post={{ ...(content as any), slug } as any}
                     readTime={(content as any).secondary_title || "5 min read"}
                     layout="horizontal"
-                    onClick={() => openPostModal(content)}
                   />
-                );
-              })
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-600">No posts found.</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Try adjusting your filters.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Filter Modal */}
-        <PostModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)}>
-          <FilterContent
-            currentFilters={currentFilters}
-            onFiltersUpdate={handleFiltersUpdate}
-          />
-        </PostModal>
-
-        {/* Post Modal */}
-        <PostModal isOpen={isModalOpen} onClose={closePostModal}>
-          {selectedPost && <PostContent post={selectedPost as any} />}
-        </PostModal>
-      </div>
+                </Link>
+              ) : (
+                // No modal path here (to avoid extra imports); still render the card
+                <Card
+                  key={key}
+                  post={content}
+                  readTime={(content as any).secondary_title || "5 min read"}
+                  layout="horizontal"
+                />
+              );
+            })
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No posts found.</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
