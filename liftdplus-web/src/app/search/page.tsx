@@ -1,337 +1,320 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/profile/page.tsx
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import {
+  HiOutlineCog,
+  HiOutlineHeart,
+  HiOutlineLogout,
+  HiOutlineTrash,
+  HiOutlineUser,
+} from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
-import { buildPostsQueryParams, getSortDisplayName } from "@/utils/tagMapper";
-import { usePostModal } from "@/utils/postHelpers";
-import Card from "@/components/site_core/Card";
-import PostModal from "@/components/site_core/PostModal";
-import PostContent from "@/components/site_core/PostContent";
-import FilterContent from "@/components/site_core/FilterContent";
-import { HiOutlineAdjustments } from "react-icons/hi";
-import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
+import UpdateEmailModal from "@/components/site_core/UpdateEmailModal";
+import UpdatePasswordModal from "@/components/site_core/UpdatePasswordModal";
+import UpdateUsernameModal from "@/components/site_core/UpdateUsernameModal";
+import DeleteAccountModal from "@/components/site_core/DeleteAccountModal";
+import EditInterestsModal from "@/components/site_core/EditInterestsModal";
+import LogoutModal from "@/components/site_core/LogoutModal";
 
-export default function Search() {
-  const router = useRouter();
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const {
-    selectedPost,
-    isModalOpen: isPostModalOpen,
-    openPostModal,
-    closePostModal,
-  } = usePostModal();
-  const [currentFilters, setCurrentFilters] = useState({
-    sortBy: "popular",
-    audience: [] as string[],
-    category: [] as string[],
-  });
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const dynamic = "force-dynamic";
+
+/* ---------- small helper so preview builds can read prod APIs ---------- */
+async function fetchJSONFromProdFirst(path: string) {
+  const urls = [
+    `https://app.liftdplus.com${path}`, // PROD first to bypass preview domain cookies
+    path,                               // then same-origin
+  ];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) continue;
+      return await res.json();
+    } catch {
+      /* try next */
+    }
+  }
+  return null;
+}
+
+export default function Profile() {
   const [user, setUser] = useState<{
     id: string;
-    user_metadata?: { avatar_url?: string };
+    email?: string;
+    created_at?: string;
+    user_metadata?: { full_name?: string; name?: string; avatar_url?: string };
   } | null>(null);
 
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = await createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    checkAuth();
-  }, []);
+  const [userProfile, setUserProfile] = useState<{
+    username?: string;
+    profile_icon_url?: string;
+  } | null>(null);
 
-  // Load posts from API
-  useEffect(() => {
-    if (!user) return;
+  const [isUpdateEmailOpen, setIsUpdateEmailOpen] = useState(false);
+  const [isUpdatePasswordOpen, setIsUpdatePasswordOpen] = useState(false);
+  const [isUpdateUsernameOpen, setIsUpdateUsernameOpen] = useState(false);
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+  const [isEditInterestsOpen, setIsEditInterestsOpen] = useState(false);
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-    const loadPosts = async () => {
+  const allInterests = [
+    "Sleep & Rest",
+    "Stress & Anxiety",
+    "Intimacy & Libido",
+    "Hormonal Changes",
+    "Pain Relief",
+    "Focus & Creativity",
+    "I'm Not Sure Yet",
+  ];
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadUserData = async () => {
       try {
-        // Create cache key based on filters and user
-        const cacheKey = `search:${JSON.stringify(currentFilters)}:${user?.id}`;
+        const supabase = await createClient();
 
-        // Check cache first
-        const cachedPosts = pageCache.get(cacheKey) as Post[] | null;
-        if (cachedPosts) {
-          setPosts(cachedPosts);
-          setLoading(false);
+        // Initial user (no live listener needed on this page)
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
+        if (!authUser) {
+          setUser(null);
           return;
         }
 
-        setLoading(true);
-        setError(null);
+        setUser(authUser);
 
-        const queryParams = buildPostsQueryParams(currentFilters);
-        const response = await fetch(`/api/v0/posts?${queryParams}`);
+        // ---- Cached preferences
+        const cacheKey = `profile:${authUser.id}`;
+        const cachedPrefs = pageCache.get(cacheKey) as string[] | null;
+        if (cachedPrefs) setSelectedInterests(cachedPrefs);
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch posts: ${response.statusText}`);
+        // ---- Load user profile from RPC
+        const { data: userData, error: userError } = await supabase.rpc(
+          "get_user",
+          { user_id: authUser.id }
+        );
+        if (!userError && userData?.length) {
+          setUserProfile({
+            username: userData[0].username,
+            profile_icon_url: userData[0].profile_icon_url,
+          });
         }
 
-        const data = await response.json();
+        // ---- Load preferences if not cached (prod-first to avoid preview cookie issues)
+        if (!cachedPrefs) {
+          const prefJSON = await fetchJSONFromProdFirst("/api/v0/preferences");
+          if (prefJSON?.preferences) {
+            const interestNames = prefJSON.preferences
+              .filter((p: { tag?: { category?: string } }) => p.tag?.category === "topic")
+              .map((p: { tag?: { display_name?: string } }) => p.tag?.display_name)
+              .filter(Boolean);
 
-        // Handle different response formats
-        let postsData: unknown[] = [];
-        if (
-          Array.isArray(data) &&
-          data.length > 0 &&
-          (data as any)[0].posts &&
-          Array.isArray((data as any)[0].posts)
-        ) {
-          // Extract posts from nested structure: [{posts: [...]}]
-          postsData = (data as any)[0].posts;
-        } else if (Array.isArray(data)) {
-          // Direct array of posts
-          postsData = data;
-        } else if ((data as any).posts && Array.isArray((data as any).posts)) {
-          postsData = (data as any).posts;
-        } else if ((data as any).topics && Array.isArray((data as any).topics)) {
-          // If it's topic format, flatten the posts
-          postsData = (data as any).topics.flatMap(
-            (topic: { posts?: unknown[] }) => topic.posts || []
-          );
+            pageCache.set(cacheKey, interestNames);
+            setSelectedInterests(interestNames);
+          }
         }
-
-        // Transform posts to ensure they have proper structure
-        const transformedPosts = (postsData as Record<string, unknown>[]).map(
-          (post, index) => ({
-            ...post,
-            post_id:
-              (post as any).id?.toString() ||
-              (post as any).post_id?.toString() ||
-              index.toString(),
-            user_liked: Boolean((post as any).user_liked),
-            user_archived: Boolean((post as any).user_archived),
-          })
-        ) as Post[];
-
-        // Cache the transformed posts before setting state
-        pageCache.set(cacheKey, transformedPosts);
-        setPosts(transformedPosts);
-      } catch (error) {
-        console.error("Error loading posts:", error);
-        setError("Failed to load posts. Please try again.");
+      } catch (err) {
+        console.error("Error loading user data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadPosts();
-  }, [user, currentFilters]);
+    loadUserData();
+  }, []);
 
-  const handleFiltersUpdate = (newFilters: Record<string, unknown>) => {
-    // Invalidate search cache when filters change
-    pageCache.invalidate("search:");
-    setCurrentFilters(
-      newFilters as {
-        sortBy: string;
-        audience: string[];
-        category: string[];
-      }
+  const menuItems = [
+    { id: "account-settings", label: "Account Settings", icon: HiOutlineCog, action: () => console.log("Account Settings") },
+    { id: "update-username", label: "Update Username", icon: HiOutlineUser, action: () => setIsUpdateUsernameOpen(true) },
+    { id: "edit-interests", label: "Edit Interests", icon: HiOutlineHeart, action: () => setIsEditInterestsOpen(true) },
+    { id: "log-out", label: "Log Out", icon: HiOutlineLogout, action: () => setIsLogoutOpen(true) },
+    { id: "delete-account", label: "Delete Account", icon: HiOutlineTrash, action: () => setIsDeleteAccountOpen(true) },
+  ];
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 md:px-0 py-6 max-w-2xl screen flex flex-col">
+        <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
+        <div className="text-center py-8"><p>Loading...</p></div>
+      </div>
     );
-  };
+  }
 
-  // Show loading state while checking authentication
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Sign In Required
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Please sign in to search and discover content.
-          </p>
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
-          >
-            Go to Home
-          </button>
-        </div>
+      <div className="container mx-auto px-4 md:px-0 py-6 max-w-2xl screen flex flex-col">
+        <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
+        <div className="text-center py-8"><p>Please sign in to view your profile.</p></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
-        <div className="flex items-center justify-between">
-          <h1
-            style={{
-              width: "262px",
-              height: "34px",
-              fontWeight: 700,
-              fontStyle: "normal",
-              fontSize: "40px",
-              lineHeight: "46px",
-              letterSpacing: "0.3%",
-              verticalAlign: "middle",
-              textTransform: "capitalize",
-              color: "var(--foreground)",
-            }}
-          >
-            Search
-          </h1>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setIsFilterModalOpen(true)}
-              className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <HiOutlineAdjustments className="w-5 h-5 text-gray-600" />
-              <span className="text-gray-700 font-medium">Filters</span>
-            </button>
-            <button
-              onClick={() => router.push("/profile")}
-              className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
-              aria-label="Go to profile"
-            >
-              <img
-                src={user?.user_metadata?.avatar_url || "/man.jpg"}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="container mx-auto px-4 md:px-0 py-6 max-w-2xl screen flex flex-col">
+      <h1 className="text-4xl font-bold text-foreground mb-6">Profile</h1>
 
-      {/* Filter Summary */}
-      <div className="bg-[#f9fafb] px-4 md:px-0 py-3 border-b border-gray-200">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-gray-600">Current filters:</span>
-
-          {/* Sort Filter */}
-          <div className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
-            {getSortDisplayName(currentFilters.sortBy)}
-          </div>
-
-          {/* Audience Filters */}
-          {currentFilters.audience.map((audience) => (
+      {/* Profile Info */}
+      <div className="mb-6">
+        <div className="flex items-center space-x-4">
+          <div>
             <div
-              key={audience}
-              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
+              className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2"
+              style={{ borderColor: "var(--accent-light)" }}
             >
-              {audience}
-            </div>
-          ))}
-
-          {/* Category Filters */}
-          {currentFilters.category.map((category) => (
-            <div
-              key={category}
-              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-            >
-              {category}
-            </div>
-          ))}
-
-          {/* Post Count */}
-          <span className="text-sm text-gray-600">• {posts.length} posts</span>
-        </div>
-      </div>
-
-      {/* Error State */}
-      {error && (
-        <div className="px-4 md:px-0 py-4">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <p>{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 text-sm underline"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading && (
-        <div className="px-4 py-4 space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="flex space-x-4">
-                <div className="w-20 h-20 bg-gray-300 rounded"></div>
-                <div className="flex-1 space-y-2 py-1">
-                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/4"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Content Cards */}
-      {!loading && !error && (
-        <div className="px-4 py-4 space-y-3">
-          {posts.length > 0 ? (
-            posts.map((content, index) => {
-              const key = `search-post-${content.post_id || index}`;
-              const slug =
-                content.slug ??
-                (typeof (content as any).title === "string"
-                  ? (content as any).title
-                      .toLowerCase()
-                      .trim()
-                      .replace(/\s+/g, "-")
-                      .replace(/[^a-z0-9-]/g, "")
-                  : null);
-
-              return slug ? (
-                <Link key={key} href={`/post/${slug}`} className="block">
-                  <Card
-                    post={{ ...content, slug } as any}
-                    readTime={content.secondary_title || "5 min read"}
-                    layout="horizontal"
-                  />
-                </Link>
-              ) : (
-                <Card
-                  key={key}
-                  post={content}
-                  readTime={content.secondary_title || "5 min read"}
-                  layout="horizontal"
-                  onClick={() => openPostModal(content)} // fallback if truly no slug
+              {userProfile?.profile_icon_url || user.user_metadata?.avatar_url ? (
+                <Image
+                  src={userProfile?.profile_icon_url || user.user_metadata?.avatar_url || ""}
+                  alt={userProfile?.username || user.user_metadata?.name || "User"}
+                  width={96}
+                  height={96}
+                  className="w-full h-full rounded-full object-cover"
                 />
-              );
-            })
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-600">No posts found matching your filters.</p>
-              <p className="text-sm text-gray-500 mt-2">
-                Try adjusting your search criteria.
-              </p>
+              ) : (
+                <HiOutlineUser className="w-12 h-12 text-gray-400" />
+              )}
             </div>
-          )}
+          </div>
+
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-800">
+              {userProfile?.username || user.user_metadata?.name || user.email || "User"}
+            </h2>
+            {userProfile?.username && (
+              <p className="text-[12px] text-gray-600">@{userProfile.username}</p>
+            )}
+            <p className="text-[12px] text-gray-600">{user.email}</p>
+            <p className="text-[12px] text-gray-600">
+              Member since{" "}
+              {user.created_at
+                ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+                : "Unknown"}
+            </p>
+          </div>
         </div>
-      )}
+      </div>
 
-      {/* Filter Modal */}
-      <PostModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-      >
-        <FilterContent
-          currentFilters={currentFilters}
-          onFiltersUpdate={handleFiltersUpdate}
-        />
-      </PostModal>
+      <hr className="border-gray-200 mb-6" />
 
-      <PostModal isOpen={isPostModalOpen} onClose={closePostModal}>
-        {selectedPost && <PostContent post={selectedPost} />}
-      </PostModal>
+      {/* Menu */}
+      <div className="space-y-4">
+        {menuItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={item.action}
+            className="block text-left w-full md:hover:shadow-md md:transition-shadow md:duration-200 md:rounded-lg md:p-2 md:-m-2"
+          >
+            <span className={`text-base ${item.id === "account-settings" ? "font-[550]" : "font-normal"} text-gray-800`}>
+              {item.label}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Modals */}
+      <UpdateEmailModal
+        isOpen={isUpdateEmailOpen}
+        onClose={() => setIsUpdateEmailOpen(false)}
+        onSubmit={async () => {}}
+      />
+      <UpdatePasswordModal
+        isOpen={isUpdatePasswordOpen}
+        onClose={() => setIsUpdatePasswordOpen(false)}
+        onSubmit={async () => {}}
+      />
+      <UpdateUsernameModal
+        isOpen={isUpdateUsernameOpen}
+        onClose={() => setIsUpdateUsernameOpen(false)}
+        currentUsername={userProfile?.username || ""}
+        onSubmit={async (newUsername: string) => {
+          try {
+            const formData = new FormData();
+            formData.append("username", newUsername);
+            const response = await fetch("/api/v0/user/username", { method: "POST", body: formData });
+            if (!response.ok) {
+              const err = await response.json().catch(() => ({}));
+              throw new Error(err.error || "Failed to update username");
+            }
+            setUserProfile((prev) => (prev ? { ...prev, username: newUsername } : { username: newUsername }));
+          } catch (error) {
+            console.error("Error updating username:", error);
+            throw error;
+          }
+        }}
+      />
+      <DeleteAccountModal
+        isOpen={isDeleteAccountOpen}
+        onClose={() => setIsDeleteAccountOpen(false)}
+        onConfirm={async () => {
+          try {
+            const response = await fetch("/api/v0/user/delete", { method: "DELETE", headers: { "Content-Type": "application/json" } });
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(errorData.error || `Server error (${response.status}): ${response.statusText}`);
+            }
+            const supabase = await createClient();
+            await supabase.auth.signOut();
+            pageCache.clear();
+            window.location.href = "/login";
+          } catch (error) {
+            console.error("Error deleting account:", error);
+            alert("Failed to delete account. Please try again.");
+          } finally {
+            setIsDeleteAccountOpen(false);
+          }
+        }}
+      />
+      <EditInterestsModal
+        isOpen={isEditInterestsOpen}
+        onClose={() => setIsEditInterestsOpen(false)}
+        availableInterests={allInterests}
+        selected={selectedInterests}
+        onSubmit={async (sel) => {
+          try {
+            const response = await fetch("/api/v0/preferences", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ interests: sel }),
+            });
+            if (!response.ok) {
+              const err = await response.json().catch(() => ({}));
+              console.error("Failed to update preferences:", err);
+              alert("Failed to update preferences. Please try again.");
+              return;
+            }
+            pageCache.invalidate("feed:");
+            pageCache.invalidate("profile:");
+            pageCache.invalidate("favorites:");
+            setSelectedInterests(sel);
+          } catch (error) {
+            console.error("Error updating preferences:", error);
+            alert("Failed to update preferences. Please try again.");
+          }
+        }}
+      />
+      <LogoutModal
+        isOpen={isLogoutOpen}
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={async () => {
+          try {
+            const supabase = await createClient();
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+              console.error("Error logging out:", error);
+              alert("Failed to log out. Please try again.");
+            } else {
+              window.location.href = "/login";
+            }
+          } catch (error) {
+            console.error("Error during logout:", error);
+            alert("Failed to log out. Please try again.");
+          }
+        }}
+      />
     </div>
   );
 }
