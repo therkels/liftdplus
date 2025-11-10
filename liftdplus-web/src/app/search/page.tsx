@@ -16,15 +16,18 @@ import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
 import { usePostModal } from "@/utils/postHelpers";
 
-/* ------------------------ small helper: prod-first fetch ------------------------ */
+/* ------------------------ prod-first fetch (with cookies) ------------------------ */
 async function fetchJSONFromProdFirst(url: string) {
   const urls = [
-    `https://app.liftdplus.com${url}`, // prod
-    url, // same-origin (preview or prod)
+    `https://app.liftdplus.com${url}`, // prod first (works from preview too)
+    url,                               // same-origin
   ];
   for (const u of urls) {
     try {
-      const res = await fetch(u, { cache: "no-store" });
+      const res = await fetch(u, {
+        cache: "no-store",
+        credentials: "include", // <-- important so cookies go to prod on preview
+      });
       if (!res.ok) continue;
       return await res.json();
     } catch {
@@ -64,29 +67,26 @@ export default function Search() {
   // filter modal
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  // post modal (shared helper)
+  // post modal
   const { selectedPost, isModalOpen, openPostModal, closePostModal } = usePostModal();
 
-  /* ------------------------------ Auth bootstrap (FIXED) ------------------------------ */
+  /* ------------------------------ Auth bootstrap (fixed) ------------------------------ */
   useEffect(() => {
     let sub: { unsubscribe: () => void } | null = null;
 
     const initAuth = async () => {
       const supabase = await createClient();
 
-      // 1) initial user
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user ?? null);
 
-      // 2) subscribe and normalize returned object
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
         pageCache.invalidate("search:");
       });
 
-      // Supabase v2: data = { subscription }
-      // Older typings sometimes return subscription directly; handle both.
-      // @ts-ignore — tolerate shape differences
+      // normalize { subscription } vs subscription
+      // @ts-ignore
       const maybeSub = data?.subscription ?? data;
       if (maybeSub && typeof maybeSub.unsubscribe === "function") {
         sub = maybeSub;
@@ -96,17 +96,13 @@ export default function Search() {
     initAuth();
 
     return () => {
-      try {
-        if (sub && typeof sub.unsubscribe === "function") sub.unsubscribe();
-      } catch {
-        /* no-op */
-      }
+      try { if (sub) sub.unsubscribe(); } catch {}
     };
   }, []);
 
-  /* ------------------------------ Load posts ------------------------------ */
+  /* ------------------------------ Load posts (with fallbacks) ------------------------------ */
   useEffect(() => {
-    if (!user) return; // wait until we know the user
+    if (!user) return;
 
     const loadPosts = async () => {
       try {
@@ -121,16 +117,41 @@ export default function Search() {
         setLoading(true);
         setError(null);
 
-        const queryParams = buildPostsQueryParams(currentFilters);
-        const data = await fetchJSONFromProdFirst(`/api/v0/posts?${queryParams}`);
-        if (!data) throw new Error("Failed to fetch posts");
+        const qp = buildPostsQueryParams(currentFilters) || "";
+        const urlWithParams = `/api/v0/posts${qp ? `?${qp}` : ""}`;
 
-        // Accept [], {posts:[...]}, or {topics:[{posts:[]}]}
+        // 1) try posts with current filters
+        let data = await fetchJSONFromProdFirst(urlWithParams);
+
+        // 2) if nothing came back, try posts without any params
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+          data = await fetchJSONFromProdFirst(`/api/v0/posts`);
+        }
+
+        // 3) if still nothing, try feed and flatten
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+          const feed = await fetchJSONFromProdFirst(`/api/v0/feed`);
+          if (feed && Array.isArray((feed as any).topics)) {
+            data = (feed as any).topics.flatMap(
+              (t: { posts?: unknown[] }) => t.posts || []
+            );
+          }
+        }
+
+        if (!data) {
+          throw new Error("No data returned from API");
+        }
+
+        // Accept [], {posts:[...]}, {topics:[{posts:[]}]}
         let postsData: unknown[] = [];
-        if (Array.isArray(data)) postsData = data;
-        else if (Array.isArray((data as any)?.posts)) postsData = (data as any).posts;
-        else if (Array.isArray((data as any)?.topics)) {
-          postsData = (data as any).topics.flatMap((t: { posts?: unknown[] }) => t.posts || []);
+        if (Array.isArray(data)) {
+          postsData = data;
+        } else if (Array.isArray((data as any)?.posts)) {
+          postsData = (data as any).posts;
+        } else if (Array.isArray((data as any)?.topics)) {
+          postsData = (data as any).topics.flatMap(
+            (t: { posts?: unknown[] }) => t.posts || []
+          );
         }
 
         const normalized = (postsData as Record<string, unknown>[])
@@ -172,7 +193,7 @@ export default function Search() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Sign In Required</h2>
-          <p className="text-gray-600 mb-4">Please sign in to search and discover content.</p>
+        <p className="text-gray-600 mb-4">Please sign in to search and discover content.</p>
           <button
             onClick={() => (window.location.href = "/")}
             className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
