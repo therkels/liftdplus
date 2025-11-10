@@ -130,7 +130,10 @@ export default function Search() {
 
         if (Array.isArray(data)) {
           // If it's an array AND its elements are wrappers with "posts", flatten them
-          if (data.length > 0 && data.every((x) => x && typeof x === "object" && "posts" in (x as any))) {
+          if (
+            data.length > 0 &&
+            data.every((x) => x && typeof x === "object" && "posts" in (x as any))
+          ) {
             postsData = (data as any[]).flatMap((x: any) => x.posts || []);
           } else {
             // assume it's already a flat posts array
@@ -352,15 +355,39 @@ export default function Search() {
         </div>
       )}
 
-      {/* Filter Modal */}
-      <PostModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)}>
-        <FilterContent currentFilters={currentFilters} onFiltersUpdate={handleFiltersUpdate} />
-      </PostModal>
+      {/* --------- Modals (mount only when open to avoid portal conflicts) --------- */}
 
-      {/* Post Modal */}
-      <PostModal isOpen={isModalOpen} onClose={closePostModal}>
-        {selectedPost && <PostContent post={selectedPost as any} />}
-      </PostModal>
+      {/* Filter Modal — mount only when open */}
+      {isFilterModalOpen && (
+        <PostModal
+          isOpen
+          onClose={() => setIsFilterModalOpen(false)}
+          key="filter-modal"
+        >
+          <FilterContent
+            currentFilters={currentFilters}
+            onFiltersUpdate={(nf) => {
+              pageCache.invalidate("search:");
+              setCurrentFilters((prev) => ({ ...prev, ...(nf as any) }));
+              setIsFilterModalOpen(false);
+            }}
+          />
+        </PostModal>
+      )}
+
+      {/* Post Modal — mount only when open */}
+      {isModalOpen && (
+        <PostModal
+          isOpen
+          onClose={() => {
+            // console.log("PostModal onClose fired"); // quick debug if needed
+            closePostModal();
+          }}
+          key="post-modal"
+        >
+          {selectedPost && <PostContent post={selectedPost as any} />}
+        </PostModal>
+      )}
     </div>
   );
 }
