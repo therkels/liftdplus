@@ -1,105 +1,88 @@
-import { useState } from "react";
-import { PostData } from "@/components/site_core/PostContent";
-import { Post } from "@/utils/postTransformers";
+"use client";
 
-/**
- * Fetches full post content and transforms it for the PostContent modal
- * @param post - The basic post data from search/feed results
- * @returns Promise<PostData> - Full post data with markdown content
- */
-export async function fetchFullPostContent(post: Post): Promise<PostData> {
-  console.log("Fetching full post content for:", post.post_id);
+import { useCallback, useState } from "react";
 
-  // Fetch the full post content
-  const response = await fetch(`/api/v0/posts/${post.post_id}`);
+/** Minimal shape a card has on the Explore page */
+type MinimalPost = {
+  slug?: string | null;
+  display_id?: string | number | null;
+  post_id?: string | number | null;
+  id?: string | number | null;
+};
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch post: ${response.statusText}`);
+/** Full shape returned by the API used by PostContent / PostModal */
+export type FullPost = {
+  post_id: string;
+  cover_image_url: string | null;
+  title: string;
+  secondary_title: string | null;
+  author_name: string | null;
+  author_photo?: string | null;
+  like_count?: number;
+  user_liked?: boolean;
+  user_archived?: boolean;
+  tags?: string[];
+  content_type: "text" | "image";
+  content?: string | null;
+  images?: string[];
+  slug?: string | null;
+  display_id?: number | null;
+  // allow passthrough fields without TS whining
+  [key: string]: any;
+};
+
+/** Fetch the full post, preferring slug; falls back to numeric ids. */
+export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
+  // Prefer slug; otherwise try display_id; then post_id/id
+  const key =
+    (input.slug ??
+      input.display_id ??
+      input.post_id ??
+      input.id ??
+      "") as string | number;
+
+  if (key === "" || key === null || key === undefined) {
+    throw new Error("No key available to fetch post");
   }
 
-  const result = await response.json();
+  // Always call the SINGULAR route (works in your app)
+  const urls = [
+    `/api/v0/post/${encodeURIComponent(String(key))}`, // same env
+    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(String(key))}`, // hard fallback to prod
+  ];
 
-  const fullPost = result[0];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) continue;
 
-  if (!fullPost) {
-    throw new Error("Post not found");
+      const json = (await res.json().catch(() => null)) as
+        | { post?: FullPost }
+        | null;
+
+      if (json?.post) return json.post;
+    } catch {
+      // try next URL
+    }
   }
 
-  // Transform the full post data to match PostData interface
-  const transformedPost: PostData & {
-    user_liked: boolean;
-    user_archived: boolean;
-  } = {
-    post_id: fullPost.id?.toString() || post.post_id,
-    cover_image_url: fullPost.cover_image_url || post.cover_image_url,
-    title: fullPost.title || post.title,
-    secondary_title: fullPost.secondary_title || post.secondary_title,
-    author_name: fullPost.author_name || post.author_name,
-    author_photo: fullPost.author_photo || post.author_photo,
-    like_count: fullPost.like_count || post.like_count,
-    user_liked: Boolean(fullPost.user_liked),
-    user_archived: Boolean(fullPost.user_archived),
-    tags: [
-      ...(Array.isArray(fullPost.topic_tags)
-        ? fullPost.topic_tags
-        : [fullPost.topic_tags].filter(Boolean)),
-      ...(Array.isArray(fullPost.format_tags)
-        ? fullPost.format_tags
-        : [fullPost.format_tags].filter(Boolean)),
-      ...(Array.isArray(fullPost.audience_tags)
-        ? fullPost.audience_tags
-        : [fullPost.audience_tags].filter(Boolean)),
-    ].filter(Boolean),
-    content_type: fullPost.config?.images?.length > 0 ? "image" : "text",
-    content: fullPost.markdown || "",
-    images: fullPost.config?.images || [],
-  };
-
-  return transformedPost;
+  throw new Error("Failed to fetch post");
 }
 
-/**
- * Handles post click with error handling and modal opening
- * @param post - The post to open
- * @param setSelectedPost - State setter for selected post
- * @param setIsModalOpen - State setter for modal visibility
- */
-export async function handlePostClick(
-  post: Post,
-  setSelectedPost: (post: PostData | null) => void,
-  setIsModalOpen: (open: boolean) => void
-): Promise<void> {
-  try {
-    const fullPost = await fetchFullPostContent(post);
-    setSelectedPost(fullPost);
-    setIsModalOpen(true);
-  } catch (error) {
-    console.error("Error fetching post content:", error);
-    alert("Failed to load post content. Please try again.");
-  }
-}
-
-/**
- * Custom hook for post modal management
- * @returns Object with modal state and handlers
- */
+/** Simple modal controller used by cards to open a post */
 export function usePostModal() {
-  const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<FullPost | null>(null);
 
-  const openPostModal = async (post: Post) => {
-    await handlePostClick(post, setSelectedPost, setIsModalOpen);
-  };
+  const openPostModal = useCallback(async (cardPost: MinimalPost) => {
+    const full = await fetchFullPost(cardPost);
+    setSelectedPost(full);
+    setIsModalOpen(true);
+  }, []);
 
-  const closePostModal = () => {
+  const closePostModal = useCallback(() => {
     setIsModalOpen(false);
-    setSelectedPost(null);
-  };
+  }, []);
 
-  return {
-    selectedPost,
-    isModalOpen,
-    openPostModal,
-    closePostModal,
-  };
+  return { selectedPost, isModalOpen, openPostModal, closePostModal };
 }
