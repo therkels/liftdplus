@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -16,11 +16,13 @@ import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
 import { usePostModal } from "@/utils/postHelpers";
 
-/* ------------------------ small helper: prod-first fetch ------------------------ */
+export const dynamic = "force-dynamic";
+
+/* ------------------------ prod-first fetch helper ------------------------ */
 async function fetchJSONFromProdFirst(url: string) {
   const urls = [
     `https://app.liftdplus.com${url}`, // prod
-    url, // same-origin (works on preview or prod too)
+    url, // same-origin (works on preview or prod)
   ];
   for (const u of urls) {
     try {
@@ -28,26 +30,18 @@ async function fetchJSONFromProdFirst(url: string) {
       if (!res.ok) continue;
       return await res.json();
     } catch {
-      // try next
+      /* try next */
     }
   }
   return null;
 }
 
-/* ---------------------------------- Types ---------------------------------- */
 type CurrentFilters = {
   sortBy: string;
   audience: string[];
   category: string[];
 };
 
-/* ------------------------------ tiny utils ------------------------------ */
-const safeSlugFromTitle = (t: unknown) =>
-  typeof t === "string"
-    ? t.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
-    : undefined;
-
-/* --------------------------------- Page ---------------------------------- */
 export default function Search() {
   const router = useRouter();
 
@@ -67,11 +61,12 @@ export default function Search() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // filter modal
+  // modals
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
-  // post modal (shared helper)
   const { selectedPost, isModalOpen, openPostModal, closePostModal } = usePostModal();
+
+  // just for guarding double-runs in strict mode logs
+  const mountedRef = useRef(false);
 
   /* ------------------------------ Auth bootstrap ------------------------------ */
   useEffect(() => {
@@ -80,17 +75,27 @@ export default function Search() {
     const initAuth = async () => {
       const supabase = await createClient();
 
-      // initial user
-      const { data: { user } } = await supabase.auth.getUser();
+      // initial user (no refresh needed)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user ?? null);
+      console.log("[Search] auth bootstrap -> user:", !!user ? user.id : null);
 
-      // updates (guard unsubscribe)
+      // live updates with proper cleanup
       const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
+        const u = session?.user ?? null;
+        console.log("[Search] onAuthStateChange -> user:", u?.id || null);
+        setUser(u);
+        // nuke any stale search cache on auth change
         pageCache.invalidate("search:");
       });
+
       subscription = authSub;
     };
+
+    // nuke stale cache on mount
+    pageCache.invalidate("search:");
 
     initAuth();
 
@@ -102,77 +107,65 @@ export default function Search() {
   }, []);
 
   /* ------------------------------ Load posts ------------------------------ */
-  useEffect(() => {
-    if (!user) return; // wait until we know the user
+  const loadPosts = useCallback(async () => {
+    if (!user) {
+      console.log("[Search] loadPosts skipped: user is null");
+      return;
+    }
 
-    const loadPosts = async () => {
-      try {
-        // cache key ties to user & filters
-        const cacheKey = `search:${JSON.stringify(currentFilters)}:${user.id}`;
-        const cached = pageCache.get(cacheKey) as Post[] | null;
-        if (cached) {
-          setPosts(cached);
-          setLoading(false);
-          return;
-        }
+    const query = buildPostsQueryParams(currentFilters);
+    const url = `/api/v0/posts?${query}`;
+    console.log("[Search] fetching:", url);
 
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const queryParams = buildPostsQueryParams(currentFilters);
-        const data = await fetchJSONFromProdFirst(`/api/v0/posts?${queryParams}`);
-        if (!data) throw new Error("Failed to fetch posts");
+      // TEMP: bypass local cache to ensure we always hit the API while debugging
+      const data = await fetchJSONFromProdFirst(url);
+      if (!data) throw new Error("No data returned from /api/v0/posts");
 
-        // Accept several shapes: [], {posts:[...]}, {topics:[{posts:[]}]}
-        let postsData: unknown[] = [];
-        if (Array.isArray(data)) {
-          postsData = data;
-        } else if (Array.isArray((data as any)?.posts)) {
-          postsData = (data as any).posts;
-        } else if (Array.isArray((data as any)?.topics)) {
-          postsData = (data as any).topics.flatMap(
-            (t: { posts?: unknown[] }) => t.posts || []
-          );
-        }
-
-        // Normalize WITHOUT inventing fake post_id values
-        const normalized = (postsData as Record<string, unknown>[]).map((raw) => {
-          const slug =
-            (raw as any).slug ??
-            safeSlugFromTitle((raw as any).title) ??
-            undefined;
-
-          const realId =
-            (raw as any).post_id ??
-            (raw as any).id ??
-            undefined;
-
-          return {
-            ...(raw as any),
-            slug,                                  // prefer slug routing
-            post_id: realId ? String(realId) : undefined, // no "0" or index fallback
-            user_liked: Boolean((raw as any).user_liked),
-            user_archived: Boolean((raw as any).user_archived),
-          } as Post;
-        });
-
-        // Optional: drop items with neither slug nor title
-        const safe = normalized.filter(
-          (p: any) => p?.slug || typeof p?.title === "string"
+      // Accept several shapes: [], {posts:[...]}, {topics:[{posts:[]}]}
+      let postsData: unknown[] = [];
+      if (Array.isArray(data)) {
+        postsData = data;
+      } else if (Array.isArray((data as any)?.posts)) {
+        postsData = (data as any).posts;
+      } else if (Array.isArray((data as any)?.topics)) {
+        postsData = (data as any).topics.flatMap(
+          (t: { posts?: unknown[] }) => t.posts || []
         );
-
-        pageCache.set(cacheKey, safe);
-        setPosts(safe);
-      } catch (err) {
-        console.error("Error loading posts:", err);
-        setError("Failed to load posts. Please try again.");
-      } finally {
-        setLoading(false);
       }
-    };
 
-    loadPosts();
+      const normalized = (postsData as Record<string, unknown>[])
+        .map((post, index) => ({
+          ...(post as any),
+          post_id:
+            (post as any).id?.toString?.() ||
+            (post as any).post_id?.toString?.() ||
+            String(index),
+          user_liked: Boolean((post as any).user_liked),
+          user_archived: Boolean((post as any).user_archived),
+        })) as Post[];
+
+      console.log("[Search] fetched posts:", normalized.length);
+      setPosts(normalized);
+    } catch (e: any) {
+      console.error("[Search] loadPosts error:", e?.message || e);
+      setError("Failed to load posts. Please try again.");
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
   }, [user, currentFilters]);
+
+  useEffect(() => {
+    // avoid double log spam in Strict Mode, but still call loadPosts on updates
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+    }
+    loadPosts();
+  }, [loadPosts]);
 
   /* --------------------------- Filter change handler --------------------------- */
   const handleFiltersUpdate = (newFilters: Record<string, unknown>) => {
@@ -183,7 +176,7 @@ export default function Search() {
     }));
   };
 
-  /* --------------------------- Not signed-in fallback -------------------------- */
+  /* ----------------------------------- UI ----------------------------------- */
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -201,7 +194,6 @@ export default function Search() {
     );
   }
 
-  /* ----------------------------------- UI ----------------------------------- */
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -285,7 +277,10 @@ export default function Search() {
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <p>{error}</p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                pageCache.invalidate("search:");
+                loadPosts();
+              }}
               className="mt-2 text-sm underline"
             >
               Try again
@@ -317,8 +312,16 @@ export default function Search() {
         <div className="px-4 py-4">
           {posts.length > 0 ? (
             posts.map((content, index) => {
-              const key = `search-post-${(content as any).post_id ?? (content as any).slug ?? index}`;
-              const slug = (content as any).slug;
+              const key = `search-post-${(content as any).post_id || index}`;
+              const slug =
+                (content as any).slug ??
+                (typeof (content as any).title === "string"
+                  ? (content as any).title
+                      .toLowerCase()
+                      .trim()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "")
+                  : null);
 
               return slug ? (
                 <Link key={key} href={`/post/${slug}`} className="block">
@@ -339,7 +342,7 @@ export default function Search() {
               );
             })
           ) : (
-            <div className="text-center py-8">
+            <div className="text-center py-16">
               <p className="text-gray-600">No posts found matching your filters.</p>
               <p className="text-sm text-gray-500 mt-2">Try adjusting your search criteria.</p>
             </div>
@@ -349,10 +352,7 @@ export default function Search() {
 
       {/* Filter Modal */}
       <PostModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)}>
-        <FilterContent
-          currentFilters={currentFilters}
-          onFiltersUpdate={handleFiltersUpdate}
-        />
+        <FilterContent currentFilters={currentFilters} onFiltersUpdate={handleFiltersUpdate} />
       </PostModal>
 
       {/* Post Modal */}
