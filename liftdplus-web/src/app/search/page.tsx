@@ -20,7 +20,7 @@ import { usePostModal } from "@/utils/postHelpers";
 async function fetchJSONFromProdFirst(url: string) {
   const urls = [
     `https://app.liftdplus.com${url}`, // prod
-    url, // same-origin (works on preview or prod too)
+    url, // same-origin (preview or prod)
   ];
   for (const u of urls) {
     try {
@@ -28,7 +28,7 @@ async function fetchJSONFromProdFirst(url: string) {
       if (!res.ok) continue;
       return await res.json();
     } catch {
-      // try the next one
+      /* try next */
     }
   }
   return null;
@@ -64,37 +64,42 @@ export default function Search() {
   // filter modal
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  // post modal (reuse shared helper so it fetches full content safely)
+  // post modal (shared helper)
   const { selectedPost, isModalOpen, openPostModal, closePostModal } = usePostModal();
 
-  /* ------------------------------ Auth bootstrap ------------------------------ */
+  /* ------------------------------ Auth bootstrap (FIXED) ------------------------------ */
   useEffect(() => {
-    let subscription: { unsubscribe: () => void } | null = null;
+    let sub: { unsubscribe: () => void } | null = null;
 
     const initAuth = async () => {
       const supabase = await createClient();
 
-      // 1) initial user (no refresh needed)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      // 1) initial user
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user ?? null);
 
-      // 2) live updates with proper cleanup (prevents “unsubscribe is not a function”)
-      const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
+      // 2) subscribe and normalize returned object
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
-        // optional: clear search page cache on auth change
         pageCache.invalidate("search:");
       });
 
-      subscription = authSub;
+      // Supabase v2: data = { subscription }
+      // Older typings sometimes return subscription directly; handle both.
+      // @ts-ignore — tolerate shape differences
+      const maybeSub = data?.subscription ?? data;
+      if (maybeSub && typeof maybeSub.unsubscribe === "function") {
+        sub = maybeSub;
+      }
     };
 
     initAuth();
 
     return () => {
-      if (subscription && typeof subscription.unsubscribe === "function") {
-        subscription.unsubscribe();
+      try {
+        if (sub && typeof sub.unsubscribe === "function") sub.unsubscribe();
+      } catch {
+        /* no-op */
       }
     };
   }, []);
@@ -105,7 +110,6 @@ export default function Search() {
 
     const loadPosts = async () => {
       try {
-        // cache key ties to user & filters
         const cacheKey = `search:${JSON.stringify(currentFilters)}:${user.id}`;
         const cached = pageCache.get(cacheKey) as Post[] | null;
         if (cached) {
@@ -118,23 +122,17 @@ export default function Search() {
         setError(null);
 
         const queryParams = buildPostsQueryParams(currentFilters);
-        // prod-first fetch avoids “refresh to see content” issues on preview
         const data = await fetchJSONFromProdFirst(`/api/v0/posts?${queryParams}`);
         if (!data) throw new Error("Failed to fetch posts");
 
-        // Accept several shapes: [], {posts:[...]}, {topics:[{posts:[]}]}
+        // Accept [], {posts:[...]}, or {topics:[{posts:[]}]}
         let postsData: unknown[] = [];
-        if (Array.isArray(data)) {
-          postsData = data;
-        } else if (Array.isArray((data as any)?.posts)) {
-          postsData = (data as any).posts;
-        } else if (Array.isArray((data as any)?.topics)) {
-          postsData = (data as any).topics.flatMap(
-            (t: { posts?: unknown[] }) => t.posts || []
-          );
+        if (Array.isArray(data)) postsData = data;
+        else if (Array.isArray((data as any)?.posts)) postsData = (data as any).posts;
+        else if (Array.isArray((data as any)?.topics)) {
+          postsData = (data as any).topics.flatMap((t: { posts?: unknown[] }) => t.posts || []);
         }
 
-        // Normalize shape expected by <Card />
         const normalized = (postsData as Record<string, unknown>[])
           .map((post, index) => ({
             ...(post as any),
@@ -161,7 +159,6 @@ export default function Search() {
 
   /* --------------------------- Filter change handler --------------------------- */
   const handleFiltersUpdate = (newFilters: Record<string, unknown>) => {
-    // Invalidate any search cache on filter change
     pageCache.invalidate("search:");
     setCurrentFilters((prev) => ({
       ...prev,
@@ -316,7 +313,11 @@ export default function Search() {
 
               return slug ? (
                 <Link key={key} href={`/post/${slug}`} className="block">
-                  <Card post={{ ...(content as any), slug } as any} readTime={(content as any).secondary_title || "5 min read"} layout="horizontal" />
+                  <Card
+                    post={{ ...(content as any), slug } as any}
+                    readTime={(content as any).secondary_title || "5 min read"}
+                    layout="horizontal"
+                  />
                 </Link>
               ) : (
                 <Card
