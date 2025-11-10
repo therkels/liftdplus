@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -16,13 +16,11 @@ import { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
 import { usePostModal } from "@/utils/postHelpers";
 
-export const dynamic = "force-dynamic";
-
 /* ------------------------ prod-first fetch helper ------------------------ */
 async function fetchJSONFromProdFirst(url: string) {
   const urls = [
     `https://app.liftdplus.com${url}`, // prod
-    url, // same-origin (works on preview or prod)
+    url, // same-origin (works on preview or prod too)
   ];
   for (const u of urls) {
     try {
@@ -30,22 +28,24 @@ async function fetchJSONFromProdFirst(url: string) {
       if (!res.ok) continue;
       return await res.json();
     } catch {
-      /* try next */
+      // try the next one
     }
   }
   return null;
 }
 
+/* ---------------------------------- Types ---------------------------------- */
 type CurrentFilters = {
   sortBy: string;
   audience: string[];
   category: string[];
 };
 
+/* --------------------------------- Page ---------------------------------- */
 export default function Search() {
   const router = useRouter();
 
-  // auth (OPTIONAL for this page)
+  // auth
   const [user, setUser] = useState<{
     id: string;
     user_metadata?: { avatar_url?: string };
@@ -61,39 +61,34 @@ export default function Search() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // modals
+  // filter modal
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // post modal
   const { selectedPost, isModalOpen, openPostModal, closePostModal } = usePostModal();
 
-  const mountedRef = useRef(false);
-
-  /* ------------------------------ Auth bootstrap (no blocking) ------------------------------ */
+  /* ------------------------------ Auth bootstrap ------------------------------ */
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null;
 
     const initAuth = async () => {
-      try {
-        const supabase = await createClient();
+      const supabase = await createClient();
 
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        setUser(user ?? null);
-        console.log("[Search] auth bootstrap -> user:", user?.id || null);
+      // 1) initial user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user ?? null);
 
-        const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
-          const u = session?.user ?? null;
-          console.log("[Search] onAuthStateChange -> user:", u?.id || null);
-          setUser(u);
-          pageCache.invalidate("search:");
-        });
-        subscription = authSub;
-      } catch (e) {
-        console.warn("[Search] auth init error (non-fatal):", e);
-      }
+      // 2) live updates with proper cleanup
+      const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+        pageCache.invalidate("search:");
+      });
+
+      subscription = authSub;
     };
 
-    pageCache.invalidate("search:");
     initAuth();
 
     return () => {
@@ -104,56 +99,77 @@ export default function Search() {
   }, []);
 
   /* ------------------------------ Load posts ------------------------------ */
-  const loadPosts = useCallback(async () => {
-    const query = buildPostsQueryParams(currentFilters);
-    const url = `/api/v0/posts?${query}`;
-    console.log("[Search] fetching:", url, "as user:", user?.id || "anon");
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await fetchJSONFromProdFirst(url);
-      if (!data) throw new Error("No data returned from /api/v0/posts");
-
-      // Accept several shapes: [], {posts:[...]}, {topics:[{posts:[]}]}
-      let postsData: unknown[] = [];
-      if (Array.isArray(data)) {
-        postsData = data;
-      } else if (Array.isArray((data as any)?.posts)) {
-        postsData = (data as any).posts;
-      } else if (Array.isArray((data as any)?.topics)) {
-        postsData = (data as any).topics.flatMap(
-          (t: { posts?: unknown[] }) => t.posts || []
-        );
-      }
-
-      const normalized = (postsData as Record<string, unknown>[])
-        .map((post, index) => ({
-          ...(post as any),
-          post_id:
-            (post as any).id?.toString?.() ||
-            (post as any).post_id?.toString?.() ||
-            String(index),
-          user_liked: Boolean((post as any).user_liked),
-          user_archived: Boolean((post as any).user_archived),
-        })) as Post[];
-
-      console.log("[Search] fetched posts:", normalized.length);
-      setPosts(normalized);
-    } catch (e: any) {
-      console.error("[Search] loadPosts error:", e?.message || e);
-      setError("Failed to load posts. Please try again.");
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentFilters, user?.id]); // user.id only affects logs/cache keys, not required
-
   useEffect(() => {
-    if (!mountedRef.current) mountedRef.current = true;
+    if (!user) return; // wait until we know the user
+
+    const loadPosts = async () => {
+      try {
+        // cache key ties to user & filters
+        const cacheKey = `search:${JSON.stringify(currentFilters)}:${user.id}`;
+        const cached = pageCache.get(cacheKey) as Post[] | null;
+        if (cached) {
+          setPosts(cached);
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        const queryParams = buildPostsQueryParams(currentFilters);
+        const data = await fetchJSONFromProdFirst(`/api/v0/posts?${queryParams}`);
+        if (!data) throw new Error("Failed to fetch posts");
+
+        // ---- SMART NORMALIZATION ----
+        // Accept any of these shapes:
+        // A) [{ posts: [...] }]                 <-- your current API response
+        // B) { posts: [...] }
+        // C) { topics: [{ posts: [...] }, ...] }
+        // D) [ ...flatPosts ]
+        let postsData: unknown[] = [];
+
+        if (Array.isArray(data)) {
+          // If it's an array AND its elements are wrappers with "posts", flatten them
+          if (data.length > 0 && data.every((x) => x && typeof x === "object" && "posts" in (x as any))) {
+            postsData = (data as any[]).flatMap((x: any) => x.posts || []);
+          } else {
+            // assume it's already a flat posts array
+            postsData = data;
+          }
+        } else if (data && typeof data === "object") {
+          if (Array.isArray((data as any).posts)) {
+            postsData = (data as any).posts;
+          } else if (Array.isArray((data as any).topics)) {
+            postsData = (data as any).topics.flatMap(
+              (t: { posts?: unknown[] }) => t.posts || []
+            );
+          }
+        }
+
+        // Normalize shape expected by <Card />
+        const normalized = (postsData as Record<string, unknown>[])
+          .map((post, index) => ({
+            ...(post as any),
+            post_id:
+              (post as any).id?.toString?.() ||
+              (post as any).post_id?.toString?.() ||
+              String(index),
+            user_liked: Boolean((post as any).user_liked),
+            user_archived: Boolean((post as any).user_archived),
+          })) as Post[];
+
+        pageCache.set(cacheKey, normalized);
+        setPosts(normalized);
+      } catch (err) {
+        console.error("Error loading posts:", err);
+        setError("Failed to load posts. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadPosts();
-  }, [loadPosts]);
+  }, [user, currentFilters]);
 
   /* --------------------------- Filter change handler --------------------------- */
   const handleFiltersUpdate = (newFilters: Record<string, unknown>) => {
@@ -163,6 +179,24 @@ export default function Search() {
       ...(newFilters as CurrentFilters),
     }));
   };
+
+  /* --------------------------- Not signed-in fallback -------------------------- */
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Sign In Required</h2>
+          <p className="text-gray-600 mb-4">Please sign in to search and discover content.</p>
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   /* ----------------------------------- UI ----------------------------------- */
   return (
@@ -215,18 +249,27 @@ export default function Search() {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-gray-600">Current filters:</span>
 
+          {/* Sort */}
           <div className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
             {getSortDisplayName(currentFilters.sortBy)}
           </div>
 
+          {/* Audience */}
           {currentFilters.audience.map((a) => (
-            <div key={a} className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
+            <div
+              key={a}
+              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
+            >
               {a}
             </div>
           ))}
 
+          {/* Category */}
           {currentFilters.category.map((c) => (
-            <div key={c} className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
+            <div
+              key={c}
+              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
+            >
               {c}
             </div>
           ))}
@@ -239,10 +282,7 @@ export default function Search() {
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <p>{error}</p>
             <button
-              onClick={() => {
-                pageCache.invalidate("search:");
-                loadPosts();
-              }}
+              onClick={() => window.location.reload()}
               className="mt-2 text-sm underline"
             >
               Try again
@@ -304,7 +344,7 @@ export default function Search() {
               );
             })
           ) : (
-            <div className="text-center py-16">
+            <div className="text-center py-8">
               <p className="text-gray-600">No posts found matching your filters.</p>
               <p className="text-sm text-gray-500 mt-2">Try adjusting your search criteria.</p>
             </div>
