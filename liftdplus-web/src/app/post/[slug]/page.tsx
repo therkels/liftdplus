@@ -2,7 +2,9 @@
 import { notFound } from "next/navigation";
 import PostContent from "@/components/site_core/PostContent";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 async function getPost(slug: string) {
   // 1) Try PRODUCTION first (has the complete data), then Preview
