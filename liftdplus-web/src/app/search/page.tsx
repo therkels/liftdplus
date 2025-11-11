@@ -1,7 +1,6 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -12,7 +11,7 @@ import Card from "@/components/site_core/Card";
 import FilterContent from "@/components/site_core/FilterContent";
 import { HiOutlineAdjustments } from "react-icons/hi";
 import { buildPostsQueryParams, getSortDisplayName } from "@/utils/tagMapper";
-import { Post } from "@/utils/postTransformers";
+import type { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
 import { usePostModal } from "@/utils/postHelpers";
 
@@ -122,21 +121,19 @@ export default function Search() {
 
         // ---- SMART NORMALIZATION ----
         // Accept any of these shapes:
-        // A) [{ posts: [...] }]                 <-- your current API response
+        // A) [{ posts: [...] }]                 <-- current API
         // B) { posts: [...] }
         // C) { topics: [{ posts: [...] }, ...] }
         // D) [ ...flatPosts ]
         let postsData: unknown[] = [];
 
         if (Array.isArray(data)) {
-          // If it's an array AND its elements are wrappers with "posts", flatten them
           if (
             data.length > 0 &&
             data.every((x) => x && typeof x === "object" && "posts" in (x as any))
           ) {
             postsData = (data as any[]).flatMap((x: any) => x.posts || []);
           } else {
-            // assume it's already a flat posts array
             postsData = data;
           }
         } else if (data && typeof data === "object") {
@@ -318,6 +315,9 @@ export default function Search() {
           {posts.length > 0 ? (
             posts.map((content, index) => {
               const key = `search-post-${(content as any).post_id || index}`;
+
+              // keep slug normalization in case Card renders any internal href,
+              // but do NOT wrap with <Link> here; we want modal behavior on click.
               const slug =
                 (content as any).slug ??
                 (typeof (content as any).title === "string"
@@ -328,21 +328,13 @@ export default function Search() {
                       .replace(/[^a-z0-9-]/g, "")
                   : null);
 
-              return slug ? (
-                <Link key={key} href={`/post/${slug}`} className="block">
-                  <Card
-                    post={{ ...(content as any), slug } as any}
-                    readTime={(content as any).secondary_title || "5 min read"}
-                    layout="horizontal"
-                  />
-                </Link>
-              ) : (
+              return (
                 <Card
                   key={key}
-                  post={content}
+                  post={{ ...(content as any), slug } as any}
                   readTime={(content as any).secondary_title || "5 min read"}
                   layout="horizontal"
-                  onClick={() => openPostModal(content)}
+                  onClick={() => openPostModal(content)} // open modal instead of navigating
                 />
               );
             })
@@ -379,10 +371,8 @@ export default function Search() {
       {isModalOpen && (
         <PostModal
           isOpen
-          onClose={() => {
-            // console.log("PostModal onClose fired"); // quick debug if needed
-            closePostModal();
-          }}
+          onClose={closePostModal}
+          showClose
           key="post-modal"
         >
           {selectedPost && <PostContent post={selectedPost as any} />}
