@@ -31,9 +31,12 @@ export async function PUT(req: NextRequest) {
   if (!userId) return json({ error: "not Authenticated" }, 400);
 
   const body = await req.json().catch(() => ({}));
-  const post_id = Number(body?.post_id);
-  const category = (body?.category ?? null) as string | null;
-  const archived = body?.archived !== false;
+console.log("🔥 ARCHIVE PUT body:", body);   // <-- Add this line
+
+const post_id = Number(body?.post_id);
+const category = (body?.category ?? null) as string | null;
+const archived = body?.archived !== false;
+
 
   if (!post_id || Number.isNaN(post_id)) {
     return json({ error: "post_id is required" }, 400);
@@ -48,9 +51,10 @@ export async function PUT(req: NextRequest) {
       .delete()
       .eq("user_id", userId)
       .eq("post_id", post_id);
-    if (error) return json({ error: error.message }, 500);
-    return json({ ok: true, archived: false });
-  }
+    if (error) {
+  console.error("🧹 ARCHIVE DELETE error:", error);  // <— Add here
+  return json({ error: error.message }, 500);
+}
 
   const { error } = await supabase
     .schema(SCHEMA)
@@ -60,9 +64,11 @@ export async function PUT(req: NextRequest) {
       { onConflict: "user_id,post_id" } // requires unique(user_id, post_id)
     );
 
-  if (error) return json({ error: error.message }, 500);
-  return json({ ok: true, archived: true });
+  if (error) {
+  console.error("📦 ARCHIVE UPSERT error:", error);  // <— Add here
+  return json({ error: error.message }, 500);
 }
+
 
 /**
  * DELETE /api/v0/posts/archive
