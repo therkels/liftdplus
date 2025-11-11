@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 
 /** Minimal shape a card has on the Explore page */
 type MinimalPost = {
@@ -33,7 +34,6 @@ export type FullPost = {
 
 /** Fetch the full post, preferring slug; falls back to numeric ids. */
 export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
-  // Prefer slug; otherwise try display_id; then post_id/id
   const key =
     (input.slug ??
       input.display_id ??
@@ -45,32 +45,18 @@ export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
     throw new Error("No key available to fetch post");
   }
 
-  // Always call the SINGULAR route (works in your app)
-  const urls = [
-    `/api/v0/post/${encodeURIComponent(String(key))}`, // same env
-    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(String(key))}`, // hard fallback to prod
-  ];
-
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) continue;
-
-      const json = (await res.json().catch(() => null)) as
-        | { post?: FullPost }
-        | null;
-
-      if (json?.post) return json.post;
-    } catch {
-      // try next URL
-    }
-  }
-
-  throw new Error("Failed to fetch post");
+  // Always call the SINGULAR route
+  const url = `/api/v0/post/${encodeURIComponent(String(key))}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch post");
+  const json = (await res.json().catch(() => null)) as { post?: FullPost } | null;
+  if (!json?.post) throw new Error("Post missing from API response");
+  return json.post;
 }
 
 /** Simple modal controller used by cards to open a post */
 export function usePostModal() {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<FullPost | null>(null);
 
@@ -78,11 +64,16 @@ export function usePostModal() {
     const full = await fetchFullPost(cardPost);
     setSelectedPost(full);
     setIsModalOpen(true);
-  }, []);
+    if (full?.slug) {
+      router.push(`/post/${full.slug}`, { scroll: false });
+    }
+  }, [router]);
 
   const closePostModal = useCallback(() => {
     setIsModalOpen(false);
-  }, []);
+    setSelectedPost(null);
+    router.back();
+  }, [router]);
 
   return { selectedPost, isModalOpen, openPostModal, closePostModal };
 }
