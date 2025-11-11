@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 export const dynamic = "force-dynamic";
 
 const SCHEMA = "private";
-const ARCHIVE_TABLE = "archives"; // you showed this table exists
+const ARCHIVE_TABLE = "archives";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -16,7 +16,9 @@ function json(body: unknown, status = 200) {
 
 async function getAuthedUserId() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   return user?.id ?? null;
 }
 
@@ -30,13 +32,12 @@ export async function PUT(req: NextRequest) {
   const userId = await getAuthedUserId();
   if (!userId) return json({ error: "not Authenticated" }, 400);
 
-  const body = await req.json().catch(() => ({}));
-console.log("🔥 ARCHIVE PUT body:", body);   // <-- Add this line
+  const body = await req.json().catch(() => ({} as any));
+  console.log("🔥 ARCHIVE PUT body:", body);
 
-const post_id = Number(body?.post_id);
-const category = (body?.category ?? null) as string | null;
-const archived = body?.archived !== false;
-
+  const post_id = Number(body?.post_id);
+  const category = (body?.category ?? null) as string | null;
+  const archived = body?.archived !== false;
 
   if (!post_id || Number.isNaN(post_id)) {
     return json({ error: "post_id is required" }, 400);
@@ -51,24 +52,28 @@ const archived = body?.archived !== false;
       .delete()
       .eq("user_id", userId)
       .eq("post_id", post_id);
+
     if (error) {
-  console.error("🧹 ARCHIVE DELETE error:", error);  // <— Add here
-  return json({ error: error.message }, 500);
-}
+      console.error("🧹 ARCHIVE DELETE error:", error);
+      return json({ error: error.message }, 500);
+    }
+    return json({ ok: true, archived: false });
+  }
 
   const { error } = await supabase
     .schema(SCHEMA)
     .from(ARCHIVE_TABLE)
     .upsert(
       { user_id: userId, post_id, category },
-      { onConflict: "user_id,post_id" } // requires unique(user_id, post_id)
+      { onConflict: "user_id,post_id" }
     );
 
   if (error) {
-  console.error("📦 ARCHIVE UPSERT error:", error);  // <— Add here
-  return json({ error: error.message }, 500);
+    console.error("📦 ARCHIVE UPSERT error:", error);
+    return json({ error: error.message }, 500);
+  }
+  return json({ ok: true, archived: true });
 }
-
 
 /**
  * DELETE /api/v0/posts/archive
@@ -78,7 +83,9 @@ export async function DELETE(req: NextRequest) {
   const userId = await getAuthedUserId();
   if (!userId) return json({ error: "not Authenticated" }, 400);
 
-  const body = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => ({} as any));
+  console.log("🔥 ARCHIVE DELETE body:", body);
+
   const post_id = Number(body?.post_id);
   if (!post_id || Number.isNaN(post_id)) {
     return json({ error: "post_id is required" }, 400);
@@ -92,6 +99,9 @@ export async function DELETE(req: NextRequest) {
     .eq("user_id", userId)
     .eq("post_id", post_id);
 
-  if (error) return json({ error: error.message }, 500);
+  if (error) {
+    console.error("🧹 ARCHIVE DELETE error:", error);
+    return json({ error: error.message }, 500);
+  }
   return json({ ok: true, archived: false });
 }
