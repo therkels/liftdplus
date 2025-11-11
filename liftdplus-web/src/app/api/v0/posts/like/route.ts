@@ -1,98 +1,97 @@
 // src/app/api/v0/posts/like/route.ts
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-// your tables live in the "private" schema
 const SCHEMA = "private";
-const LIKES_TABLE = "likes"; // you showed this in Supabase UI
+const LIKES_TABLE = "likes"; // ✅ your table name from Supabase
 
-/** Small helpers */
-async function getAuthedUserId() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  return user.id as string;
-}
+// ✅ Handle a PUT (add or toggle like)
+export async function PUT(request: Request) {
+  try {
+    const supabase = await createClient();
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
+    // 1️⃣ Identify user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-/**
- * PUT /api/v0/posts/like
- * Body: { post_id: number, like?: boolean }
- * - if like === false => remove like (same as DELETE)
- * - else => upsert like
- */
-export async function PUT(req: NextRequest) {
-  const userId = await getAuthedUserId();
-  if (!userId) return json({ error: "not Authenticated" }, 400);
+    // 2️⃣ Parse JSON body
+    const body = await request.json().catch(() => null);
+    const post_id = Number(body?.post_id);
+    if (!post_id || Number.isNaN(post_id)) {
+      return NextResponse.json({ error: "Missing or invalid post_id" }, { status: 400 });
+    }
 
-  const body = await req.json().catch(() => ({}));
-  const post_id = Number(body?.post_id);
-  const likeFlag: boolean = body?.like !== false;
+    // 3️⃣ Check if already liked
+    const { data: existing } = await supabase
+      .schema(SCHEMA)
+      .from(LIKES_TABLE)
+      .select("id")
+      .eq("post_id", post_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-  if (!post_id || Number.isNaN(post_id)) {
-    return json({ error: "post_id is required" }, 400);
+    if (existing) {
+      // unlike
+      await supabase
+        .schema(SCHEMA)
+        .from(LIKES_TABLE)
+        .delete()
+        .eq("id", existing.id);
+      return NextResponse.json({ liked: false });
+    } else {
+      // like
+      const { error: insertError } = await supabase
+        .schema(SCHEMA)
+        .from(LIKES_TABLE)
+        .insert([{ post_id, user_id: user.id }]);
+
+      if (insertError) throw insertError;
+      return NextResponse.json({ liked: true });
+    }
+  } catch (e: any) {
+    console.error("PUT /posts/like error:", e);
+    return NextResponse.json(
+      { error: e?.message ?? "Unexpected error" },
+      { status: 500 }
+    );
   }
+}
 
-  const supabase = await createClient();
+// ✅ Handle DELETE (explicit unlike)
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  if (!likeFlag) {
-    // behave like DELETE
+    const body = await request.json().catch(() => null);
+    const post_id = Number(body?.post_id);
+    if (!post_id || Number.isNaN(post_id)) {
+      return NextResponse.json({ error: "Missing or invalid post_id" }, { status: 400 });
+    }
+
     const { error } = await supabase
       .schema(SCHEMA)
       .from(LIKES_TABLE)
       .delete()
-      .eq("user_id", userId)
-      .eq("post_id", post_id);
+      .eq("post_id", post_id)
+      .eq("user_id", user.id);
 
-    if (error) return json({ error: error.message }, 500);
-    return json({ ok: true, liked: false });
-  }
-
-  // upsert the like
-  const { error } = await supabase
-    .schema(SCHEMA)
-    .from(LIKES_TABLE)
-    .upsert(
-      { user_id: userId, post_id },
-      { onConflict: "user_id,post_id" } // requires unique(user_id, post_id)
+    if (error) throw error;
+    return NextResponse.json({ liked: false });
+  } catch (e: any) {
+    console.error("DELETE /posts/like error:", e);
+    return NextResponse.json(
+      { error: e?.message ?? "Unexpected error" },
+      { status: 500 }
     );
-
-  if (error) return json({ error: error.message }, 500);
-  return json({ ok: true, liked: true });
-}
-
-/**
- * DELETE /api/v0/posts/like
- * Body: { post_id: number }
- */
-export async function DELETE(req: NextRequest) {
-  const userId = await getAuthedUserId();
-  if (!userId) return json({ error: "not Authenticated" }, 400);
-
-  const body = await req.json().catch(() => ({}));
-  const post_id = Number(body?.post_id);
-
-  if (!post_id || Number.isNaN(post_id)) {
-    return json({ error: "post_id is required" }, 400);
   }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .schema(SCHEMA)
-    .from(LIKES_TABLE)
-    .delete()
-    .eq("user_id", userId)
-    .eq("post_id", post_id);
-
-  if (error) return json({ error: error.message }, 500);
-  return NextResponse.json({ ok: true, liked: false });
 }
