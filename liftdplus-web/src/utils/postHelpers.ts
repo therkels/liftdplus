@@ -64,9 +64,9 @@ export function usePostModal() {
     const full = await fetchFullPost(cardPost);
     setSelectedPost(full);
     setIsModalOpen(true);
-    if (full?.slug) {
-      router.push(`/post/${full.slug}`, { scroll: false });
-    }
+    // if (full?.slug) {
+    //  router.push(`/post/${full.slug}`, { scroll: false });
+  //  }
   }, [router]);
 
   const closePostModal = useCallback(() => {
