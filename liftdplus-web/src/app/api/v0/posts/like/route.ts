@@ -20,7 +20,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-   // 2️⃣ Parse JSON body
+ // 2️⃣ Parse JSON body
 const body = await request.json().catch(() => null);
 console.log("📦 like body received:", body); // 👈 ADD THIS LINE
 const post_id = Number(body?.post_id);
