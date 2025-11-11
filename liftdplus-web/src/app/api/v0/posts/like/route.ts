@@ -12,7 +12,65 @@ export async function PUT(request: Request) {
   try {
     const supabase = await createClient();
 
-    // 1️⃣ Identify user
+    // 1) Auth
+    const {
+      data: { user },
+      error: authErr,
+    } = await supabase.auth.getUser();
+    if (authErr) {
+      console.error("Auth error:", authErr);
+    }
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    // 2) Parse JSON body
+    const body = await request.json().catch(() => ({}));
+    console.log("🔥 DEBUG body:", body); // <-- this is the line you asked about
+
+    const post_id_raw = body?.post_id ?? body?.postId ?? body?.id;
+    const post_id = Number(post_id_raw);
+
+    if (!post_id || Number.isNaN(post_id)) {
+      return NextResponse.json(
+        { error: "Missing or invalid post_id in request body" },
+        { status: 400 }
+      );
+    }
+
+    // 3) Upsert into private.likes (user_id + post_id)
+    //    Change schema/table/column names if yours differ.
+    const { error: upsertErr } = await supabase
+      .schema("private")
+      .from("likes")
+      .upsert(
+        { user_id: user.id, post_id },
+        { onConflict: "user_id,post_id" }
+      );
+
+    if (upsertErr) {
+      console.error("Upsert like error:", upsertErr);
+      return NextResponse.json(
+        { error: "Failed to like post", details: upsertErr.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, post_id });
+  } catch (e: any) {
+    console.error("PUT /posts/like unexpected error:", e);
+    return NextResponse.json(
+      { error: "Unexpected error", message: e?.message ?? String(e) },
+      { status: 500 }
+    );
+  }
+}
+
+
+// ❌ Handle a DELETE (remove like)
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -20,79 +78,39 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
- // 2️⃣ Parse JSON body
-const body = await request.json().catch(() => null);
-console.log("📦 like body received:", body); // 👈 ADD THIS LINE
-const post_id = Number(body?.post_id);
-if (!post_id || Number.isNaN(post_id)) {
-  return NextResponse.json({ error: "Missing or invalid post_id" }, { status: 400 });
-}
+    const body = await request.json().catch(() => ({}));
+    console.log("🔥 DEBUG body (DELETE):", body);
 
+    const post_id_raw = body?.post_id ?? body?.postId ?? body?.id;
+    const post_id = Number(post_id_raw);
 
-    // 3️⃣ Check if already liked
-    const { data: existing } = await supabase
-      .schema(SCHEMA)
-      .from(LIKES_TABLE)
-      .select("id")
-      .eq("post_id", post_id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (existing) {
-      // unlike
-      await supabase
-        .schema(SCHEMA)
-        .from(LIKES_TABLE)
-        .delete()
-        .eq("id", existing.id);
-      return NextResponse.json({ liked: false });
-    } else {
-      // like
-      const { error: insertError } = await supabase
-        .schema(SCHEMA)
-        .from(LIKES_TABLE)
-        .insert([{ post_id, user_id: user.id }]);
-
-      if (insertError) throw insertError;
-      return NextResponse.json({ liked: true });
-    }
-  } catch (e: any) {
-    console.error("PUT /posts/like error:", e);
-    return NextResponse.json(
-      { error: e?.message ?? "Unexpected error" },
-      { status: 500 }
-    );
-  }
-}
-
-// ✅ Handle DELETE (explicit unlike)
-export async function DELETE(request: Request) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-
-    const body = await request.json().catch(() => null);
-    const post_id = Number(body?.post_id);
     if (!post_id || Number.isNaN(post_id)) {
-      return NextResponse.json({ error: "Missing or invalid post_id" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing or invalid post_id in request body" },
+        { status: 400 }
+      );
     }
 
-    const { error } = await supabase
-      .schema(SCHEMA)
-      .from(LIKES_TABLE)
+    const { error: delErr } = await supabase
+      .schema("private")
+      .from("likes")
       .delete()
-      .eq("post_id", post_id)
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .eq("post_id", post_id);
 
-    if (error) throw error;
-    return NextResponse.json({ liked: false });
+    if (delErr) {
+      console.error("Delete like error:", delErr);
+      return NextResponse.json(
+        { error: "Failed to unlike", details: delErr.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, post_id });
   } catch (e: any) {
-    console.error("DELETE /posts/like error:", e);
+    console.error("DELETE /posts/like unexpected error:", e);
     return NextResponse.json(
-      { error: e?.message ?? "Unexpected error" },
+      { error: "Unexpected error", message: e?.message ?? String(e) },
       { status: 500 }
     );
   }
