@@ -1,57 +1,58 @@
-import type { NextRequest } from "next/server";
+// src/app/api/v0/posts/liked/route.ts
+import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+export const dynamic = "force-dynamic";
+
+/**
+ * GET /api/v0/posts/liked
+ * Returns the current user's liked posts (array).
+ */
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
 
-  if (!user) {
-    return jsonResponse({ error: "not Authenticated" }, 400);
+    // who is the user?
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError) {
+      console.error("Auth error:", authError);
+      return NextResponse.json({ error: "Auth error" }, { status: 401 });
+    }
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    // optional: log the event (safe to keep or remove)
+    await supabase.from("event_logs").insert([
+      {
+        event_type: "get_liked_posts",
+        details: {},
+        user_id: user.id,
+      },
+    ]).catch(() => { /* ignore logging failures */ });
+
+    // call your DB function (RPC) that already assembles liked posts
+    const { data, error } = await supabase.rpc("get_liked_posts", {
+      p_user_id: user.id,
+    });
+
+    if (error) {
+      console.error("RPC get_liked_posts failed:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // should be an array; if not, send empty array
+    return NextResponse.json(Array.isArray(data) ? data : []);
+  } catch (e: any) {
+    console.error("GET /posts/liked crashed:", e);
+    return NextResponse.json(
+      { error: e?.message ?? "Unexpected error" },
+      { status: 500 }
+    );
   }
-
-  await supabase.from("event_logs").insert([
-    {
-      event_type: "get_liked_info",
-      details: {},
-      user_id: user.id,
-    },
-  ]);
-  return getLikedInfo(supabase, user.id);
-}
-
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { posts: string } }
-) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return jsonResponse({ error: "not Authenticated" }, 400);
-  }
-
-  const param_list = params.posts || [];
-}
-
-async function getLikedInfo(supabase: SupabaseClient, user_id: string) {
-  const { data, error } = await supabase.rpc("get_liked_posts", {
-    p_user_id: user_id,
-  });
-  if (error) {
-    console.error("Database error in get_liked_posts:", error);
-    return jsonResponse({ error: error.message }, 500);
-  }
-  return jsonResponse(data);
-}
-
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
 }
