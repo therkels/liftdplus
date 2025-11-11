@@ -31,6 +31,13 @@ export function usePostInteractions(post: PostLike) {
     if (isLoading) return;
 
     const idCandidate = resolveId();
+    console.log("❤️ Like click payload", {
+  rawPost: post,
+  resolvedId: resolveId(),
+  post_id: (post as any)?.post_id,
+  id: (post as any)?.id,
+  display_id: (post as any)?.display_id,
+});
     if (!idCandidate) {
       console.warn("❤️ No post id found on post:", post);
       return;
@@ -63,6 +70,13 @@ export function usePostInteractions(post: PostLike) {
     if (isLoading) return;
 
     const idCandidate = resolveId();
+    console.log("📦 Archive click payload", {
+  rawPost: post,
+  resolvedId: resolveId(),
+  post_id: (post as any)?.post_id,
+  id: (post as any)?.id,
+  display_id: (post as any)?.display_id,
+});
     if (!idCandidate) {
       console.warn("📦 No post id found on post (archive):", post);
       return;
