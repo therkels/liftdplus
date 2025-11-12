@@ -61,7 +61,7 @@ export function usePostModal() {
   const [isModalOpen] = useState(false);
   const [selectedPost] = useState<FullPost | null>(null);
 
- const openPostModal = useCallback((cardPost: MinimalPost) => {
+const openPostModal = useCallback((cardPost: MinimalPost) => {
   // Build the best key we have without fetching
   const key =
     cardPost.slug ??
@@ -77,6 +77,7 @@ export function usePostModal() {
 
   router.push(`/post/${encodeURIComponent(String(key))}`, { scroll: false });
 }, [router]);
+
 
   const closePostModal = useCallback(() => {
     router.back(); // reveal the listing underneath
