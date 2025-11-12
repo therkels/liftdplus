@@ -341,17 +341,10 @@ useEffect(() => {
                <Link
                  key={key}
                  href={`/post/${slug}`}
-                 onClick={(e) => {
-                   console.log("[CARD CLICK]", {
-                     href: `/post/${slug}`,
-                     meta: e.metaKey,
-                     ctrl: e.ctrlKey,
-                     button: e.button,
-                     defaultPrevented: e.defaultPrevented,
-                   });
-                   // keep existing behavior
-                   openPostModal(content);
+                 onClick={() => {
+                   console.log("[CARD CLICK TEST]");
                  }}
+
                  className="block"
                  >
                  
