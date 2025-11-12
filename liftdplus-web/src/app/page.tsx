@@ -551,11 +551,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Post modal */}
-        <PostModal isOpen={isModalOpen} onClose={closePostModal}>
-          {selectedPost && <PostContent post={selectedPost as any} />}
-        </PostModal>
-
         <InstallPrompt />
       </div>
     </div>
