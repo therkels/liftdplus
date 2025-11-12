@@ -18,6 +18,7 @@ import PostContent from "@/components/site_core/PostContent";
 import { Post } from "@/utils/postTransformers";
 import { usePostModal } from "@/utils/postHelpers";
 import { pageCache } from "@/utils/cache/PageCache";
+import Link from "next/link"; // ⬅️ make sure this is at the top of your file
 
 export const dynamic = "force-dynamic";
 
@@ -523,36 +524,31 @@ export default function Home() {
         )}
 
         {/* Feed */}
-        {loading ? (
-          <div className="space-y-8">
-            <CardScrollerSkeleton />
-            <CardScrollerSkeleton />
-          </div>
-        ) : feedData.length ? (
-          feedData.map((topic) => (
-            <CardScroller key={topic.topic_id} title={topic.topic_display}>
-              {topic.posts.map((post) => (
-                <Card
-                  key={post.post_id}
-                  post={post}
-                  onClick={() => openPostModal(post)}
-                  compact={true}
-                />
-              ))}
-            </CardScroller>
-          ))
-        ) : (
-          <div className="container mx-auto px-4 md:px-0 py-8 text-center">
-            <p className="text-gray-600">No posts available at the moment.</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Try updating your interests in your profile to see personalized
-              content.
-            </p>
-          </div>
-        )}
+{loading ? (
+  <div className="space-y-8">
+    <CardScrollerSkeleton />
+    <CardScrollerSkeleton />
+  </div>
+) : feedData.length ? (
+  feedData.map((topic) => (
+    <CardScroller key={topic.topic_id} title={topic.topic_display}>
+      {topic.posts.map((post) => (
+        <Link
+          key={post.post_id}                            // <-- key on the returned element
+          href={`/post/${post.slug}`}
+          onClick={() => openPostModal(post)}
+        >
+          <Card post={post} compact={true} />
+        </Link>
+      ))}
+    </CardScroller>
+  ))
+) : (
+  <div className="container mx-auto px-4 md:px-0 py-8 text-center">
+    <p className="text-gray-600">No posts available at the moment.</p>
+    <p className="text-sm text-gray-500 mt-2">
+      Try updating your interests in your profile to see personalized content.
+    </p>
+  </div>
+)}
 
-        <InstallPrompt />
-      </div>
-    </div>
-  );
-}
