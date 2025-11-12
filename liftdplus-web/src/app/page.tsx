@@ -548,10 +548,11 @@ return (
           <PostContent post={selectedPost as any} />
         </PostModal>
       )}
-
+      
       {/* PWA install banner */}
       <InstallPrompt />
-    </div> {/* .container */}
-  </div>   {/* .min-h-screen */}
+    </div>
+  </div>
 );
 }
+
