@@ -416,152 +416,142 @@ export default function Home() {
     );
   }
 
-  /* ------------------------------ Signed-in UI ------------------------------ */
-  const displayName =
-    user.user_metadata?.name || user.email?.split("@")[0] || "there";
+ /* ------------------------------ Signed-in UI ------------------------------ */
+const displayName =
+  user.user_metadata?.name || user.email?.split("@")[0] || "there";
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 md:px-0 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold text-gray-800">
-            Hello, {displayName}
-          </h1>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => router.push("/search")}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Search"
+return (
+  <div className="min-h-screen bg-gray-50">
+    <div className="container mx-auto px-4 md:px-0 py-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Hello, {displayName}
+        </h1>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => router.push("/search")}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Search"
+          >
+            <svg
+              className="w-6 h-6 text-gray-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
             >
-              <svg
-                className="w-6 h-6 text-gray-600"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
-                />
-              </svg>
-            </button>
-            <button
-              onClick={() => router.push("/favorites")}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Favorites"
-            >
-              <svg
-                className="w-6 h-6 text-gray-600"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 21l7-5 7 5V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16z"
-                />
-              </svg>
-            </button>
-            <button
-              onClick={() => router.push("/profile")}
-              className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity"
-              aria-label="Profile"
-            >
-              <img
-                src={user.user_metadata?.avatar_url || "/man.jpg"}
-                alt="Profile"
-                className="w-full h-full object-cover"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
               />
-            </button>
-          </div>
-        </div>
-
-        {/* Interests */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Your Interests
-            </h2>
-            <button
-              onClick={() => router.push("/profile")}
-              className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            </svg>
+          </button>
+          <button
+            onClick={() => router.push("/favorites")}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Favorites"
+          >
+            <svg
+              className="w-6 h-6 text-gray-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
             >
-              <HiOutlineCog className="w-4 h-4" />
-              <span>Edit</span>
-            </button>
-          </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 21l7-5 7 5V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16z"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => router.push("/profile")}
+            className="w-10 h-10 rounded-full overflow-hidden hover:opacity-80 transition-opacity"
+            aria-label="Profile"
+          >
+            <img
+              src={user.user_metadata?.avatar_url || "/man.jpg"}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          </button>
+        </div>
+      </div>
 
-          {interestsLoading ? (
-            <InterestTagsSkeleton />
-          ) : (
-            <InterestTags interests={interestsData} />
-          )}
+      {/* Interests */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Your Interests</h2>
+          <button
+            onClick={() => router.push("/profile")}
+            className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <HiOutlineCog className="w-4 h-4" />
+            <span>Edit</span>
+          </button>
         </div>
 
-        {/* Errors */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center">
-              <svg
-                className="w-5 h-5 text-red-400 mr-3"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+        {interestsLoading ? <InterestTagsSkeleton /> : <InterestTags interests={interestsData} />}
+      </div>
+
+      {/* Errors */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 text-red-400 mr-3" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 102 0V7zm-1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Feed */}
+      {loading ? (
+        <div className="space-y-8">
+          <CardScrollerSkeleton />
+          <CardScrollerSkeleton />
+        </div>
+      ) : feedData.length ? (
+        feedData.map((topic) => (
+          <CardScroller key={topic.topic_id} title={topic.topic_display}>
+            {topic.posts.map((post) => (
+              <Link
+                key={post.post_id}
+                href={`/post/${post.slug}`}
+                onClick={() => openPostModal(post)}
               >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 102 0V7zm-1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="text-red-700">{error}</p>
-            </div>
-          </div>
-        )}
+                <Card post={post} compact={true} />
+              </Link>
+            ))}
+          </CardScroller>
+        ))
+      ) : (
+        <div className="container mx-auto px-4 md:px-0 py-8 text-center">
+          <p className="text-gray-600">No posts available at the moment.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Try updating your interests in your profile to see personalized content.
+          </p>
+        </div>
+      )}
 
-                {/* Feed */}
-        {loading ? (
-          <div className="space-y-8">
-            <CardScrollerSkeleton />
-            <CardScrollerSkeleton />
-          </div>
-        ) : feedData.length ? (
-          feedData.map((topic) => (
-            <CardScroller key={topic.topic_id} title={topic.topic_display}>
-              {topic.posts.map((post) => (
-                <Link
-                  key={post.post_id}
-                  href={`/post/${post.slug}`}
-                  onClick={() => openPostModal(post)}
-                >
-                  <Card post={post} compact={true} />
-                </Link>
-              ))}
-            </CardScroller>
-          ))
-        ) : (
-          <div className="container mx-auto px-4 md:px-0 py-8 text-center">
-            <p className="text-gray-600">No posts available at the moment.</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Try updating your interests in your profile to see personalized content.
-            </p>
-          </div>
-        )}
+      {/* Post Modal — only render when open */}
+      {isModalOpen && selectedPost && (
+        <PostModal isOpen onClose={closePostModal}>
+          <PostContent post={selectedPost as any} />
+        </PostModal>
+      )}
 
-        {/* Post Modal — only render when open */}
-        {isModalOpen && selectedPost && (
-          <PostModal isOpen onClose={closePostModal}>
-            <PostContent post={selectedPost as any} />
-          </PostModal>
-        )}
-
-               {/* PWA install banner */}
-        <InstallPrompt />
-      </div> {/* closes .container */}
-    </div>   {/* closes .min-h-screen */}
-  );
-}           // closes component
+      {/* PWA install banner */}
+      <InstallPrompt />
+    </div> {/* .container */}
+  </div>   {/* .min-h-screen */}
+);
+} // end Home
