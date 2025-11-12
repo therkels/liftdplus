@@ -14,6 +14,7 @@ import { buildPostsQueryParams, getSortDisplayName } from "@/utils/tagMapper";
 import type { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
 import { usePostModal } from "@/utils/postHelpers";
+import Link from "next/link";
 
 /* ------------------------ prod-first fetch helper ------------------------ */
 async function fetchJSONFromProdFirst(url: string) {
@@ -329,13 +330,17 @@ export default function Search() {
                   : null);
 
               return (
-                <Card
-                  key={key}
-                  post={{ ...(content as any), slug } as any}
-                  readTime={(content as any).secondary_title || "5 min read"}
-                  layout="horizontal"
-                  onClick={() => openPostModal(content)} // open modal instead of navigating
-                />
+                <Link
+                  key={content.slug}
+                  href={`/post/${content.slug}`}
+                  onClick={() => openPostModal(content)}
+                >
+                  <Card
+                    post={{ ...(content as any), slug } as any}
+                    readTime={(content as any).secondary_title || "5 min read"}
+                    layout="horizontal"
+                  />
+                </Link>
               );
             })
           ) : (
