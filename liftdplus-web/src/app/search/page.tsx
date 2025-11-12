@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 import PostModal from "@/components/site_core/PostModal";
@@ -44,6 +44,11 @@ type CurrentFilters = {
 /* --------------------------------- Page ---------------------------------- */
 export default function Search() {
   const router = useRouter();
+  const pathname = usePathname();
+
+useEffect(() => {
+  console.log("[PATHNAME]", pathname);
+}, [pathname]);
 
   // auth
   const [user, setUser] = useState<{
