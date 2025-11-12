@@ -367,17 +367,6 @@ export default function Search() {
         </PostModal>
       )}
 
-      {/* Post Modal — mount only when open */}
-      {isModalOpen && (
-        <PostModal
-          isOpen
-          onClose={closePostModal}
-          showClose
-          key="post-modal"
-        >
-          {selectedPost && <PostContent post={selectedPost as any} />}
-        </PostModal>
-      )}
     </div>
   );
 }
