@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { HiOutlineCog } from "react-icons/hi";
 
 import { createClient } from "@/utils/supabase/client";
@@ -205,6 +205,12 @@ async function fetchJSONFromProdFirst(paths: string[]) {
 /* ------------------------------ Page ------------------------------ */
 export default function Home() {
   const router = useRouter();
+  const pathname = usePathname();
+
+useEffect(() => {
+  console.log("[PATHNAME]", pathname);
+}, [pathname]);
+
 
   // feed + interests
   const [feedData, setFeedData] = useState<Topic[]>([]);
