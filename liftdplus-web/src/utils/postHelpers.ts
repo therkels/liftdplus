@@ -60,14 +60,7 @@ export function usePostModal() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<FullPost | null>(null);
 
-  const openPostModal = useCallback(async (cardPost: MinimalPost) => {
-    const full = await fetchFullPost(cardPost);
-    setSelectedPost(full);
-    setIsModalOpen(true);
-    // if (full?.slug) {
-    //  router.push(`/post/${full.slug}`, { scroll: false });
-  //  }
-  }, [router]);
+  export default function ModalDefault() { return null; }
 
   const closePostModal = useCallback(() => {
     setIsModalOpen(false);
