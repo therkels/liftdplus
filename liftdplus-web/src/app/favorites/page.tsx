@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import { HiX } from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
@@ -29,7 +29,7 @@ interface FavoriteCategory {
 
 export default function Favorites() {
   const router = useRouter();
-  import { usePathname } from "next/navigation";
+
 // ...
 const pathname = usePathname();
 useEffect(() => {
