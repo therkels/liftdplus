@@ -29,6 +29,14 @@ interface FavoriteCategory {
 
 export default function Favorites() {
   const router = useRouter();
+  import { usePathname } from "next/navigation";
+// ...
+const pathname = usePathname();
+useEffect(() => {
+  // Will print whenever the URL path actually changes
+  console.log("[PATHNAME]", pathname);
+}, [pathname]);
+
   const [categories, setCategories] = useState<FavoriteCategory[]>([]);
   const [selectedCategory, setSelectedCategory] =
     useState<FavoriteCategory | null>(null);
