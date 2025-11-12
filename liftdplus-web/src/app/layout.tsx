@@ -24,7 +24,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  modal,
+}: Readonly<{ children: React.ReactNode; modal: React.ReactNode;}>) {
   return (
     <html lang="en">
       <head>
@@ -47,7 +48,9 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased min-h-screen bg-gray-50`}>
         <ClientProviders>
           <ConditionalNavBar />
-          <ConditionalMain>{children}</ConditionalMain>
+         <ConditionalMain>{children}</ConditionalMain>
+          {modal}
+          
         </ClientProviders>
 
         {/* Keep this outside providers if you like; just don't render children again */}
