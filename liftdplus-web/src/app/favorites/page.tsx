@@ -17,6 +17,7 @@ import {
   ArchiveCategory,
 } from "@/utils/postActions";
 import { pageCache } from "@/utils/cache/PageCache";
+import Link from "next/link";
 
 interface FavoriteCategory {
   id: string;
@@ -217,9 +218,15 @@ export default function Favorites() {
   };
 
   const closePostModal = () => {
-    setIsPostModalOpen(false);
-    setSelectedPost(null);
-  };
+  setIsPostModalOpen(false);
+  setSelectedPost(null);
+
+  // Optional nicety: revert the browser URL when closing a post modal
+  if (typeof window !== "undefined" && window.history.length > 1) {
+    window.history.back();
+  }
+};
+
 
   // Use the accurate unique posts count from the database
   const totalPosts = uniquePostsCount;
@@ -389,14 +396,30 @@ export default function Favorites() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {selectedCategory?.posts.map((post) => (
-                    <Card
-                      key={post.post_id}
-                      post={post}
-                      onClick={() => handlePostClick(post)}
-                      compact={false}
-                    />
-                  ))}
+                 {selectedCategory?.posts.map((post) => {
+                  const safeSlug =
+                    post.slug ??
+                    (typeof (post as any).title === "string"
+                     ? (post as any).title
+                     .toLowerCase()
+                     .trim()
+                     .replace(/\s+/g, "-")
+                     .replace(/[^a-z0-9-]/g, "")
+                    : String(post.post_id));
+
+  return (
+    <Link
+      key={post.post_id}
+      href={`/post/${safeSlug}`}
+      onClick={() => handlePostClick(post)}
+      className="block"
+    >
+      <Card post={post} compact={false} />
+    </Link>
+  );
+})}
+
+
                 </div>
               )}
             </div>
@@ -404,6 +427,13 @@ export default function Favorites() {
         </div>
       )}
       
+    {/* Post Modal — only render when open */}
+      {isPostModalOpen && selectedPost && (
+      <PostModal isOpen onClose={closePostModal}>
+        <PostContent post={selectedPost} />
+      </PostModal>
+    )}
+  
     </div>
   );
 }
