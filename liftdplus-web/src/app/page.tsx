@@ -523,32 +523,45 @@ export default function Home() {
           </div>
         )}
 
-        {/* Feed */}
-{loading ? (
-  <div className="space-y-8">
-    <CardScrollerSkeleton />
-    <CardScrollerSkeleton />
-  </div>
-) : feedData.length ? (
-  feedData.map((topic) => (
-    <CardScroller key={topic.topic_id} title={topic.topic_display}>
-      {topic.posts.map((post) => (
-        <Link
-          key={post.post_id}                            // <-- key on the returned element
-          href={`/post/${post.slug}`}
-          onClick={() => openPostModal(post)}
-        >
-          <Card post={post} compact={true} />
-        </Link>
-      ))}
-    </CardScroller>
-  ))
-) : (
-  <div className="container mx-auto px-4 md:px-0 py-8 text-center">
-    <p className="text-gray-600">No posts available at the moment.</p>
-    <p className="text-sm text-gray-500 mt-2">
-      Try updating your interests in your profile to see personalized content.
-    </p>
-  </div>
-)}
+                {/* Feed */}
+        {loading ? (
+          <div className="space-y-8">
+            <CardScrollerSkeleton />
+            <CardScrollerSkeleton />
+          </div>
+        ) : feedData.length ? (
+          feedData.map((topic) => (
+            <CardScroller key={topic.topic_id} title={topic.topic_display}>
+              {topic.posts.map((post) => (
+                <Link
+                  key={post.post_id}
+                  href={`/post/${post.slug}`}
+                  onClick={() => openPostModal(post)}
+                >
+                  <Card post={post} compact={true} />
+                </Link>
+              ))}
+            </CardScroller>
+          ))
+        ) : (
+          <div className="container mx-auto px-4 md:px-0 py-8 text-center">
+            <p className="text-gray-600">No posts available at the moment.</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Try updating your interests in your profile to see personalized content.
+            </p>
+          </div>
+        )}
 
+        {/* Post Modal — only render when open */}
+        {isModalOpen && selectedPost && (
+          <PostModal isOpen onClose={closePostModal}>
+            <PostContent post={selectedPost as any} />
+          </PostModal>
+        )}
+
+        {/* PWA install banner */}
+        <InstallPrompt />
+      </div> {/* closes .container */}
+    </div>   {/* closes .min-h-screen */}
+  );
+}           /* closes component */
