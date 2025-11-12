@@ -61,20 +61,22 @@ export function usePostModal() {
   const [isModalOpen] = useState(false);
   const [selectedPost] = useState<FullPost | null>(null);
 
-  const openPostModal = useCallback(
-    async (cardPost: MinimalPost) => {
-      // If we already have a slug, just push it.
-      if (cardPost.slug) {
-        router.push(`/post/${cardPost.slug}`, { scroll: false });
-        return;
-      }
-      // Otherwise fetch to discover a usable key (slug/id) then push.
-      const full = await fetchFullPost(cardPost);
-      const key = full.slug ?? full.display_id ?? full.post_id ?? full.id;
-      router.push(`/post/${encodeURIComponent(String(key))}`, { scroll: false });
-    },
-    [router]
-  );
+ const openPostModal = useCallback((cardPost: MinimalPost) => {
+  // Build the best key we have without fetching
+  const key =
+    cardPost.slug ??
+    cardPost.display_id ??
+    cardPost.post_id ??
+    cardPost.id;
+
+  if (!key) {
+    // Optional: console.warn so we know if a card has no identifier
+    console.warn("openPostModal: no identifier on cardPost", cardPost);
+    return;
+  }
+
+  router.push(`/post/${encodeURIComponent(String(key))}`, { scroll: false });
+}, [router]);
 
   const closePostModal = useCallback(() => {
     router.back(); // reveal the listing underneath
