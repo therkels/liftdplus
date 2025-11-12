@@ -310,15 +310,18 @@ export default function Search() {
         </div>
       )}
 
-      {/* Results */}
+           {/* Results */}
       {!loading && !error && (
         <div className="px-4 py-4">
           {posts.length > 0 ? (
             posts.map((content, index) => {
-              const key = `search-post-${(content as any).post_id || index}`;
+              // stable key
+              const key =
+                (content as any).post_id?.toString?.() ??
+                (content as any).id?.toString?.() ??
+                `search-post-${index}`;
 
-              // keep slug normalization in case Card renders any internal href,
-              // but do NOT wrap with <Link> here; we want modal behavior on click.
+              // ensure we have a slug even if API returns only a title
               const slug =
                 (content as any).slug ??
                 (typeof (content as any).title === "string"
@@ -327,13 +330,14 @@ export default function Search() {
                       .trim()
                       .replace(/\s+/g, "-")
                       .replace(/[^a-z0-9-]/g, "")
-                  : null);
+                  : "");
 
               return (
                 <Link
-                  key={content.slug}
-                  href={`/post/${content.slug}`}
+                  key={key}
+                  href={`/post/${slug}`}
                   onClick={() => openPostModal(content)}
+                  className="block"
                 >
                   <Card
                     post={{ ...(content as any), slug } as any}
@@ -346,7 +350,9 @@ export default function Search() {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-600">No posts found matching your filters.</p>
-              <p className="text-sm text-gray-500 mt-2">Try adjusting your search criteria.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Try adjusting your search criteria.
+              </p>
             </div>
           )}
         </div>
@@ -354,13 +360,16 @@ export default function Search() {
 
       {/* --------- Modals (mount only when open to avoid portal conflicts) --------- */}
 
-      {/* Filter Modal — mount only when open */}
+      {/* Post Modal — show when a card is clicked */}
+      {isModalOpen && selectedPost && (
+        <PostModal isOpen onClose={closePostModal}>
+          <PostContent post={selectedPost as any} />
+        </PostModal>
+      )}
+
+      {/* Filter Modal */}
       {isFilterModalOpen && (
-        <PostModal
-          isOpen
-          onClose={() => setIsFilterModalOpen(false)}
-          key="filter-modal"
-        >
+        <PostModal isOpen onClose={() => setIsFilterModalOpen(false)} key="filter-modal">
           <FilterContent
             currentFilters={currentFilters}
             onFiltersUpdate={(nf) => {
