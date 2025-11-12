@@ -403,11 +403,7 @@ export default function Favorites() {
           </div>
         </div>
       )}
-
-      {/* Post Modal */}
-      <PostModal isOpen={isPostModalOpen} onClose={closePostModal}>
-        {selectedPost && <PostContent post={selectedPost} />}
-      </PostModal>
+      
     </div>
   );
 }
