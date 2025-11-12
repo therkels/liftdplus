@@ -559,9 +559,9 @@ export default function Home() {
           </PostModal>
         )}
 
-        {/* PWA install banner */}
+               {/* PWA install banner */}
         <InstallPrompt />
       </div> {/* closes .container */}
     </div>   {/* closes .min-h-screen */}
   );
-}           /* closes component */
+}           // closes component
