@@ -28,7 +28,6 @@ export type FullPost = {
   images?: string[];
   slug?: string | null;
   display_id?: number | null;
-  // allow passthrough fields without TS whining
   [key: string]: any;
 };
 
@@ -45,7 +44,6 @@ export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
     throw new Error("No key available to fetch post");
   }
 
-  // Always call the SINGULAR route
   const url = `/api/v0/post/${encodeURIComponent(String(key))}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch post");
@@ -54,18 +52,32 @@ export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
   return json.post;
 }
 
-/** Simple modal controller used by cards to open a post */
+/** Controller used by cards to open a post */
 export function usePostModal() {
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<FullPost | null>(null);
 
-  export default function ModalDefault() { return null; }
+  // Keep these so existing pages that read them don't break,
+  // but we won't actually open the old state-driven modal anymore.
+  const [isModalOpen] = useState(false);
+  const [selectedPost] = useState<FullPost | null>(null);
+
+  const openPostModal = useCallback(
+    async (cardPost: MinimalPost) => {
+      // If we already have a slug, just push it.
+      if (cardPost.slug) {
+        router.push(`/post/${cardPost.slug}`, { scroll: false });
+        return;
+      }
+      // Otherwise fetch to discover a usable key (slug/id) then push.
+      const full = await fetchFullPost(cardPost);
+      const key = full.slug ?? full.display_id ?? full.post_id ?? full.id;
+      router.push(`/post/${encodeURIComponent(String(key))}`, { scroll: false });
+    },
+    [router]
+  );
 
   const closePostModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedPost(null);
-    router.back();
+    router.back(); // reveal the listing underneath
   }, [router]);
 
   return { selectedPost, isModalOpen, openPostModal, closePostModal };
