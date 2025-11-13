@@ -35,12 +35,11 @@ export async function PUT(request: Request) {
     const post_id = Number(post_id_raw);
 
     if (!post_id || Number.isNaN(post_id)) {
-      return NextResponse.json(
-        { error: "Missing or invalid post_id in request" },
-        { status: 400 }
-      );
-    }
-
+  return NextResponse.json(
+    { error: "DEBUG_LIKE_MISSING_POST_ID" }, // <--- change to this
+    { status: 400 }
+  );
+}
     // 3) Upsert into private.likes (user_id + post_id)
     const { error: upsertErr } = await supabase
       .schema(SCHEMA)
