@@ -24,7 +24,6 @@ const resolveId = () =>
   (post as any)?.display_id ??
   (post as any)?.postId; // <-- added postId as a fallback
 
-
   const invalidateCaches = () => {
     pageCache.invalidate("search:");
     pageCache.invalidate("feed:");
