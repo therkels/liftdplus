@@ -32,10 +32,13 @@ export async function PUT(req: NextRequest) {
   const userId = await getAuthedUserId();
   if (!userId) return json({ error: "not Authenticated" }, 400);
 
+  const url = new URL(req.url);
   const body = await req.json().catch(() => ({} as any));
   console.log("🔥 ARCHIVE PUT body:", body);
+  
+  const fromQuery = url.searchParams.get("post_id");
+  const post_id = Number(body?.post_id ?? fromQuery);
 
-  const post_id = Number(body?.post_id);
   const category = (body?.category ?? null) as string | null;
   const archived = body?.archived !== false;
 
@@ -83,10 +86,13 @@ export async function DELETE(req: NextRequest) {
   const userId = await getAuthedUserId();
   if (!userId) return json({ error: "not Authenticated" }, 400);
 
+  const url = new URL(req.url);
   const body = await req.json().catch(() => ({} as any));
   console.log("🔥 ARCHIVE DELETE body:", body);
+  
+  const fromQuery = url.searchParams.get("post_id");
+  const post_id = Number(body?.post_id ?? fromQuery);
 
-  const post_id = Number(body?.post_id);
   if (!post_id || Number.isNaN(post_id)) {
     return json({ error: "post_id is required" }, 400);
   }
