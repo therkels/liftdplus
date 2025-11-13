@@ -10,6 +10,15 @@ interface PostMetadataProps {
 }
 
 const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
+  // 🧩 Debug log – this is what we care about
+  console.log("🧩 PostMetadata post object", {
+    post,
+    post_id: (post as any)?.post_id,
+    id: (post as any)?.id,
+    display_id: (post as any)?.display_id,
+    postId: (post as any)?.postId,
+  });
+
   const {
     isLiked,
     isArchived,
