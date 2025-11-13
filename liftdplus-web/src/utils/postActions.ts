@@ -56,6 +56,7 @@ function mapToPost(arr: Record<string, unknown>[]): Post[] {
 
 /* ---------------------------------- Likes ---------------------------------- */
 
+/** Like a post */
 export async function likePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
   try {
@@ -64,8 +65,15 @@ export async function likePost(postId: string | number): Promise<boolean> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: id, like: true }),
     });
-    ...
+    if (!res.ok) throw new Error(await res.text());
+    return true;
+  } catch (e) {
+    console.error("Error liking post:", e);
+    return false;
+  }
+}
 
+/** Unlike a post */
 export async function unlikePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
   try {
@@ -74,10 +82,17 @@ export async function unlikePost(postId: string | number): Promise<boolean> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: id }),
     });
-    ...
+    if (!res.ok) throw new Error(await res.text());
+    return true;
+  } catch (e) {
+    console.error("Error unliking post:", e);
+    return false;
+  }
+}
 
 /* -------------------------------- Archives --------------------------------- */
 
+/** Archive a post (optional category override) */
 export async function archivePost(
   postId: string | number,
   category?: string
@@ -93,8 +108,15 @@ export async function archivePost(
         category,
       }),
     });
-    ...
+    if (!res.ok) throw new Error(await res.text());
+    return true;
+  } catch (e) {
+    console.error("Error archiving post:", e);
+    return false;
+  }
+}
 
+/** Remove a post from archives */
 export async function unarchivePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
   try {
@@ -103,7 +125,13 @@ export async function unarchivePost(postId: string | number): Promise<boolean> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: id }),
     });
-    ...
+    if (!res.ok) throw new Error(await res.text());
+    return true;
+  } catch (e) {
+    console.error("Error unarchiving post:", e);
+    return false;
+  }
+}
 
 /* ------------------------------ Fetch Helpers ------------------------------ */
 
@@ -114,7 +142,10 @@ export async function getLikedPosts(): Promise<Post[]> {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    if (!res.ok) throw new Error(`Failed to fetch liked posts: ${res.status} ${res.statusText}`);
+    if (!res.ok)
+      throw new Error(
+        `Failed to fetch liked posts: ${res.status} ${res.statusText}`
+      );
 
     const payload = await res.json();
     return mapToPost(normalizePostsArray(payload));
@@ -135,7 +166,10 @@ export async function getArchivedPosts(category?: string): Promise<Post[]> {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    if (!res.ok) throw new Error(`Failed to fetch archived posts: ${res.status} ${res.statusText}`);
+    if (!res.ok)
+      throw new Error(
+        `Failed to fetch archived posts: ${res.status} ${res.statusText}`
+      );
 
     const payload = await res.json();
     return mapToPost(normalizePostsArray(payload));
@@ -152,7 +186,10 @@ export async function getArchiveCategories(): Promise<ArchiveCategory[]> {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    if (!res.ok) throw new Error(`Failed to fetch archive categories: ${res.status} ${res.statusText}`);
+    if (!res.ok)
+      throw new Error(
+        `Failed to fetch archive categories: ${res.status} ${res.statusText}`
+      );
 
     const payload = await res.json();
     const arr = Array.isArray(payload) ? payload : [];
@@ -174,7 +211,10 @@ export async function getUniqueSavedPostsCount(): Promise<number> {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    if (!res.ok) throw new Error(`Failed to fetch saved posts count: ${res.status} ${res.statusText}`);
+    if (!res.ok)
+      throw new Error(
+        `Failed to fetch saved posts count: ${res.status} ${res.statusText}`
+      );
 
     const payload = await res.json();
     return Number(payload?.count ?? 0);
