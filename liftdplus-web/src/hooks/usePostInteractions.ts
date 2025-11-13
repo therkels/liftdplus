@@ -18,8 +18,12 @@ export function usePostInteractions(post: PostLike) {
   const { showSuccess, showError } = useToast();
 
   // helper to resolve an ID from various post shapes
-  const resolveId = () =>
-    (post as any)?.post_id ?? (post as any)?.id ?? (post as any)?.display_id;
+const resolveId = () =>
+  (post as any)?.post_id ??
+  (post as any)?.id ??
+  (post as any)?.display_id ??
+  (post as any)?.postId; // <-- added postId as a fallback
+
 
   const invalidateCaches = () => {
     pageCache.invalidate("search:");
@@ -28,23 +32,27 @@ export function usePostInteractions(post: PostLike) {
   };
 
   const handleLike = useCallback(async () => {
-    if (isLoading) return;
+  if (isLoading) return;
 
-    const idCandidate = resolveId();
-    console.log("❤️ Like click payload", {
-  rawPost: post,
-  resolvedId: resolveId(),
-  post_id: (post as any)?.post_id,
-  id: (post as any)?.id,
-  display_id: (post as any)?.display_id,
-});
-    if (!idCandidate) {
-      console.warn("❤️ No post id found on post:", post);
-      return;
-    }
+  const idCandidate = resolveId();
 
-    setIsLoading(true);
-    const nextLiked = !isLiked;
+  console.log("❤️ handleLike debug", {
+    location: typeof window !== "undefined" ? window.location.pathname : "",
+    rawPost: post,
+    resolvedId: idCandidate,
+    post_id: (post as any)?.post_id,
+    id: (post as any)?.id,
+    display_id: (post as any)?.display_id,
+    postId: (post as any)?.postId,
+  });
+
+  if (!idCandidate) {
+    console.warn("❤️ No post id found on post:", post);
+    return;
+  }
+
+  setIsLoading(true);
+  const nextLiked = !isLiked;
 
     // optimistic update
     setIsLiked(nextLiked);
