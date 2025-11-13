@@ -59,6 +59,8 @@ function mapToPost(arr: Record<string, unknown>[]): Post[] {
 /** Like a post */
 export async function likePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
+  console.log("🔁 likePost called with id =", id);  // <--- add this line
+
   try {
     const res = await fetch(`/api/v0/posts/like?post_id=${id}`, {
       method: "PUT",
