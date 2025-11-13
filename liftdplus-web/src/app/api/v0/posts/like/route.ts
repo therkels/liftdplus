@@ -25,10 +25,14 @@ export async function PUT(request: Request) {
     }
 
     // 2) Parse JSON body
+    // src/app/api/v0/posts/like/route.ts
+    // inside PUT
+    const url = new URL(request.url);
     const body = await request.json().catch(() => ({}));
-    console.log("🔥 DEBUG body:", body); // <-- this is the line you asked about
-
-    const post_id_raw = body?.post_id ?? body?.postId ?? body?.id;
+    console.log("🔥 DEBUG body:", body);
+    
+    const fromQuery = url.searchParams.get("post_id");
+    const post_id_raw = body?.post_id ?? body?.postId ?? body?.id ?? fromQuery;
     const post_id = Number(post_id_raw);
 
     if (!post_id || Number.isNaN(post_id)) {
@@ -78,10 +82,13 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
+    // inside DELETE
+    const url = new URL(request.url);
     const body = await request.json().catch(() => ({}));
     console.log("🔥 DEBUG body (DELETE):", body);
-
-    const post_id_raw = body?.post_id ?? body?.postId ?? body?.id;
+    
+    const fromQuery = url.searchParams.get("post_id");
+    const post_id_raw = body?.post_id ?? body?.postId ?? body?.id ?? fromQuery;
     const post_id = Number(post_id_raw);
 
     if (!post_id || Number.isNaN(post_id)) {
