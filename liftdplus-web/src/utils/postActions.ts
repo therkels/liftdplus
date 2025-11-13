@@ -58,14 +58,26 @@ function mapToPost(arr: Record<string, unknown>[]): Post[] {
 
 export async function likePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
-  console.log("🔁 likePost called with id =", id);
+
+  const url = `/api/v0/posts/like?post_id=${encodeURIComponent(String(id))}`;
+  const payload = { post_id: id, like: true };
+
+  console.log("🔁 likePost about to send", { id, url, payload });
 
   try {
-    const res = await fetch(`/api/v0/posts/like?post_id=${id}`, {
+    const res = await fetch(url, {
       method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
 
-    if (!res.ok) throw new Error(await res.text());
+    const text = await res.text().catch(() => "");
+    console.log("🔁 likePost response", { status: res.status, text });
+
+    if (!res.ok) {
+      throw new Error(text || `Request failed with ${res.status}`);
+    }
+
     return true;
   } catch (e) {
     console.error("Error liking post:", e);
