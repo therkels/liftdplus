@@ -55,48 +55,35 @@ function mapToPost(arr: Record<string, unknown>[]): Post[] {
 }
 
 /* ---------------------------------- Likes ---------------------------------- */
-
 /** Like a post */
 export async function likePost(postId: string | number): Promise<boolean> {
   try {
-    const res = await fetch("/api/v0/posts/like", {
+-    const res = await fetch("/api/v0/posts/like", {
++    const res = await fetch("/api/v0/posts/like/", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: toNumber(postId), like: true }),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return true;
-  } catch (e) {
-    console.error("Error liking post:", e);
-    return false;
-  }
-}
+
 
 /** Unlike a post */
 export async function unlikePost(postId: string | number): Promise<boolean> {
   try {
-    const res = await fetch("/api/v0/posts/like", {
+-    const res = await fetch("/api/v0/posts/like", {
++    const res = await fetch("/api/v0/posts/like/", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: toNumber(postId) }),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return true;
-  } catch (e) {
-    console.error("Error unliking post:", e);
-    return false;
-  }
-}
+
 
 /* -------------------------------- Archives --------------------------------- */
 
 /** Archive a post (optional category override) */
-export async function archivePost(
-  postId: string | number,
-  category?: string
-): Promise<boolean> {
+export async function archivePost(postId: string | number, category?: string): Promise<boolean> {
   try {
-    const res = await fetch("/api/v0/posts/archive", {
+-    const res = await fetch("/api/v0/posts/archive", {
++    const res = await fetch("/api/v0/posts/archive/", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -105,29 +92,18 @@ export async function archivePost(
         category,
       }),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return true;
-  } catch (e) {
-    console.error("Error archiving post:", e);
-    return false;
-  }
-}
+
 
 /** Remove a post from archives */
 export async function unarchivePost(postId: string | number): Promise<boolean> {
   try {
-    const res = await fetch("/api/v0/posts/archive", {
+-    const res = await fetch("/api/v0/posts/archive", {
++    const res = await fetch("/api/v0/posts/archive/", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: toNumber(postId) }),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return true;
-  } catch (e) {
-    console.error("Error unarchiving post:", e);
-    return false;
-  }
-}
+
 
 /* ------------------------------ Fetch Helpers ------------------------------ */
 
