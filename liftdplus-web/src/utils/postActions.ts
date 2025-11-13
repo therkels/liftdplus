@@ -56,17 +56,15 @@ function mapToPost(arr: Record<string, unknown>[]): Post[] {
 
 /* ---------------------------------- Likes ---------------------------------- */
 
-/** Like a post */
 export async function likePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
-  console.log("🔁 likePost called with id =", id);  // <--- add this line
+  console.log("🔁 likePost called with id =", id);
 
   try {
     const res = await fetch(`/api/v0/posts/like?post_id=${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ post_id: id, like: true }),
     });
+
     if (!res.ok) throw new Error(await res.text());
     return true;
   } catch (e) {
@@ -75,15 +73,14 @@ export async function likePost(postId: string | number): Promise<boolean> {
   }
 }
 
-/** Unlike a post */
 export async function unlikePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
+
   try {
     const res = await fetch(`/api/v0/posts/like?post_id=${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ post_id: id }),
     });
+
     if (!res.ok) throw new Error(await res.text());
     return true;
   } catch (e) {
