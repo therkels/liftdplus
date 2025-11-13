@@ -26,8 +26,8 @@ export interface PostData {
 
   // what may be missing when the modal opens
   content_type: PostContentType;
-  content?: string;          // for text posts
-  images?: string[];         // for image/carousel posts
+  content?: string; // for text posts
+  images?: string[]; // for image/carousel posts
 
   // backend may send a config blob with images, etc.
   config?: any;
@@ -52,7 +52,27 @@ function normalizeImages(p: any): string[] {
   return [...cover, ...cfgImages];
 }
 
-async function fetchFullPost(keys: { slug?: string; display_id?: string | number; id?: string | number }) {
+function resolveNumericId(source: any): number | undefined {
+  if (!source) return undefined;
+
+  const candidates = [source.post_id, source.id, source.display_id];
+
+  for (const value of candidates) {
+    if (value === null || value === undefined) continue;
+    const n = Number(value);
+    if (!Number.isNaN(n) && n > 0) {
+      return n;
+    }
+  }
+
+  return undefined;
+}
+
+async function fetchFullPost(keys: {
+  slug?: string;
+  display_id?: string | number;
+  id?: string | number;
+}) {
   // Prefer slug, then display_id, then id
   const key =
     (typeof keys.slug === "string" && keys.slug) ??
@@ -97,7 +117,8 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
   const needsFetch = useMemo(() => {
     // If text but no content, or image but no images, we need to fetch the full post
     if (post.content_type === "text") return !post.content;
-    if (post.content_type === "image") return !post.images || post.images.length === 0;
+    if (post.content_type === "image")
+      return !post.images || post.images.length === 0;
     return false;
   }, [post]);
 
@@ -107,20 +128,32 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
     async function go() {
       setError(null);
 
+      // 1) If we already have the full post, just normalize & ensure post_id
       if (!needsFetch) {
-        // Still normalize the author photo/images if missing
-        const normalized: PostData = {
+        const base: PostData = {
           ...post,
           author_photo: post.author_photo ?? normalizeAuthorPhoto(post),
           images:
             post.content_type === "image"
-              ? (post.images && post.images.length > 0 ? post.images : normalizeImages(post))
+              ? post.images && post.images.length > 0
+                ? post.images
+                : normalizeImages(post)
               : post.images,
         };
+
+        const resolvedId =
+          resolveNumericId(base) ?? resolveNumericId(post);
+
+        const normalized: PostData = {
+          ...base,
+          post_id: resolvedId ?? base.post_id,
+        };
+
         if (!cancelled) setFullPost(normalized);
         return;
       }
 
+      // 2) Otherwise, fetch the full post from the API
       const loaded = await fetchFullPost({
         slug: post.slug,
         display_id: post.display_id,
@@ -135,12 +168,21 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
         return;
       }
 
-      // keep the card’s basic fields, prefer loaded for rich fields
-      const merged: PostData = {
+      // Keep the card’s basic fields, prefer loaded for rich fields
+      const baseLoaded: PostData = {
         ...post,
         ...loaded,
         author_photo: normalizeAuthorPhoto(loaded),
         images: normalizeImages(loaded),
+      };
+
+      // Ensure we have a numeric post_id for likes/archives
+      const resolvedId =
+        resolveNumericId(baseLoaded) ?? resolveNumericId(post);
+
+      const merged: PostData = {
+        ...baseLoaded,
+        post_id: resolvedId ?? baseLoaded.post_id,
       };
 
       setFullPost(merged);
