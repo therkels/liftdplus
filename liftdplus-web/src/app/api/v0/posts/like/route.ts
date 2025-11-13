@@ -21,13 +21,15 @@ export async function PUT(request: Request) {
       console.error("Auth error:", authErr);
     }
     if (!user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      return NextResponse.json({ error: "NOT_AUTHENTICATED_DEBUG" }, { status: 401 });
     }
 
     // 2) Parse body + query string
     const url = new URL(request.url);
     const body = await request.json().catch(() => ({} as any));
-    console.log("🔥 LIKE PUT body:", body);
+
+    console.log("🔥 LIKE PUT DEBUG body:", body);
+    console.log("🔥 LIKE PUT DEBUG query:", Object.fromEntries(url.searchParams));
 
     const fromQuery = url.searchParams.get("post_id");
     const post_id_raw =
@@ -35,11 +37,13 @@ export async function PUT(request: Request) {
     const post_id = Number(post_id_raw);
 
     if (!post_id || Number.isNaN(post_id)) {
-  return NextResponse.json(
-    { error: "DEBUG_LIKE_MISSING_POST_ID" }, // <--- change to this
-    { status: 400 }
-  );
-}
+      // IMPORTANT: distinctive error text
+      return NextResponse.json(
+        { error: "LIKE_ROUTE_DEBUG_MISSING_OR_INVALID_POST_ID", post_id_raw },
+        { status: 400 }
+      );
+    }
+
     // 3) Upsert into private.likes (user_id + post_id)
     const { error: upsertErr } = await supabase
       .schema(SCHEMA)
@@ -52,20 +56,20 @@ export async function PUT(request: Request) {
     if (upsertErr) {
       console.error("Upsert like error:", upsertErr);
       return NextResponse.json(
-        { error: "Failed to like post", details: upsertErr.message },
+        { error: "LIKE_ROUTE_DEBUG_UPSERT_FAILED", details: upsertErr.message },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: "Post liked successfully",
+      message: "LIKE_ROUTE_DEBUG_POST_LIKED",
       post_id,
     });
   } catch (e: any) {
     console.error("PUT /posts/like unexpected error:", e);
     return NextResponse.json(
-      { error: "Unexpected error", message: e?.message ?? String(e) },
+      { error: "LIKE_ROUTE_DEBUG_UNEXPECTED", message: e?.message ?? String(e) },
       { status: 500 }
     );
   }
@@ -84,13 +88,14 @@ export async function DELETE(request: Request) {
       console.error("Auth error:", authErr);
     }
     if (!user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      return NextResponse.json({ error: "NOT_AUTHENTICATED_DEBUG" }, { status: 401 });
     }
 
-    // body + query again
     const url = new URL(request.url);
     const body = await request.json().catch(() => ({} as any));
-    console.log("🔥 LIKE DELETE body:", body);
+
+    console.log("🔥 LIKE DELETE DEBUG body:", body);
+    console.log("🔥 LIKE DELETE DEBUG query:", Object.fromEntries(url.searchParams));
 
     const fromQuery = url.searchParams.get("post_id");
     const post_id_raw =
@@ -99,7 +104,7 @@ export async function DELETE(request: Request) {
 
     if (!post_id || Number.isNaN(post_id)) {
       return NextResponse.json(
-        { error: "Missing or invalid post_id in request" },
+        { error: "LIKE_ROUTE_DEBUG_MISSING_OR_INVALID_POST_ID", post_id_raw },
         { status: 400 }
       );
     }
@@ -114,20 +119,20 @@ export async function DELETE(request: Request) {
     if (delErr) {
       console.error("Delete like error:", delErr);
       return NextResponse.json(
-        { error: "Failed to unlike", details: delErr.message },
+        { error: "LIKE_ROUTE_DEBUG_DELETE_FAILED", details: delErr.message },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: "Post unliked successfully",
+      message: "LIKE_ROUTE_DEBUG_POST_UNLIKED",
       post_id,
     });
   } catch (e: any) {
     console.error("DELETE /posts/like unexpected error:", e);
     return NextResponse.json(
-      { error: "Unexpected error", message: e?.message ?? String(e) },
+      { error: "LIKE_ROUTE_DEBUG_UNEXPECTED", message: e?.message ?? String(e) },
       { status: 500 }
     );
   }
