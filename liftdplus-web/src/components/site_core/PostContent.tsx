@@ -52,7 +52,11 @@ function normalizeImages(p: any): string[] {
   return [...cover, ...cfgImages];
 }
 
-async function fetchFullPost(keys: { slug?: string; display_id?: string | number; id?: string | number }) {
+async function fetchFullPost(keys: {
+  slug?: string;
+  display_id?: string | number;
+  id?: string | number;
+}) {
   // Prefer slug, then display_id, then id
   const key =
     (typeof keys.slug === "string" && keys.slug) ??
@@ -97,7 +101,8 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
   const needsFetch = useMemo(() => {
     // If text but no content, or image but no images, we need to fetch the full post
     if (post.content_type === "text") return !post.content;
-    if (post.content_type === "image") return !post.images || post.images.length === 0;
+    if (post.content_type === "image")
+      return !post.images || post.images.length === 0;
     return false;
   }, [post]);
 
@@ -107,20 +112,24 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
     async function go() {
       setError(null);
 
+      // Case 1: card already has everything – normalize and keep like/bookmark state
       if (!needsFetch) {
-        // Still normalize the author photo/images if missing
         const normalized: PostData = {
           ...post,
           author_photo: post.author_photo ?? normalizeAuthorPhoto(post),
           images:
             post.content_type === "image"
-              ? (post.images && post.images.length > 0 ? post.images : normalizeImages(post))
+              ? post.images && post.images.length > 0
+                ? post.images
+                : normalizeImages(post)
               : post.images,
         };
+
         if (!cancelled) setFullPost(normalized);
         return;
       }
 
+      // Case 2: fetch the full post, then MERGE with the card’s state
       const loaded = await fetchFullPost({
         slug: post.slug,
         display_id: post.display_id,
@@ -135,12 +144,33 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
         return;
       }
 
-      // keep the card’s basic fields, prefer loaded for rich fields
+      // Merge server data and card data, but:
+      // 👉 always prefer the card's user_liked / user_archived / like_count if present
       const merged: PostData = {
-        ...post,
         ...loaded,
-        author_photo: normalizeAuthorPhoto(loaded),
-        images: normalizeImages(loaded),
+        ...post,
+        author_photo:
+          post.author_photo ??
+          loaded.author_photo ??
+          normalizeAuthorPhoto(loaded),
+        images:
+          post.content_type === "image"
+            ? post.images && post.images.length > 0
+              ? post.images
+              : normalizeImages(loaded)
+            : loaded.images ?? post.images,
+        user_liked:
+          typeof post.user_liked === "boolean"
+            ? post.user_liked
+            : loaded.user_liked,
+        user_archived:
+          typeof post.user_archived === "boolean"
+            ? post.user_archived
+            : loaded.user_archived,
+        like_count:
+          typeof post.like_count === "number"
+            ? post.like_count
+            : loaded.like_count,
       };
 
       setFullPost(merged);
