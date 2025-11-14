@@ -6,19 +6,30 @@ import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
   const handleGoogleSignIn = useCallback(async () => {
-    const supabase = await createClient();
+    const supabase = createClient();
+
+    // Dynamically determine the correct domain:
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "https://app.liftdplus.com/api/v0/auth/callback",
+        redirectTo: `${origin}/api/v0/auth/callback`,
       },
     });
+
     if (data?.url) {
       window.location.href = data.url;
     } else if (error) {
       alert("Google sign-in failed: " + error.message);
     }
   }, []);
+
+  return (
+    // ... keep the rest of your component exactly the same
+  );
+}
 
   return (
     <div className="min-h-screen">
