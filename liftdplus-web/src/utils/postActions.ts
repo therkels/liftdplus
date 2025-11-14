@@ -1,3 +1,4 @@
+// src/utils/postActions.ts
 import { Post } from "./postTransformers";
 
 export interface ArchiveCategory {
@@ -71,9 +72,8 @@ export async function unlikePost(postId: string | number): Promise<boolean> {
   }
 }
 
-/**
- * Archive a post automatically to the correct category based on user preferences
- */
+/* ------------------------------- Archives ---------------------------------- */
+
 export async function archivePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
 
@@ -99,9 +99,6 @@ export async function archivePost(postId: string | number): Promise<boolean> {
   }
 }
 
-/**
- * Remove a post from archives
- */
 export async function unarchivePost(postId: string | number): Promise<boolean> {
   const id = toNumber(postId);
 
@@ -127,9 +124,8 @@ export async function unarchivePost(postId: string | number): Promise<boolean> {
   }
 }
 
-/**
- * Get all liked posts for the current user
- */
+/* --------------------------- Fetch helpers --------------------------------- */
+
 export async function getLikedPosts(): Promise<Post[]> {
   try {
     const response = await fetch("/api/v0/posts/liked", {
@@ -144,8 +140,8 @@ export async function getLikedPosts(): Promise<Post[]> {
     }
 
     const result = await response.json();
-
     const posts = Array.isArray(result) ? result : [];
+
     return posts.map((post: any) => ({
       ...post,
       post_id: post.id?.toString?.() || post.post_id,
@@ -168,9 +164,6 @@ export async function getLikedPosts(): Promise<Post[]> {
   }
 }
 
-/**
- * Get archived posts, optionally filtered by category
- */
 export async function getArchivedPosts(category?: string): Promise<Post[]> {
   try {
     const url = category
@@ -189,8 +182,8 @@ export async function getArchivedPosts(category?: string): Promise<Post[]> {
     }
 
     const result = await response.json();
-
     const posts = Array.isArray(result) ? result : [];
+
     return posts.map((post: any) => ({
       ...post,
       post_id: post.id?.toString?.() || post.post_id,
@@ -213,9 +206,6 @@ export async function getArchivedPosts(category?: string): Promise<Post[]> {
   }
 }
 
-/**
- * Get all archive categories with post counts
- */
 export async function getArchiveCategories(): Promise<ArchiveCategory[]> {
   try {
     const response = await fetch("/api/v0/posts/archives", {
@@ -232,8 +222,8 @@ export async function getArchiveCategories(): Promise<ArchiveCategory[]> {
     }
 
     const result = await response.json();
-
     const categories = Array.isArray(result) ? result : [];
+
     return categories.map((cat: any) => ({
       category: cat.category,
       cover_image_url: cat.cover_image_url || "/dandelion.jpg",
@@ -245,9 +235,6 @@ export async function getArchiveCategories(): Promise<ArchiveCategory[]> {
   }
 }
 
-/**
- * Get unique saved posts count (avoids double counting liked + archived posts)
- */
 export async function getUniqueSavedPostsCount(): Promise<number> {
   try {
     const response = await fetch("/api/v0/posts/saved-count", {
