@@ -1,4 +1,3 @@
-// /src/app/api/v0/posts/archive/route.ts
 import type { NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
@@ -26,12 +25,18 @@ export async function PUT(req: NextRequest) {
     post_id?: number;
     category?: string;
   };
-  if (!post_id && post_id !== 0) return json({ error: "post_id required" }, 400);
+
+  if (!post_id && post_id !== 0) {
+    return json({ error: "post_id required" }, 400);
+  }
+
+  // 🔹 Use a safe default category if none is provided
+  const effectiveCategory = category ?? "favorites";
 
   const payload = {
     user_id: user.id,
     post_id,
-    category: category ?? null,
+    category: effectiveCategory,
   };
 
   const { error } = await supabase
@@ -39,7 +44,11 @@ export async function PUT(req: NextRequest) {
     .from(ARCHIVES_TABLE)
     .upsert(payload, { onConflict: "user_id,post_id" });
 
-  if (error) return json({ error: error.message }, 500);
+  if (error) {
+    console.error("[archive PUT] Supabase error:", error);
+    return json({ error: error.message }, 500);
+  }
+
   return json({ ok: true });
 }
 
@@ -54,7 +63,10 @@ export async function DELETE(req: NextRequest) {
   const { post_id } = (await req.json().catch(() => ({}))) as {
     post_id?: number;
   };
-  if (!post_id && post_id !== 0) return json({ error: "post_id required" }, 400);
+
+  if (!post_id && post_id !== 0) {
+    return json({ error: "post_id required" }, 400);
+  }
 
   const { error } = await supabase
     .schema(SCHEMA)
@@ -62,6 +74,10 @@ export async function DELETE(req: NextRequest) {
     .delete()
     .match({ user_id: user.id, post_id });
 
-  if (error) return json({ error: error.message }, 500);
+  if (error) {
+    console.error("[archive DELETE] Supabase error:", error);
+    return json({ error: error.message }, 500);
+  }
+
   return json({ ok: true });
 }
