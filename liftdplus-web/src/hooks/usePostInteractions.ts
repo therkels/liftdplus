@@ -22,8 +22,30 @@ export function usePostInteractions(post: PostLike) {
   const [isLoading, setIsLoading] = useState(false);
   const { showSuccess, showError } = useToast();
 
-  const handleLike = useCallback(async () => {
+   const handleLike = useCallback(async () => {
     if (isLoading) return;
+
+    // 🔹 Figure out a real post ID from the post object
+    const rawId =
+      (post as any).id ??
+      (post as any).post_id ??
+      (post as any).display_id ??
+      null;
+
+    const id =
+      typeof rawId === "number"
+        ? rawId
+        : rawId !== null
+        ? Number(rawId)
+        : NaN;
+
+    if (!id || Number.isNaN(id)) {
+      console.error("[usePostInteractions] Invalid post id for like/unlike", {
+        post,
+        rawId,
+      });
+      return; // don't call the API with a bad id
+    }
 
     setIsLoading(true);
     const newLikedState = !isLiked;
@@ -34,8 +56,8 @@ export function usePostInteractions(post: PostLike) {
 
     try {
       const success = newLikedState
-        ? await likePost(post?.post_id || "")
-        : await unlikePost(post?.post_id || "");
+        ? await likePost(id)
+        : await unlikePost(id);
 
       if (!success) {
         // Revert on failure
@@ -54,7 +76,8 @@ export function usePostInteractions(post: PostLike) {
     } finally {
       setIsLoading(false);
     }
-  }, [isLiked, isLoading, post?.post_id]);
+  }, [isLiked, isLoading, post]);
+
 
   const handleArchive = useCallback(async () => {
     if (isLoading) return;
