@@ -22,7 +22,7 @@ export function usePostInteractions(post: PostLike) {
   const [isLoading, setIsLoading] = useState(false);
   const { showSuccess, showError } = useToast();
 
-   const handleLike = useCallback(async () => {
+  const handleLike = useCallback(async () => {
     if (isLoading) return;
 
     // 🔹 Figure out a real post ID from the post object
@@ -55,9 +55,7 @@ export function usePostInteractions(post: PostLike) {
     setLikeCount((prev) => (newLikedState ? prev + 1 : prev - 1));
 
     try {
-      const success = newLikedState
-        ? await likePost(id)
-        : await unlikePost(id);
+      const success = newLikedState ? await likePost(id) : await unlikePost(id);
 
       if (!success) {
         // Revert on failure
@@ -78,51 +76,73 @@ export function usePostInteractions(post: PostLike) {
     }
   }, [isLiked, isLoading, post]);
 
+  const handleArchive = useCallback(
+    async () => {
+      if (isLoading) return;
 
-  const handleArchive = useCallback(async () => {
-    if (isLoading) return;
+      // 🔹 Figure out a real post ID from the post object
+      const rawId =
+        (post as any).id ??
+        (post as any).post_id ??
+        (post as any).display_id ??
+        null;
 
-    setIsLoading(true);
-    const newArchivedState = !isArchived;
+      const id =
+        typeof rawId === "number"
+          ? rawId
+          : rawId !== null
+          ? Number(rawId)
+          : NaN;
 
-    // Optimistic update
-    setIsArchived(newArchivedState);
-
-    try {
-      const success = newArchivedState
-        ? await archivePost(post?.post_id || "")
-        : await unarchivePost(post?.post_id || "");
-
-      if (!success) {
-        // Revert on failure
-        setIsArchived(!newArchivedState);
-        if (newArchivedState) {
-          showError("Failed to save post");
-        }
-        throw new Error("Failed to update archive status");
-      } else {
-        // Invalidate cache on successful archive/unarchive
-        pageCache.invalidate("search:");
-        pageCache.invalidate("feed:");
-        pageCache.invalidate("favorites:");
-
-        // Show success message only when saving (not removing)
-        if (newArchivedState) {
-          // Determine which category the post was saved to based on its tags
-          // Handle both Post (with topic_tags) and PostData (with tags array)
-          const postTopicTag =
-            ("topic_tags" in post ? post.topic_tags : post?.tags?.[0]) ||
-            "favorites";
-          showSuccess(`Saved to ${postTopicTag}`);
-        }
+      if (!id || Number.isNaN(id)) {
+        console.error("[usePostInteractions] Invalid post id for archive", {
+          post,
+          rawId,
+        });
+        return; // don't call the API with a bad id
       }
-    } catch (error) {
-      console.error("Error handling archive:", error);
-      // State already reverted above
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isArchived, isLoading, post?.post_id]);
+
+      setIsLoading(true);
+      const newArchivedState = !isArchived;
+
+      // Optimistic update
+      setIsArchived(newArchivedState);
+
+      try {
+        const success = newArchivedState
+          ? await archivePost(id)
+          : await unarchivePost(id);
+
+        if (!success) {
+          // Revert on failure
+          setIsArchived(!newArchivedState);
+          if (newArchivedState) {
+            showError("Failed to save post");
+          }
+          throw new Error("Failed to update archive status");
+        } else {
+          // Invalidate cache on successful archive/unarchive
+          pageCache.invalidate("search:");
+          pageCache.invalidate("feed:");
+          pageCache.invalidate("favorites:");
+
+          // Show success message only when saving (not removing)
+          if (newArchivedState) {
+            const postTopicTag =
+              ("topic_tags" in post
+                ? (post as any).topic_tags
+                : (post as any)?.tags?.[0]) || "favorites";
+            showSuccess(`Saved to ${postTopicTag}`);
+          }
+        }
+      } catch (error) {
+        console.error("Error handling archive:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isArchived, isLoading, post, showError, showSuccess]
+  );
 
   return {
     isLiked,
