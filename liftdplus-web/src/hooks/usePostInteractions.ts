@@ -1,3 +1,4 @@
+// src/hooks/usePostInteractions.ts
 "use client";
 
 import { useState, useCallback } from "react";
@@ -15,6 +16,28 @@ import { pageCache } from "@/utils/cache/PageCache";
 // Union type to support both Post and PostData
 type PostLike = Post | PostData;
 
+// Helper: safely extract a numeric post ID from either shape
+function getNumericPostId(post: PostLike): number | null {
+  const rawId =
+    (post as any).id ??
+    (post as any).post_id ??
+    (post as any).display_id ??
+    null;
+
+  const id =
+    typeof rawId === "number"
+      ? rawId
+      : rawId !== null
+      ? Number(rawId)
+      : NaN;
+
+  if (!id || Number.isNaN(id)) {
+    console.error("[usePostInteractions] Invalid post id", { post, rawId });
+    return null;
+  }
+  return id;
+}
+
 export function usePostInteractions(post: PostLike) {
   const [isLiked, setIsLiked] = useState(post?.user_liked || false);
   const [isArchived, setIsArchived] = useState(post?.user_archived || false);
@@ -25,27 +48,8 @@ export function usePostInteractions(post: PostLike) {
   const handleLike = useCallback(async () => {
     if (isLoading) return;
 
-    // 🔹 Figure out a real post ID from the post object
-    const rawId =
-      (post as any).id ??
-      (post as any).post_id ??
-      (post as any).display_id ??
-      null;
-
-    const id =
-      typeof rawId === "number"
-        ? rawId
-        : rawId !== null
-        ? Number(rawId)
-        : NaN;
-
-    if (!id || Number.isNaN(id)) {
-      console.error("[usePostInteractions] Invalid post id for like/unlike", {
-        post,
-        rawId,
-      });
-      return; // don't call the API with a bad id
-    }
+    const id = getNumericPostId(post);
+    if (id === null) return;
 
     setIsLoading(true);
     const newLikedState = !isLiked;
@@ -63,86 +67,59 @@ export function usePostInteractions(post: PostLike) {
         setLikeCount((prev) => (newLikedState ? prev - 1 : prev + 1));
         throw new Error("Failed to update like status");
       } else {
-        // Invalidate cache on successful like/unlike
         pageCache.invalidate("search:");
         pageCache.invalidate("feed:");
         pageCache.invalidate("favorites:");
       }
     } catch (error) {
       console.error("Error handling like:", error);
-      // State already reverted above
     } finally {
       setIsLoading(false);
     }
   }, [isLiked, isLoading, post]);
 
-  const handleArchive = useCallback(
-    async () => {
-      if (isLoading) return;
+  const handleArchive = useCallback(async () => {
+    if (isLoading) return;
 
-      // 🔹 Figure out a real post ID from the post object
-      const rawId =
-        (post as any).id ??
-        (post as any).post_id ??
-        (post as any).display_id ??
-        null;
+    const id = getNumericPostId(post);
+    if (id === null) return;
 
-      const id =
-        typeof rawId === "number"
-          ? rawId
-          : rawId !== null
-          ? Number(rawId)
-          : NaN;
+    setIsLoading(true);
+    const newArchivedState = !isArchived;
 
-      if (!id || Number.isNaN(id)) {
-        console.error("[usePostInteractions] Invalid post id for archive", {
-          post,
-          rawId,
-        });
-        return; // don't call the API with a bad id
-      }
+    // Optimistic update
+    setIsArchived(newArchivedState);
 
-      setIsLoading(true);
-      const newArchivedState = !isArchived;
+    try {
+      const success = newArchivedState
+        ? await archivePost(id)
+        : await unarchivePost(id);
 
-      // Optimistic update
-      setIsArchived(newArchivedState);
-
-      try {
-        const success = newArchivedState
-          ? await archivePost(id)
-          : await unarchivePost(id);
-
-        if (!success) {
-          // Revert on failure
-          setIsArchived(!newArchivedState);
-          if (newArchivedState) {
-            showError("Failed to save post");
-          }
-          throw new Error("Failed to update archive status");
-        } else {
-          // Invalidate cache on successful archive/unarchive
-          pageCache.invalidate("search:");
-          pageCache.invalidate("feed:");
-          pageCache.invalidate("favorites:");
-
-          // Show success message only when saving (not removing)
-          if (newArchivedState) {
-            const postTopicTag =
-              ("topic_tags" in post
-                ? (post as any).topic_tags
-                : (post as any)?.tags?.[0]) || "favorites";
-            showSuccess(`Saved to ${postTopicTag}`);
-          }
+      if (!success) {
+        // Revert on failure
+        setIsArchived(!newArchivedState);
+        if (newArchivedState) {
+          showError("Failed to save post");
         }
-      } catch (error) {
-        console.error("Error handling archive:", error);
-      } finally {
-        setIsLoading(false);
+        throw new Error("Failed to update archive status");
+      } else {
+        pageCache.invalidate("search:");
+        pageCache.invalidate("feed:");
+        pageCache.invalidate("favorites:");
+
+        if (newArchivedState) {
+          const postTopicTag =
+            ("topic_tags" in post ? (post as any).topic_tags : post?.tags?.[0]) ||
+            "favorites";
+          showSuccess(`Saved to ${postTopicTag}`);
+        }
       }
-    },
-    [isArchived, isLoading, post, showError, showSuccess]
-  );
+    } catch (error) {
+      console.error("Error handling archive:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isArchived, isLoading, post, showError, showSuccess]);
 
   return {
     isLiked,
