@@ -1,73 +1,97 @@
-import { NextResponse } from "next/server";
-// The client you created from the Server-Side Auth instructions
-import { createClient } from "@/utils/supabase/server";
+// src/app/api/v0/auth/callback/route.ts
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  // if "next" is in param, use it as the redirect URL
-  let next = searchParams.get("next") ?? "/";
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+
+export async function GET(req: NextRequest) {
+  const requestUrl = new URL(req.url);
+  const origin = requestUrl.origin;
+  const code = requestUrl.searchParams.get("code");
+
+  // "next" is optional; default to "/"
+  let next = requestUrl.searchParams.get("next") ?? "/";
   if (!next.startsWith("/")) {
-    // if "next" is not a relative URL, use the default
     next = "/";
   }
-  if (code) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!user || !user.id) {
-      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  // If there is no code, send them to your auth-code-error page
+  if (!code) {
+    requestUrl.pathname = "/auth/auth-code-error";
+    requestUrl.searchParams.delete("code");
+    return NextResponse.redirect(requestUrl);
+  }
+
+  // Start with a response that redirects to "/" on the SAME origin.
+  // We'll update the Location later depending on isNewUser.
+  let response = NextResponse.redirect(new URL("/", origin));
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+
+  // Turn the `code` into a Supabase session + cookies on THIS origin
+  const {
+    data: { user },
+    error: exchangeError,
+  } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (!user || exchangeError) {
+    const errUrl = new URL("/auth/auth-code-error", origin);
+    return NextResponse.redirect(errUrl);
+  }
+
+  // ---------- Your existing "is new user?" logic ----------
+
+  const { data: userData } = await supabase.rpc("get_user", {
+    user_id: user.id,
+  });
+
+  let isNewUser = false;
+
+  if (!userData || userData.length === 0) {
+    // Create new user
+    const { error: createError } = await supabase.rpc("create_user", {
+      user_id: user.id,
+      username: "user_" + Math.random().toString(36).substring(2, 10),
+      profile_icon_url: user.user_metadata?.avatar_url,
+    });
+
+    if (createError) {
+      const errUrl = new URL("/auth/auth-code-error", origin);
+      return NextResponse.redirect(errUrl);
     }
 
-    const { data: userData } = await supabase.rpc("get_user", {
+    isNewUser = true;
+  } else {
+    // Check if existing user has preferences
+    const { data: preferences } = await supabase.rpc("get_user_preferences", {
       user_id: user.id,
     });
-    let isNewUser = false;
 
-    if (!userData || userData.length === 0) {
-      // Create new user
-      const { data, error } = await supabase.rpc("create_user", {
-        user_id: user.id,
-        username: "user_" + Math.random().toString(36).substring(2, 10),
-        profile_icon_url: user.user_metadata?.avatar_url,
-      });
-      if (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+    if (!preferences || preferences.length === 0) {
       isNewUser = true;
-    } else {
-      // Check if existing user has preferences
-      const { data: preferences } = await supabase.rpc("get_user_preferences", {
-        user_id: user.id,
-      });
-      if (!preferences || preferences.length === 0) {
-        isNewUser = true;
-      }
-    }
-
-    if (!error) {
-      // Redirect new users to disclaimer, existing users to main app
-      const redirectPath = isNewUser ? "/disclaimer" : next;
-
-      const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
-      const isLocalEnv = process.env.NODE_ENV === "development";
-      if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${redirectPath}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${redirectPath}`);
-      } else {
-        return NextResponse.redirect(`${origin}${redirectPath}`);
-      }
     }
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  // New users → /disclaimer, existing users → `next`
+  const redirectPath = isNewUser ? "/disclaimer" : next;
+  const redirectUrl = new URL(redirectPath, origin);
+
+  // Reuse the same response so we keep the cookies we set above
+  response.headers.set("Location", redirectUrl.toString());
+
+  return response;
 }
