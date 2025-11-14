@@ -27,11 +27,6 @@ export default function LoginPage() {
   }, []);
 
   return (
-    // ... keep the rest of your component exactly the same
-  );
-}
-
-  return (
     <div className="min-h-screen">
       {/* Mobile Web View */}
       <div className="flex flex-col bg-background lg:hidden">
