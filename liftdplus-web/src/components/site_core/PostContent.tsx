@@ -150,9 +150,7 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
         return;
       }
 
-      // Merge server data and card data, but:
-      // 👉 always prefer the card's user_liked / user_archived / like_count if present
-      const merged: PostData = {
+          const merged: PostData = {
         ...loaded,
         ...post,
         author_photo:
@@ -160,7 +158,7 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
           loaded.author_photo ??
           normalizeAuthorPhoto(loaded),
         images:
-          (post.content_type ?? loaded.content_type) === "image"
+          post.content_type === "image"
             ? post.images && post.images.length > 0
               ? post.images
               : normalizeImages(loaded)
@@ -178,6 +176,18 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
             ? post.like_count
             : loaded.like_count,
       };
+
+      console.log("[PostContent] merge",
+        {
+          id: post.post_id,
+          card_user_liked: post.user_liked,
+          loaded_user_liked: loaded.user_liked,
+          merged_user_liked: merged.user_liked,
+        }
+      );
+
+      setFullPost(merged);
+
 
       // 🔑 IMPORTANT:
       // Push merged data back into the SAME `post` object
