@@ -2,12 +2,14 @@
 
 import { useCallback, useState } from "react";
 
-/** Minimal shape a card has on the Explore page */
+/** Minimal shape a card has on Explore / Discover */
 type MinimalPost = {
   slug?: string | null;
   display_id?: string | number | null;
   post_id?: string | number | null;
   id?: string | number | null;
+  // allow passthrough fields
+  [key: string]: any;
 };
 
 /** Full shape returned by the API used by PostContent / PostModal */
@@ -33,7 +35,6 @@ export type FullPost = {
 
 /** Fetch the full post, preferring slug; falls back to numeric ids. */
 export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
-  // Prefer slug; otherwise try display_id; then post_id/id
   const key =
     (input.slug ??
       input.display_id ??
@@ -45,7 +46,6 @@ export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
     throw new Error("No key available to fetch post");
   }
 
-  // Always call the SINGULAR route (works in your app)
   const urls = [
     `/api/v0/post/${encodeURIComponent(String(key))}`, // same env
     `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(String(key))}`, // hard fallback to prod
@@ -69,23 +69,27 @@ export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
   throw new Error("Failed to fetch post");
 }
 
-/** Simple modal controller used by cards to open a post */
-
-// This can be whatever shape your cards use; we just want to accept both
-// the "minimal" and "full" versions without fighting TS.
-type AnyPost = MinimalPost & Partial<FullPost>;
-
+/** Modal controller: Card + Modal share the *same object* reference. */
 export function usePostModal() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<AnyPost | null>(null);
+  const [selectedPost, setSelectedPost] = useState<FullPost | null>(null);
 
-  const openPostModal = useCallback((post: AnyPost | null) => {
-    if (!post) return;
-
-    // ✅ IMPORTANT: do NOT refetch and do NOT clone
-    // We keep the SAME object reference that Card is using.
-    setSelectedPost(post);
+  const openPostModal = useCallback(async (cardPost: MinimalPost) => {
+    // 1) Open immediately using the card object (same reference as Card)
+    setSelectedPost(cardPost as FullPost);
     setIsModalOpen(true);
+
+    try {
+      // 2) Fetch full data and merge it into the SAME object
+      const full = await fetchFullPost(cardPost);
+
+      const merged = Object.assign(cardPost, full) as FullPost;
+
+      // Trigger a re-render with the enriched data
+      setSelectedPost({ ...merged });
+    } catch (err) {
+      console.error("[usePostModal] failed to load full post", err);
+    }
   }, []);
 
   const closePostModal = useCallback(() => {
