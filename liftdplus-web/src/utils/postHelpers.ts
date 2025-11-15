@@ -70,18 +70,27 @@ export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
 }
 
 /** Simple modal controller used by cards to open a post */
+
+// This can be whatever shape your cards use; we just want to accept both
+// the "minimal" and "full" versions without fighting TS.
+type AnyPost = MinimalPost & Partial<FullPost>;
+
 export function usePostModal() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<FullPost | null>(null);
+  const [selectedPost, setSelectedPost] = useState<AnyPost | null>(null);
 
-  const openPostModal = useCallback(async (cardPost: MinimalPost) => {
-    const full = await fetchFullPost(cardPost);
-    setSelectedPost(full);
+  const openPostModal = useCallback((post: AnyPost | null) => {
+    if (!post) return;
+
+    // ✅ IMPORTANT: do NOT refetch and do NOT clone
+    // We keep the SAME object reference that Card is using.
+    setSelectedPost(post);
     setIsModalOpen(true);
   }, []);
 
   const closePostModal = useCallback(() => {
     setIsModalOpen(false);
+    setSelectedPost(null);
   }, []);
 
   return { selectedPost, isModalOpen, openPostModal, closePostModal };
