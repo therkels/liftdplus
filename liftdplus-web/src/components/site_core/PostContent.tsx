@@ -112,24 +112,30 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
     async function go() {
       setError(null);
 
-      // Case 1: card already has everything – normalize and keep like/bookmark state
+      // Case 1: card already has everything – just normalize ON THE SAME OBJECT
       if (!needsFetch) {
-        const normalized: PostData = {
-          ...post,
-          author_photo: post.author_photo ?? normalizeAuthorPhoto(post),
-          images:
-            post.content_type === "image"
-              ? post.images && post.images.length > 0
-                ? post.images
-                : normalizeImages(post)
-              : post.images,
-        };
+        const target = post as any;
 
-        if (!cancelled) setFullPost(normalized);
+        // fill in author photo if missing
+        target.author_photo =
+          target.author_photo ?? normalizeAuthorPhoto(target);
+
+        // ensure images array is set for image posts
+        if (target.content_type === "image") {
+          target.images =
+            target.images && target.images.length > 0
+              ? target.images
+              : normalizeImages(target);
+        }
+
+        if (!cancelled) {
+          // use the original object reference
+          setFullPost(target as PostData);
+        }
         return;
       }
 
-      // Case 2: fetch the full post, then MERGE with the card’s state
+      // Case 2: we need to fetch the full post from the API
       const loaded = await fetchFullPost({
         slug: post.slug,
         display_id: post.display_id,
@@ -154,7 +160,7 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
           loaded.author_photo ??
           normalizeAuthorPhoto(loaded),
         images:
-          post.content_type === "image"
+          (post.content_type ?? loaded.content_type) === "image"
             ? post.images && post.images.length > 0
               ? post.images
               : normalizeImages(loaded)
@@ -173,7 +179,14 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
             : loaded.like_count,
       };
 
-      setFullPost(merged);
+      // 🔑 IMPORTANT:
+      // Push merged data back into the SAME `post` object
+      Object.assign(post as any, merged);
+
+      if (!cancelled) {
+        // And use that same shared object as fullPost
+        setFullPost(post as PostData);
+      }
     }
 
     go();
