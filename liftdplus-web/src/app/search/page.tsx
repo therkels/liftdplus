@@ -312,33 +312,39 @@ export default function Search() {
       {/* Results */}
       {!loading && !error && (
         <div className="px-4 py-4">
-          {posts.length > 0 ? (
-            posts.map((content, index) => {
-              const key = `search-post-${(content as any).post_id || index}`;
+         {posts.length > 0 ? (
+  posts.map((content, index) => {
+    const key = `search-post-${(content as any).post_id || index}`;
 
-              // keep slug normalization in case Card renders any internal href,
-              // but do NOT wrap with <Link> here; we want modal behavior on click.
-              const slug =
-                (content as any).slug ??
-                (typeof (content as any).title === "string"
-                  ? (content as any).title
-                      .toLowerCase()
-                      .trim()
-                      .replace(/\s+/g, "-")
-                      .replace(/[^a-z0-9-]/g, "")
-                  : null);
+    const slug =
+      (content as any).slug ??
+      (typeof (content as any).title === "string"
+        ? (content as any).title
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        : null);
 
-              return (
-                <Card
-                  key={key}
-                  post={{ ...(content as any), slug } as any}
-                  readTime={(content as any).secondary_title || "5 min read"}
-                  layout="horizontal"
-                  onClick={() => openPostModal(content)} // open modal instead of navigating
-                />
-              );
-            })
-          ) : (
+    // IMPORTANT: use a *single* object so the same reference is shared
+    // between the card and the modal.
+    const enrichedPost = content as any;
+    if (slug) {
+      enrichedPost.slug = slug;
+    }
+
+    return (
+      <Card
+        key={key}
+        post={enrichedPost}
+        readTime={enrichedPost.secondary_title || "5 min read"}
+        layout="horizontal"
+        onClick={() => openPostModal(enrichedPost)}
+      />
+    );
+  })
+) : (
+
             <div className="text-center py-8">
               <p className="text-gray-600">No posts found matching your filters.</p>
               <p className="text-sm text-gray-500 mt-2">Try adjusting your search criteria.</p>
