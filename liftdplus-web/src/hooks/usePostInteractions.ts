@@ -51,12 +51,16 @@ export function usePostInteractions(post: PostLike) {
     const id = getNumericPostId(post);
     if (id === null) return;
 
-    setIsLoading(true);
     const newLikedState = !isLiked;
+    const nextCount = newLikedState
+      ? likeCount + 1
+      : Math.max(0, likeCount - 1);
+
+    setIsLoading(true);
 
     // Optimistic update
     setIsLiked(newLikedState);
-    setLikeCount((prev) => (newLikedState ? prev + 1 : prev - 1));
+    setLikeCount(nextCount);
 
     try {
       const success = newLikedState ? await likePost(id) : await unlikePost(id);
@@ -64,9 +68,14 @@ export function usePostInteractions(post: PostLike) {
       if (!success) {
         // Revert on failure
         setIsLiked(!newLikedState);
-        setLikeCount((prev) => (newLikedState ? prev - 1 : prev + 1));
+        setLikeCount(likeCount);
         throw new Error("Failed to update like status");
       } else {
+        // ✅ Keep the underlying post object in sync
+        (post as any).user_liked = newLikedState;
+        (post as any).like_count = nextCount;
+
+        // Invalidate caches so other screens refetch fresh data if needed
         pageCache.invalidate("search:");
         pageCache.invalidate("feed:");
         pageCache.invalidate("favorites:");
@@ -76,7 +85,7 @@ export function usePostInteractions(post: PostLike) {
     } finally {
       setIsLoading(false);
     }
-  }, [isLiked, isLoading, post]);
+  }, [isLiked, isLoading, likeCount, post]);
 
   const handleArchive = useCallback(async () => {
     if (isLoading) return;
@@ -103,6 +112,9 @@ export function usePostInteractions(post: PostLike) {
         }
         throw new Error("Failed to update archive status");
       } else {
+        // ✅ Keep the underlying post object in sync
+        (post as any).user_archived = newArchivedState;
+
         pageCache.invalidate("search:");
         pageCache.invalidate("feed:");
         pageCache.invalidate("favorites:");
