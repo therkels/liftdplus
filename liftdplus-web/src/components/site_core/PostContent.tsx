@@ -114,24 +114,18 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
 
       // Case 1: card already has everything – just normalize ON THE SAME OBJECT
       if (!needsFetch) {
-        const target = post as any;
+        // ✅ Mutate the incoming post object so Card + Modal share the same reference
+        const normalized = Object.assign(post as any, {
+          author_photo: post.author_photo ?? normalizeAuthorPhoto(post),
+          images:
+            post.content_type === "image"
+              ? post.images && post.images.length > 0
+                ? post.images
+                : normalizeImages(post)
+              : post.images,
+        }) as PostData;
 
-        // fill in author photo if missing
-        target.author_photo =
-          target.author_photo ?? normalizeAuthorPhoto(target);
-
-        // ensure images array is set for image posts
-        if (target.content_type === "image") {
-          target.images =
-            target.images && target.images.length > 0
-              ? target.images
-              : normalizeImages(target);
-        }
-
-        if (!cancelled) {
-          // use the original object reference
-          setFullPost(target as PostData);
-        }
+        if (!cancelled) setFullPost(normalized);
         return;
       }
 
@@ -150,9 +144,9 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
         return;
       }
 
-          const merged: PostData = {
-        ...loaded,
-        ...post,
+      // Merge server data into the SAME post object
+      // We still prefer the card's user_liked / user_archived / like_count
+      const merged = Object.assign(post as any, loaded, {
         author_photo:
           post.author_photo ??
           loaded.author_photo ??
@@ -175,27 +169,18 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
           typeof post.like_count === "number"
             ? post.like_count
             : loaded.like_count,
-      };
+      }) as PostData;
 
-      console.log("[PostContent] merge",
-        {
-          id: post.post_id,
-          card_user_liked: post.user_liked,
-          loaded_user_liked: loaded.user_liked,
-          merged_user_liked: merged.user_liked,
-        }
-      );
-
-      setFullPost(merged);
-
-
-      // 🔑 IMPORTANT:
-      // Push merged data back into the SAME `post` object
-      Object.assign(post as any, merged);
+      console.log("[PostContent] merge", {
+        id: post.post_id,
+        card_user_liked: post.user_liked,
+        loaded_user_liked: loaded.user_liked,
+        merged_user_liked: merged.user_liked,
+      });
 
       if (!cancelled) {
-        // And use that same shared object as fullPost
-        setFullPost(post as PostData);
+        // merged === post here, but using merged keeps it explicit
+        setFullPost(merged);
       }
     }
 
