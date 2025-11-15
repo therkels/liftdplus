@@ -75,11 +75,18 @@ export function usePostInteractions(post: PostLike) {
         (post as any).user_liked = newLikedState;
         (post as any).like_count = nextCount;
 
+        console.log(
+          "[usePostInteractions] after like",
+          { id: getNumericPostId(post), newLikedState, nextCount },
+          { post_user_liked: (post as any).user_liked, post_like_count: (post as any).like_count }
+        );
+
         // Invalidate caches so other screens refetch fresh data if needed
         pageCache.invalidate("search:");
         pageCache.invalidate("feed:");
         pageCache.invalidate("favorites:");
       }
+
     } catch (error) {
       console.error("Error handling like:", error);
     } finally {
