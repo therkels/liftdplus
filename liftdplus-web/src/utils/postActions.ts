@@ -74,28 +74,26 @@ export async function unlikePost(postId: string | number): Promise<boolean> {
 
 /* ------------------------------- Archives ---------------------------------- */
 
+// include category + cover image
 export async function archivePost(
   postId: string | number,
-  category?: string,
-  coverImageUrl?: string
+  category: string,
+  coverImageUrl?: string | null
 ): Promise<boolean> {
   const id = toNumber(postId);
 
-  try {
-    const body = {
-      post_id: id,
-      // we include these so the backend *can* use them.
-      // if the API ignores them, no harm done.
-      category,             // e.g. "Hormonal Changes"
-      cover_image_url: coverImageUrl ?? null,
-    };
+  const payload: any = { post_id: id, category };
+  if (coverImageUrl) {
+    payload.cover_image_url = coverImageUrl;
+  }
 
+  try {
     const response = await fetch("/api/v0/posts/archive", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -111,6 +109,38 @@ export async function archivePost(
   }
 }
 
+export async function unarchivePost(
+  postId: string | number,
+  category?: string
+): Promise<boolean> {
+  const id = toNumber(postId);
+
+  const payload: any = { post_id: id };
+  if (category) {
+    payload.category = category;
+  }
+
+  try {
+    const response = await fetch("/api/v0/posts/archive", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("unarchivePost failed:", response.status, text);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error unarchiving post:", error);
+    return false;
+  }
+}
 
 /* --------------------------- Fetch helpers --------------------------------- */
 
