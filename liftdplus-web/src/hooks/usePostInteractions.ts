@@ -15,6 +15,7 @@ import { pageCache } from "@/utils/cache/PageCache";
 
 type PostLike = Post | PostData;
 
+// Helper: safely extract a numeric post ID from either shape
 function getNumericPostId(post: PostLike): number | null {
   const rawId =
     (post as any).id ??
@@ -56,7 +57,7 @@ export function usePostInteractions(post: PostLike) {
 
     setIsLoading(true);
 
-    // optimistic
+    // Optimistic update
     setIsLiked(newLikedState);
     setLikeCount(nextCount);
 
@@ -64,22 +65,29 @@ export function usePostInteractions(post: PostLike) {
       const success = newLikedState ? await likePost(id) : await unlikePost(id);
 
       if (!success) {
+        // Revert on failure
         setIsLiked(!newLikedState);
         setLikeCount(likeCount);
-        throw new Error("Failed to update like status");
-      } else {
-        (post as any).user_liked = newLikedState;
-        (post as any).like_count = nextCount;
-        pageCache.invalidate("search:");
-        pageCache.invalidate("feed:");
-        pageCache.invalidate("favorites:");
+        console.error("[usePostInteractions] like/unlike failed for post", id);
+        showError("We couldn't update your like. Please try again.");
+        return;
       }
+
+      // ✅ Keep the underlying post object in sync
+      (post as any).user_liked = newLikedState;
+      (post as any).like_count = nextCount;
+
+      // ✅ Invalidate caches so other screens refetch
+      pageCache.invalidate("search:");
+      pageCache.invalidate("feed:");
+      pageCache.invalidate("favorites:");
     } catch (error) {
       console.error("Error handling like:", error);
+      showError("We couldn't update your like. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [isLiked, isLoading, likeCount, post]);
+  }, [isLiked, isLoading, likeCount, post, showError]);
 
   const handleArchive = useCallback(async () => {
     if (isLoading) return;
@@ -90,41 +98,40 @@ export function usePostInteractions(post: PostLike) {
     setIsLoading(true);
     const newArchivedState = !isArchived;
 
-    // 🔑 derive the topic/category name for this post
-    // Card posts have `topic_tags` as a display string like "Hormonal Changes"
+    // Derive a human-friendly category name for the toast
     const topicTag =
       ("topic_tags" in (post as any) && (post as any).topic_tags) ||
       (post as any).category ||
       (post as any).tags?.[0] ||
       "favorites";
 
-    const coverImage =
-      (post as any).cover_image_url || null;
-
     // Optimistic update
     setIsArchived(newArchivedState);
 
     try {
       const success = newArchivedState
-        ? await archivePost(id, topicTag, coverImage) // ✅ pass category + cover image
+        ? await archivePost(id) // 🔹 only pass id (matches postActions.ts)
         : await unarchivePost(id);
 
       if (!success) {
+        // Revert on failure
         setIsArchived(!newArchivedState);
         if (newArchivedState) {
           showError("Failed to save post");
         }
         throw new Error("Failed to update archive status");
-      } else {
-        (post as any).user_archived = newArchivedState;
+      }
 
-        pageCache.invalidate("search:");
-        pageCache.invalidate("feed:");
-        pageCache.invalidate("favorites:");
+      // ✅ Sync underlying object
+      (post as any).user_archived = newArchivedState;
 
-        if (newArchivedState) {
-          showSuccess(`Saved to ${topicTag}`);
-        }
+      // ✅ Invalidate caches so Favorites etc. update
+      pageCache.invalidate("search:");
+      pageCache.invalidate("feed:");
+      pageCache.invalidate("favorites:");
+
+      if (newArchivedState) {
+        showSuccess(`Saved to ${topicTag}`);
       }
     } catch (error) {
       console.error("Error handling archive:", error);
