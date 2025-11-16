@@ -567,11 +567,8 @@ export default function Home() {
                     post={enrichedPost}
                     compact
                     onClick={() => {
-                      // 1. Open the modal (X button lives here)
+                      // Only open the modal – keeps your original X behavior
                       openPostModal(enrichedPost);
-
-                      // 2. Update the URL to the unique post URL
-                      router.push(`/post/${postKey}`, { scroll: false });
                     }}
                   />
                 );
