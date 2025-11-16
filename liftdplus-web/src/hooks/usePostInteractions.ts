@@ -13,10 +13,8 @@ import {
 import { useToast } from "@/contexts/ToastContext";
 import { pageCache } from "@/utils/cache/PageCache";
 
-// Union type to support both Post and PostData
 type PostLike = Post | PostData;
 
-// Helper: safely extract a numeric post ID from either shape
 function getNumericPostId(post: PostLike): number | null {
   const rawId =
     (post as any).id ??
@@ -58,7 +56,7 @@ export function usePostInteractions(post: PostLike) {
 
     setIsLoading(true);
 
-    // Optimistic update
+    // optimistic
     setIsLiked(newLikedState);
     setLikeCount(nextCount);
 
@@ -66,27 +64,16 @@ export function usePostInteractions(post: PostLike) {
       const success = newLikedState ? await likePost(id) : await unlikePost(id);
 
       if (!success) {
-        // Revert on failure
         setIsLiked(!newLikedState);
         setLikeCount(likeCount);
         throw new Error("Failed to update like status");
       } else {
-        // ✅ Keep the underlying post object in sync
         (post as any).user_liked = newLikedState;
         (post as any).like_count = nextCount;
-
-        console.log(
-          "[usePostInteractions] after like",
-          { id: getNumericPostId(post), newLikedState, nextCount },
-          { post_user_liked: (post as any).user_liked, post_like_count: (post as any).like_count }
-        );
-
-        // Invalidate caches so other screens refetch fresh data if needed
         pageCache.invalidate("search:");
         pageCache.invalidate("feed:");
         pageCache.invalidate("favorites:");
       }
-
     } catch (error) {
       console.error("Error handling like:", error);
     } finally {
@@ -103,23 +90,32 @@ export function usePostInteractions(post: PostLike) {
     setIsLoading(true);
     const newArchivedState = !isArchived;
 
+    // 🔑 derive the topic/category name for this post
+    // Card posts have `topic_tags` as a display string like "Hormonal Changes"
+    const topicTag =
+      ("topic_tags" in (post as any) && (post as any).topic_tags) ||
+      (post as any).category ||
+      (post as any).tags?.[0] ||
+      "favorites";
+
+    const coverImage =
+      (post as any).cover_image_url || null;
+
     // Optimistic update
     setIsArchived(newArchivedState);
 
     try {
       const success = newArchivedState
-        ? await archivePost(id)
+        ? await archivePost(id, topicTag, coverImage) // ✅ pass category + cover image
         : await unarchivePost(id);
 
       if (!success) {
-        // Revert on failure
         setIsArchived(!newArchivedState);
         if (newArchivedState) {
           showError("Failed to save post");
         }
         throw new Error("Failed to update archive status");
       } else {
-        // ✅ Keep the underlying post object in sync
         (post as any).user_archived = newArchivedState;
 
         pageCache.invalidate("search:");
@@ -127,10 +123,7 @@ export function usePostInteractions(post: PostLike) {
         pageCache.invalidate("favorites:");
 
         if (newArchivedState) {
-          const postTopicTag =
-            ("topic_tags" in post ? (post as any).topic_tags : post?.tags?.[0]) ||
-            "favorites";
-          showSuccess(`Saved to ${postTopicTag}`);
+          showSuccess(`Saved to ${topicTag}`);
         }
       }
     } catch (error) {
