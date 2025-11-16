@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import PostContentBase from "./PostContentBase";
 import PostContentCarousel from "./PostContentCarousel";
 
@@ -191,6 +191,40 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
     };
   }, [needsFetch, post]);
 
+  const handleShareClick = useCallback(async () => {
+    if (!fullPost) return;
+
+    const baseUrl =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://app.liftdplus.com";
+
+    const postKey =
+      fullPost.slug ??
+      (fullPost.display_id != null ? String(fullPost.display_id) : undefined) ??
+      (fullPost.post_id != null ? String(fullPost.post_id) : undefined);
+
+    if (!postKey) return;
+
+    const shareUrl = `${baseUrl}/post/${encodeURIComponent(postKey)}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: fullPost.title,
+          url: shareUrl,
+        });
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Link copied to clipboard");
+      } else {
+        window.prompt("Copy this link:", shareUrl);
+      }
+    } catch (err) {
+      console.error("Share failed", err);
+    }
+  }, [fullPost]);
+
   if (error) {
     return (
       <div className="p-6 text-center">
@@ -208,16 +242,48 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
     );
   }
 
-  if (fullPost.content_type === "image") {
-    const postWithImages: PostData = {
-      ...fullPost,
-      images: fullPost.images ?? [],
-    };
-    return <PostContentCarousel post={postWithImages} />;
-  }
+  const isImage = fullPost.content_type === "image";
+  const postWithImages: PostData = isImage
+    ? {
+        ...fullPost,
+        images: fullPost.images ?? [],
+      }
+    : fullPost;
 
-  // default to text post
-  return <PostContentBase post={fullPost} />;
+  return (
+    <div className="space-y-4">
+      {/* Share button row */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={handleShareClick}
+          className="p-2 rounded-full border border-gray-200 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition text-gray-600"
+          aria-label="Share this post"
+        >
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
+            <path d="M16 8l-4-4-4 4" />
+            <path d="M12 4v13" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Actual post content */}
+      {isImage ? (
+        <PostContentCarousel post={postWithImages} />
+      ) : (
+        <PostContentBase post={postWithImages} />
+      )}
+    </div>
+  );
 };
 
 export default PostContent;
