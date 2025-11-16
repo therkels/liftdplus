@@ -7,9 +7,10 @@ import { usePostInteractions } from "@/hooks/usePostInteractions";
 
 interface PostMetadataProps {
   post: PostData;
+  onShare?: () => void; // 👈 NEW
 }
 
-const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
+const PostMetadata: React.FC<PostMetadataProps> = ({ post, onShare }) => {
   const {
     isLiked,
     isArchived,
@@ -88,8 +89,34 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
             </div>
           </div>
 
-          {/* Like and Save Buttons - Right Side */}
+          {/* Like / Share / Save Buttons - Right Side */}
           <div className="flex items-center space-x-3">
+            {/* Share button */}
+            {onShare && (
+              <button
+                type="button"
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                onClick={onShare}
+                aria-label="Share this post"
+              >
+                <svg
+                  className="w-6 h-6"
+                  style={{ color: "var(--accent-light)" }}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
+                  <path d="M16 8l-4-4-4 4" />
+                  <path d="M12 4v13" />
+                </svg>
+              </button>
+            )}
+
+            {/* Like button */}
             <button
               className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               onClick={handleLike}
@@ -111,6 +138,7 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post }) => {
               </svg>
             </button>
 
+            {/* Bookmark button */}
             <button
               className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               onClick={handleBookmarkClick}
