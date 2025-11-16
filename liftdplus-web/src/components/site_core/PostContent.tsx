@@ -252,35 +252,13 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
 
   return (
     <div className="space-y-4">
-      {/* Share button row */}
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={handleShareClick}
-          className="p-2 rounded-full border border-gray-200 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition text-gray-600"
-          aria-label="Share this post"
-        >
-          <svg
-            className="w-4 h-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
-            <path d="M16 8l-4-4-4 4" />
-            <path d="M12 4v13" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Actual post content */}
       {isImage ? (
         <PostContentCarousel post={postWithImages} />
       ) : (
-        <PostContentBase post={postWithImages} />
+        <PostContentBase
+          post={postWithImages}
+          onShare={handleShareClick}
+        />
       )}
     </div>
   );
