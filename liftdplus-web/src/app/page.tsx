@@ -522,7 +522,7 @@ export default function Home() {
           </div>
         )}
 
-               {/* Feed */}
+                        {/* Feed */}
         {loading ? (
           <div className="space-y-8">
             <CardScrollerSkeleton />
@@ -567,8 +567,11 @@ export default function Home() {
                     post={enrichedPost}
                     compact
                     onClick={() => {
-                      // 👉 Navigate to the unique URL instead of only opening a modal
-                      router.push(`/post/${postKey}`);
+                      // 1. Open the modal (X button lives here)
+                      openPostModal(enrichedPost);
+
+                      // 2. Update the URL to the unique post URL
+                      router.push(`/post/${postKey}`, { scroll: false });
                     }}
                   />
                 );
