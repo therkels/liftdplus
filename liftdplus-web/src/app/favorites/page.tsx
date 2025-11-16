@@ -16,7 +16,6 @@ import {
   getUniqueSavedPostsCount,
   ArchiveCategory,
 } from "@/utils/postActions";
-import { pageCache } from "@/utils/cache/PageCache";
 
 interface FavoriteCategory {
   id: string;
@@ -72,21 +71,6 @@ export default function Favorites() {
   }, [user]);
 
   const loadCategories = async () => {
-    // Create cache key for favorites data
-    const cacheKey = `favorites:${user?.id}`;
-
-    // Check cache first
-    const cachedData = pageCache.get(cacheKey) as {
-      categories: FavoriteCategory[];
-      uniqueCount: number;
-    } | null;
-    if (cachedData) {
-      setCategories(cachedData.categories);
-      setUniquePostsCount(cachedData.uniqueCount);
-      setCategoriesLoading(false);
-      return;
-    }
-
     setCategoriesLoading(true);
     setError(null);
 
@@ -97,24 +81,20 @@ export default function Favorites() {
         getUniqueSavedPostsCount(),
       ]);
 
-      // Define the 6 core interests (excluding "I'm Not Sure Yet" and "Cannabis 101")
-     const coreInterests = [
-       "Sleep & Rest",
-       "Stress & Anxiety",
-       "Intimacy & Libido",
-       "Hormonal Changes",
-       "Pain Relief",
-       "Focus & Creativity",
-       "Cannabis 101",
-     ];
+      const coreInterests = [
+        "Sleep & Rest",
+        "Stress & Anxiety",
+        "Intimacy & Libido",
+        "Hormonal Changes",
+        "Pain Relief",
+        "Focus & Creativity",
+        "Cannabis 101",
+      ];
 
-
-      // Create a map of existing archive categories for quick lookup
       const archiveCategoryMap = new Map(
         archiveCategories.map((cat: ArchiveCategory) => [cat.category, cat])
       );
 
-      // Create favorite categories for core interests only
       const favoriteCategories: FavoriteCategory[] = coreInterests.map(
         (categoryName) => {
           const existingCategory = archiveCategoryMap.get(categoryName);
@@ -122,14 +102,12 @@ export default function Favorites() {
             id: categoryName.toLowerCase().replace(/\s+/g, "-"),
             name: categoryName,
             postCount: existingCategory?.cat_count || 0,
-            posts: [], // Will be loaded when category is selected
-            coverImage: existingCategory?.cover_image_url || null, // null for empty categories
+            posts: [],
+            coverImage: existingCategory?.cover_image_url || null,
           };
         }
       );
 
-      // Add liked posts as a special category (always show, even if empty)
-      // Use the same thumbnail logic as archive categories - first post's cover image
       const likedCoverImage =
         likedPosts.length > 0
           ? likedPosts[0]?.cover_image_url || "/dandelion.jpg"
@@ -140,13 +118,7 @@ export default function Favorites() {
         name: "Liked Posts",
         postCount: likedPosts.length,
         posts: likedPosts,
-        coverImage: likedCoverImage, // Use first liked post's cover image
-      });
-
-      // Cache the favorites data before setting state
-      pageCache.set(cacheKey, {
-        categories: favoriteCategories,
-        uniqueCount: uniqueCount,
+        coverImage: likedCoverImage,
       });
 
       setCategories(favoriteCategories);
@@ -160,38 +132,24 @@ export default function Favorites() {
   };
 
   const loadCategoryPosts = async (category: FavoriteCategory) => {
-    // Create cache key for category posts
-    const cacheKey = `favorites-posts:${category.id}:${user?.id}`;
-
-    // Check cache first
-    const cachedPosts = pageCache.get(cacheKey) as Post[] | null;
-    if (cachedPosts) {
-      const updatedCategory = { ...category, posts: cachedPosts };
-      setSelectedCategory(updatedCategory);
-      setPostsLoading(false);
-      return;
-    }
-
     setPostsLoading(true);
+    setError(null);
 
     try {
       let posts: Post[] = [];
 
       if (category.id === "liked-posts") {
-        // Posts are already loaded for liked posts
+        // We already have these loaded on the client
         posts = category.posts;
       } else {
-        // Load archived posts for this category
+        // Load archived posts for this category fresh from the API
         posts = await getArchivedPosts(category.name);
       }
 
-      // Cache the posts before setting state
-      pageCache.set(cacheKey, posts);
-
-      // Update the category with loaded posts
-      const updatedCategory = {
+      const updatedCategory: FavoriteCategory = {
         ...category,
-        posts: posts,
+        posts,
+        postCount: posts.length, // keep header count in sync with actual posts
       };
 
       setSelectedCategory(updatedCategory);
