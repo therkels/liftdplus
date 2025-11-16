@@ -74,16 +74,28 @@ export async function unlikePost(postId: string | number): Promise<boolean> {
 
 /* ------------------------------- Archives ---------------------------------- */
 
-export async function archivePost(postId: string | number): Promise<boolean> {
+export async function archivePost(
+  postId: string | number,
+  category?: string,
+  coverImageUrl?: string
+): Promise<boolean> {
   const id = toNumber(postId);
 
   try {
+    const body = {
+      post_id: id,
+      // we include these so the backend *can* use them.
+      // if the API ignores them, no harm done.
+      category,             // e.g. "Hormonal Changes"
+      cover_image_url: coverImageUrl ?? null,
+    };
+
     const response = await fetch("/api/v0/posts/archive", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ post_id: id }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -99,30 +111,6 @@ export async function archivePost(postId: string | number): Promise<boolean> {
   }
 }
 
-export async function unarchivePost(postId: string | number): Promise<boolean> {
-  const id = toNumber(postId);
-
-  try {
-    const response = await fetch("/api/v0/posts/archive", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ post_id: id }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("unarchivePost failed:", response.status, text);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error unarchiving post:", error);
-    return false;
-  }
-}
 
 /* --------------------------- Fetch helpers --------------------------------- */
 
