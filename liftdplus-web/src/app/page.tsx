@@ -522,55 +522,68 @@ export default function Home() {
           </div>
         )}
 
-        {/* Feed */}
-    {loading ? (
-      <div className="space-y-8">
-        <CardScrollerSkeleton />
-        <CardScrollerSkeleton />
-      </div>
-    ) : feedData.length ? (
-      feedData.map((topic) => (
-        <CardScroller key={topic.topic_id} title={topic.topic_display}>
-          {topic.posts.map((content, index) => {
-          const key = `feed-post-${(content as any).post_id || index}`;
+               {/* Feed */}
+        {loading ? (
+          <div className="space-y-8">
+            <CardScrollerSkeleton />
+            <CardScrollerSkeleton />
+          </div>
+        ) : feedData.length ? (
+          feedData.map((topic) => (
+            <CardScroller
+              key={topic.topic_id}
+              title={topic.topic_display}
+            >
+              {topic.posts.map((content, index) => {
+                const key = `feed-post-${(content as any).post_id || index}`;
 
-        // Generate / normalize slug, same pattern as Search page
-        const slug =
-          (content as any).slug ??
-          (typeof (content as any).title === "string"
-            ? (content as any).title
-                .toLowerCase()
-                .trim()
-                .replace(/\s+/g, "-")
-                .replace(/[^a-z0-9-]/g, "")
-            : null);
+                // Generate / normalize slug, same pattern as Search page
+                const slug =
+                  (content as any).slug ??
+                  (typeof (content as any).title === "string"
+                    ? (content as any).title
+                        .toLowerCase()
+                        .trim()
+                        .replace(/\s+/g, "-")
+                        .replace(/[^a-z0-9-]/g, "")
+                    : null);
 
-        // IMPORTANT: reuse the same object instance
-        const enrichedPost = content as any;
-        if (slug) {
-          enrichedPost.slug = slug;
-        }
+                // Reuse the same object instance
+                const enrichedPost = content as any;
+                if (slug) {
+                  enrichedPost.slug = slug;
+                }
 
-        return (
-          <Card
-            key={key}
-            post={enrichedPost}
-            onClick={() => openPostModal(enrichedPost)}
-            compact
-          />
-        );
-      })}
-    </CardScroller>
-  ))
-) : (
-  <div className="container mx-auto px-4 md:px-0 py-8 text-center">
-    <p className="text-gray-600">No posts available at the moment.</p>
-    <p className="text-sm text-gray-500 mt-2">
-      Try updating your interests in your profile to see personalized
-      content.
-    </p>
-  </div>
-)}
+                // Decide what to use in the URL
+                const postKey =
+                  enrichedPost.slug ||
+                  enrichedPost.display_id?.toString?.() ||
+                  enrichedPost.id?.toString?.() ||
+                  key;
+
+                return (
+                  <Card
+                    key={postKey}
+                    post={enrichedPost}
+                    compact
+                    onClick={() => {
+                      // 👉 Navigate to the unique URL instead of only opening a modal
+                      router.push(`/post/${postKey}`);
+                    }}
+                  />
+                );
+              })}
+            </CardScroller>
+          ))
+        ) : (
+          <div className="container mx-auto px-4 md:px-0 py-8 text-center">
+            <p className="text-gray-600">No posts available at the moment.</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Try updating your interests in your profile to see personalized
+              content.
+            </p>
+          </div>
+        )}
 
 
         {/* Post modal */}
