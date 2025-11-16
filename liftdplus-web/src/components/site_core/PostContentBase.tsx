@@ -15,12 +15,14 @@ const ReactMarkdown =
 
 interface PostContentBaseProps {
   post: PostData;
+  onShare?: () => void; // 👈 NEW
 }
 
-const PostContentBase: React.FC<PostContentBaseProps> = ({ post }) => {
+const PostContentBase: React.FC<PostContentBaseProps> = ({ post, onShare }) => {
   return (
     <div className="w-full">
-      <PostMetadata post={post} />
+      {/* Pass onShare down to the header/metadata */}
+      <PostMetadata post={post} onShare={onShare} />
 
       <div className="relative w-full h-64 md:h-80">
         <Image
