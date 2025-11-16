@@ -15,7 +15,6 @@ import { pageCache } from "@/utils/cache/PageCache";
 
 type PostLike = Post | PostData;
 
-// Helper: safely extract a numeric post ID from either shape
 function getNumericPostId(post: PostLike): number | null {
   const rawId =
     (post as any).id ??
@@ -44,6 +43,7 @@ export function usePostInteractions(post: PostLike) {
   const [isLoading, setIsLoading] = useState(false);
   const { showSuccess, showError } = useToast();
 
+  /* --------------------------- LIKE / UNLIKE --------------------------- */
   const handleLike = useCallback(async () => {
     if (isLoading) return;
 
@@ -57,7 +57,7 @@ export function usePostInteractions(post: PostLike) {
 
     setIsLoading(true);
 
-    // Optimistic update
+    // optimistic UI
     setIsLiked(newLikedState);
     setLikeCount(nextCount);
 
@@ -73,22 +73,21 @@ export function usePostInteractions(post: PostLike) {
         return;
       }
 
-      // ✅ Keep the underlying post object in sync
+      // ✅ keep the underlying post object + caches in sync
       (post as any).user_liked = newLikedState;
       (post as any).like_count = nextCount;
 
-      // ✅ Invalidate caches so other screens refetch
       pageCache.invalidate("search:");
       pageCache.invalidate("feed:");
       pageCache.invalidate("favorites:");
     } catch (error) {
       console.error("Error handling like:", error);
-      showError("We couldn't update your like. Please try again.");
     } finally {
       setIsLoading(false);
     }
   }, [isLiked, isLoading, likeCount, post, showError]);
 
+  /* --------------------------- ARCHIVE / UNARCHIVE --------------------------- */
   const handleArchive = useCallback(async () => {
     if (isLoading) return;
 
@@ -98,23 +97,24 @@ export function usePostInteractions(post: PostLike) {
     setIsLoading(true);
     const newArchivedState = !isArchived;
 
-    // Derive a human-friendly category name for the toast
+    // derive the topic/category name for this post
     const topicTag =
       ("topic_tags" in (post as any) && (post as any).topic_tags) ||
       (post as any).category ||
       (post as any).tags?.[0] ||
       "favorites";
 
-    // Optimistic update
+    const coverImage = (post as any).cover_image_url || null;
+
+    // optimistic UI
     setIsArchived(newArchivedState);
 
     try {
       const success = newArchivedState
-        ? await archivePost(id) // 🔹 only pass id (matches postActions.ts)
-        : await unarchivePost(id);
+        ? await archivePost(id, topicTag, coverImage)   // PUT
+        : await unarchivePost(id, topicTag);           // DELETE (with same category)
 
       if (!success) {
-        // Revert on failure
         setIsArchived(!newArchivedState);
         if (newArchivedState) {
           showError("Failed to save post");
@@ -122,10 +122,9 @@ export function usePostInteractions(post: PostLike) {
         throw new Error("Failed to update archive status");
       }
 
-      // ✅ Sync underlying object
+      // ✅ keep underlying object + caches in sync
       (post as any).user_archived = newArchivedState;
 
-      // ✅ Invalidate caches so Favorites etc. update
       pageCache.invalidate("search:");
       pageCache.invalidate("feed:");
       pageCache.invalidate("favorites:");
