@@ -98,14 +98,16 @@ export default function Favorites() {
       ]);
 
       // Define the 6 core interests (excluding "I'm Not Sure Yet" and "Cannabis 101")
-      const coreInterests = [
-        "Sleep & Rest",
-        "Stress & Anxiety",
-        "Intimacy & Libido",
-        "Hormonal Changes",
-        "Pain Relief",
-        "Focus & Creativity",
-      ];
+     const coreInterests = [
+       "Sleep & Rest",
+       "Stress & Anxiety",
+       "Intimacy & Libido",
+       "Hormonal Changes",
+       "Pain Relief",
+       "Focus & Creativity",
+       "Cannabis 101",
+     ];
+
 
       // Create a map of existing archive categories for quick lookup
       const archiveCategoryMap = new Map(
