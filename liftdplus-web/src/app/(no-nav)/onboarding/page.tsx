@@ -124,40 +124,51 @@ export default function OnboardingPage() {
   };
 
   const handleNext = async () => {
-    if (!user || selectedInterests.length === 0) return;
+  console.log("HANDLE NEXT CLICKED");
 
-    setSaving(true);
-    try {
-      // Save preferences to API
-      const response = await fetch("/api/v0/preferences", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          interests: selectedInterests,
-        }),
-      });
+  if (!user || selectedInterests.length === 0) {
+    console.log("BLOCKED: missing user or interests", { user, selectedInterests });
+    return;
+  }
 
-      if (!response.ok) {
-        throw new Error("Failed to save preferences");
-      }
+  setSaving(true);
+  try {
+    console.log("SAVING PREFERENCES...");
 
-      pageCache.invalidate("feed:");
-      pageCache.invalidate("profile:");
-      pageCache.invalidate("favorites:");
-      
-      track("onboarding_completed");
+    // Save preferences to API
+    const response = await fetch("/api/v0/preferences", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        interests: selectedInterests,
+      }),
+    });
 
-      // Redirect to main app
-      router.push("/");
-    } catch (error) {
-      console.error("Error saving preferences:", error);
-      alert("Failed to save your preferences. Please try again.");
-    } finally {
-      setSaving(false);
+    if (!response.ok) {
+      console.log("PREFERENCES SAVE FAILED", response.status);
+      throw new Error("Failed to save preferences");
     }
-  };
+
+    console.log("PREFERENCES SAVED OK");
+
+    pageCache.invalidate("feed:");
+    pageCache.invalidate("profile:");
+    pageCache.invalidate("favorites:");
+
+    console.log("FIRING EVENT onboarding_completed");
+    track("onboarding_completed");
+    console.log("EVENT CALLED, NOW ROUTING");
+
+    router.push("/");
+  } catch (error) {
+    console.error("Error saving preferences:", error);
+    alert("Failed to save your preferences. Please try again.");
+  } finally {
+    setSaving(false);
+  }
+};
 
   // Show loading state while checking authentication
   if (loading) {
