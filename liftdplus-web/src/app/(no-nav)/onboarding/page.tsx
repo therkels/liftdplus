@@ -7,6 +7,16 @@ import { HiOutlineArrowRight } from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
 import { pageCache } from "@/utils/cache/PageCache";
 
+const track = (eventName: string, params: Record<string, any> = {}) => {
+  try {
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", eventName, params);
+    }
+  } catch (e) {
+    // no-op
+  }
+};
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -136,6 +146,8 @@ export default function OnboardingPage() {
       pageCache.invalidate("feed:");
       pageCache.invalidate("profile:");
       pageCache.invalidate("favorites:");
+      
+      track("onboarding_completed");
 
       // Redirect to main app
       router.push("/");
