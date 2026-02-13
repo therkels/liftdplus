@@ -159,9 +159,13 @@ export default function OnboardingPage() {
 
     console.log("FIRING EVENT onboarding_completed");
     track("onboarding_completed");
+    
     console.log("EVENT CALLED, NOW ROUTING");
 
-    router.push("/");
+    setTimeout(() => {
+  router.push("/");
+}, 300);
+    
   } catch (error) {
     console.error("Error saving preferences:", error);
     alert("Failed to save your preferences. Please try again.");
