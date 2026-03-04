@@ -1,10 +1,10 @@
 import UnregisterSW from "@/components/dev/UnregisterSW";
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ConditionalNavBar from "@/components/site_core/ConditionalNavBar";
 import ConditionalMain from "@/components/site_core/ConditionalMain";
-import Script from "next/script";
 import ClientProviders from "@/components/ClientProviders";
 
 const inter = Inter({
@@ -13,8 +13,33 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "LIFTD+ App",
-  description: "LIFTD+ Application",
+  title: "LIFTD+ | Cannabis Education for Adults",
+  description:
+    "Curious about cannabis for sleep, stress, or pain? LIFTD+ helps you understand what cannabis does — and whether it might work for you — before you walk into a dispensary. Free to join, nothing to buy.",
+  keywords:
+    "cannabis education, CBD for sleep, THC for pain, cannabis for stress, beginner cannabis guide, cannabis for adults, microdosing, cannabis anxiety",
+  metadataBase: new URL("https://liftdplus.com"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "LIFTD+ | Cannabis Education for Adults",
+    description:
+      "Learn about cannabis for sleep, stress, and pain. Written for beginners. Free to start.",
+    url: "https://liftdplus.com",
+    siteName: "LIFTD+",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LIFTD+ | Cannabis Education for Adults",
+    description:
+      "Learn about cannabis for sleep, stress, and pain. Free to start.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: "/liftd-icon.svg",
     shortcut: "/liftd-icon.svg",
@@ -27,23 +52,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <head>
-        {/* Google Analytics */}
-        <Script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-NYZ84B03HS"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-NYZ84B03HS');
-          `}
-        </Script>
-      </head>
-
+      <head />
       <body className={`${inter.variable} antialiased min-h-screen bg-gray-50`}>
         <ClientProviders>
           <ConditionalNavBar />
@@ -52,6 +61,7 @@ export default function RootLayout({
 
         {/* Keep this outside providers if you like; just don't render children again */}
         <UnregisterSW />
+        <GoogleAnalytics gaId="G-NYZ84B03HS" />
       </body>
     </html>
   );

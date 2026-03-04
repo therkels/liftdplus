@@ -1,14 +1,15 @@
+/* Avenir Next Rounded — brand fonts for landing */
 @font-face {
   font-family: 'AvenirRounded';
-  src: url('/fonts/Avenir Next Rounded W02 Bold.ttf') format('truetype');
-  font-weight: 700;
+  src: url('/fonts/Avenir Next Rounded W04 Medium.ttf') format('truetype');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'AvenirRounded';
-  src: url('/fonts/Avenir Next Rounded W04 Medium.ttf') format('truetype');
-  font-weight: 500;
+  src: url('/fonts/Avenir Next Rounded W02 Bold.ttf') format('truetype');
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -60,6 +61,20 @@
 }
 
 :root {
+  /* Landing / reference mockup palette */
+  --teal: #6b938c;
+  --sage: #bac8b2;
+  --mist: #cdcec7;
+  --slate: #4f5a58;
+  --dark: #313a43;
+  --lime: #ccff33;
+  --navy: #2e3a45;
+  --white: #ffffff;
+  --off: #f6f7f3;
+  --cream: #eef0e9;
+  --text: #313a43;
+  --dim: #6b8880;
+  /* App-wide */
   --background: #ffffff;
   --background-light: #ececec;
   --subtext: #868585;
@@ -68,6 +83,9 @@
   --accent-dark: #4c5a58;
   --accent-light: #5b8f8d;
   --onboarding-header: #b6c4af;
+  --off-white: #f5f6f2;
+  --text-color: #1e2a24;
+  --rule: rgba(107,147,140,0.18);
 }
 
 @theme inline {
@@ -89,5 +107,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'AvenirRounded', 'Avenir Next', 'Avenir', system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  scroll-behavior: smooth;
 }
