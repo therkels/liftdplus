@@ -8,6 +8,7 @@ export default function ConditionalNavBar() {
 
   const isNoNavRoute =
     pathname === "/" ||
+    pathname === "/welcome" ||
     pathname === "" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/onboarding") ||
