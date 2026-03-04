@@ -524,7 +524,7 @@ export default function LandingPage() {
           </div>
           <p className={`${styles.gateLine} ${styles.reveal}`}>
             Want to go deeper?{" "}
-            <Link href="/onboarding">Create a free account</Link> to unlock the
+            <Link href="/welcome">Create a free account</Link> to unlock the
             full library.
           </p>
         </div>
@@ -550,7 +550,7 @@ export default function LandingPage() {
             We&apos;ll guide you from there.
           </p>
           <Link
-            href="/onboarding"
+            href="/welcome"
             className={styles.btnPrimary}
             style={{ margin: "0 auto" }}
             onClick={() => trackCta("mid_page_cta")}
