@@ -86,7 +86,7 @@ export default function LandingPage() {
             Sign In
           </Link>
           <Link
-            href="/onboarding"
+            href="/welcome"
             className={styles.navCta}
             onClick={() => trackCta("nav_start_free")}
           >
@@ -111,7 +111,7 @@ export default function LandingPage() {
             work for you — before you walk into a dispensary.
           </p>
           <Link
-            href="/onboarding"
+            href="/welcome"
             className={styles.btnPrimary}
             onClick={() => trackCta("hero_start_learning")}
           >
