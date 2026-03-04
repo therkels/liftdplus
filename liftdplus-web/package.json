@@ -10,6 +10,7 @@
     "lint:fix": "next lint --fix"
   },
   "dependencies": {
+    "@next/third-parties": "^16.1.6",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.5",
     "next": "^14.1.3",
