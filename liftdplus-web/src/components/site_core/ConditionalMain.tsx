@@ -10,6 +10,7 @@ export default function ConditionalMain({ children }: ConditionalMainProps) {
   const pathname = usePathname();
 
   const isNoNavRoute =
+    pathname === "/welcome" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/disclaimer");
@@ -17,7 +18,7 @@ export default function ConditionalMain({ children }: ConditionalMainProps) {
   return (
     <main
       className={
-        isNoNavRoute ? "min-h-screen m-0 p-0" : "pb-20 md:pb-8 md:px-8 md:pt-20" // Added top padding for fixed desktop nav
+        isNoNavRoute ? "min-h-screen m-0 p-0 w-screen overflow-hidden" : "pb-20 md:pb-8 md:px-8 md:pt-20" // Added top padding for fixed desktop nav
       }
     >
       {children}

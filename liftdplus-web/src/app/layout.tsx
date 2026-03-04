@@ -53,7 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head />
-      <body className={`${inter.variable} antialiased min-h-screen bg-gray-50`}>
+      <body className={`${inter.variable} antialiased min-h-screen`}>
         <ClientProviders>
           <ConditionalNavBar />
           <ConditionalMain>{children}</ConditionalMain>
