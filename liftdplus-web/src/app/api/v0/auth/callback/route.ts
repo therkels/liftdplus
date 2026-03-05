@@ -52,8 +52,8 @@ export async function GET(request: Request) {
     }
 
     if (!error) {
-      // Redirect new users to onboarding, existing users to main app
-      const redirectPath = isNewUser ? "/onboarding/q1" : next;
+      // Redirect new users to username step (Q1–Q4 already done pre-auth), existing users to main app
+      const redirectPath = isNewUser ? "/onboarding/username" : next;
 
       const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === "development";

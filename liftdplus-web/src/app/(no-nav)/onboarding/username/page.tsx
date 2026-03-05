@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { sendGAEvent } from "@next/third-parties/google";
 import { createClient } from "@/utils/supabase/client";
+import { pageCache } from "@/utils/cache/PageCache";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
 const MIN_LENGTH = 3;
@@ -94,6 +95,7 @@ export default function OnboardingUsernamePage() {
     setSubmitting(true);
 
     try {
+      // Same as onboarding/page.tsx: update existing username (create_user already set a random one)
       const formData = new FormData();
       formData.append("username", username.trim());
 
@@ -113,19 +115,27 @@ export default function OnboardingUsernamePage() {
         return;
       }
 
-      const topics = onboardingData.topics ?? [];
-      if (topics.length > 0) {
-        const prefRes = await fetch("/api/v0/preferences", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ interests: topics }),
-        });
-        if (!prefRes.ok) {
-          setApiError("Failed to save preferences. Please try again.");
-          setSubmitting(false);
-          return;
-        }
+      // Same format as onboarding/page.tsx: POST preferences with { interests: array }
+      const selectedInterests = onboardingData.topics ?? [];
+      const prefRes = await fetch("/api/v0/preferences", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          interests: selectedInterests,
+        }),
+      });
+
+      if (!prefRes.ok) {
+        setApiError("Failed to save preferences. Please try again.");
+        setSubmitting(false);
+        return;
       }
+
+      pageCache.invalidate("feed:");
+      pageCache.invalidate("profile:");
+      pageCache.invalidate("favorites:");
 
       if (typeof window !== "undefined") {
         localStorage.removeItem("liftd_disclaimer");
