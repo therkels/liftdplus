@@ -55,6 +55,12 @@ export default function OnboardingUsernamePage() {
       const q3 = parseStorage<{ purchaseBehavior: string }>("liftd_onboarding_q3");
       const q4 = parseStorage<{ learningGoal: string }>("liftd_onboarding_q4");
 
+      console.log("q1 raw:", localStorage.getItem("liftd_onboarding_q1"));
+      console.log("q2 raw:", localStorage.getItem("liftd_onboarding_q2"));
+      console.log("q3 raw:", localStorage.getItem("liftd_onboarding_q3"));
+      console.log("q4 raw:", localStorage.getItem("liftd_onboarding_q4"));
+      console.log("onboardingData topics:", q1?.topics);
+
       setOnboardingData({
         topics: q1?.topics ?? [],
         experienceLevel: q2?.experienceLevel ?? "",
