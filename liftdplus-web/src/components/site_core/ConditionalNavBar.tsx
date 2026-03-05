@@ -11,6 +11,7 @@ export default function ConditionalNavBar() {
     pathname === "/welcome" ||
     pathname === "" ||
     pathname.startsWith("/login") ||
+    pathname === "/onboarding/username" ||
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/disclaimer");
 

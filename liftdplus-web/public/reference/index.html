@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFTD+ — Cannabis Education for Adults</title>
+<style>
+
+@font-face {
+  font-family: 'AvenirRounded';
+  src: url('Avenir_Next_Rounded_W04_Medium.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'AvenirRounded';
+  src: url('Avenir_Next_Rounded_W02_Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+:root {
+  --teal:   #6b938c;
+  --sage:   #bac8b2;
+  --mist:   #cdcec7;
+  --slate:  #4f5a58;
+  --dark:   #313a43;
+  --lime:   #ccff33;
+  --navy:   #2e3a45;
+  --white:  #ffffff;
+  --off:    #f6f7f3;
+  --cream:  #eef0e9;
+  --text:   #313a43;
+  --dim:    #6b8880;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'AvenirRounded', 'Avenir Next', 'Avenir', system-ui, sans-serif;
+  font-weight: 400;
+  background: var(--white);
+  color: var(--text);
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 60px; height: 76px;
+  transition: background 0.4s, box-shadow 0.4s;
+}
+nav.over-photo { background: transparent; }
+nav.scrolled {
+  background: rgba(255,255,255,0.97);
+  box-shadow: 0 1px 0 rgba(107,147,140,0.15);
+  backdrop-filter: blur(12px);
+}
+.nav-logo { height: 40px; display: block; }
+.nav-logo-light { display: block; }
+.nav-logo-dark  { display: none; }
+nav.scrolled .nav-logo-light { display: none; }
+nav.scrolled .nav-logo-dark  { display: block; }
+
+.nav-links { display: flex; align-items: center; gap: 36px; }
+.nav-link {
+  font-size: 0.82rem; font-weight: 400;
+  color: rgba(255,255,255,0.75); text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: color 0.2s;
+}
+nav.scrolled .nav-link { color: var(--slate); }
+.nav-link:hover { color: #fff; }
+nav.scrolled .nav-link:hover { color: var(--teal); }
+.nav-signin {
+  font-size: 0.82rem; color: rgba(255,255,255,0.65);
+  text-decoration: none; transition: color 0.2s;
+}
+nav.scrolled .nav-signin { color: var(--slate); }
+.nav-cta {
+  background: var(--lime); color: var(--navy);
+  padding: 11px 26px; border-radius: 6px;
+  font-size: 0.8rem; font-weight: 700;
+  text-decoration: none; letter-spacing: 0.04em; text-transform: uppercase;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ─── HERO ─── */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding-top: 76px;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-color: var(--off);
+  background-image: url('matthew-mosbauer-ZlPQb7S9kuA-unsplash.jpg');
+  background-size: cover;
+  background-position: center 35%;
+  z-index: 0;
+}
+/* Photo only covers right half */
+.hero-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to right,
+    var(--white) 0%,
+    var(--white) 48%,
+    rgba(255,255,255,0) 70%
+  );
+  z-index: 1;
+}
+.hero-left {
+  position: relative; z-index: 2;
+  padding: 80px 60px 80px 80px;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--teal);
+  margin-bottom: 24px;
+}
+.hero-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--lime);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.75)} }
+
+h1 {
+  font-size: clamp(2.6rem, 4.2vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--teal);
+  margin-bottom: 24px;
+}
+.hero-sub {
+  font-size: 1rem; color: var(--slate);
+  line-height: 1.8; max-width: 440px;
+  margin-bottom: 40px; font-weight: 400;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--lime); color: var(--navy);
+  padding: 15px 32px; border-radius: 6px;
+  font-size: 0.82rem; font-weight: 700;
+  text-decoration: none; letter-spacing: 0.06em; text-transform: uppercase;
+  transition: opacity 0.2s, transform 0.15s;
+  border: none; cursor: pointer;
+}
+.btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
+.hero-trust {
+  margin-top: 20px; font-size: 0.75rem; color: var(--mist);
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-trust-check { color: var(--teal); }
+.hero-trust a { color: var(--teal); text-decoration: none; }
+.hero-trust a:hover { text-decoration: underline; }
+
+/* right col is just the photo through the bg */
+.hero-right { position: relative; z-index: 2; height: 100%; min-height: 580px; }
+
+/* ─── TRUST BAR ─── */
+.trust-bar {
+  background: var(--white);
+  border-top: 1px solid rgba(107,147,140,0.12);
+  border-bottom: 1px solid rgba(107,147,140,0.12);
+  padding: 18px 60px;
+  display: flex; align-items: center; justify-content: center; gap: 48px;
+}
+.ti {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--mist);
+  display: flex; align-items: center; gap: 8px;
+}
+.ti-dot { color: var(--lime); font-size: 0.5rem; }
+
+/* ─── GENERIC SECTION ─── */
+.section { padding: 120px 80px; }
+.si { max-width: 1100px; margin: 0 auto; }
+.eyebrow {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--teal);
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.eyebrow-line { display: block; width: 24px; height: 2px; background: var(--lime); flex-shrink: 0; }
+h2 {
+  font-size: clamp(2rem, 3.2vw, 3rem);
+  font-weight: 700; line-height: 1.12;
+  color: var(--teal);
+  margin-bottom: 16px;
+}
+.body-lg { font-size: 1rem; color: var(--slate); line-height: 1.8; max-width: 520px; }
+
+/* ─── INTRO (what to expect) ─── */
+.intro-section { background: var(--white); }
+.intro-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 100px; align-items: center; margin-top: 72px;
+}
+.intro-photo {
+  border-radius: 20px; overflow: hidden;
+  aspect-ratio: 4/5; position: relative;
+  box-shadow: 0 24px 64px rgba(49,58,67,0.1);
+}
+.intro-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.9s ease;
+}
+.intro-photo:hover img { transform: scale(1.04); }
+.intro-photo-badge {
+  position: absolute; bottom: 20px; left: 20px;
+  background: rgba(49,58,67,0.75);
+  backdrop-filter: blur(10px);
+  border-radius: 6px; padding: 8px 14px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.8); text-transform: uppercase;
+}
+.intro-list { margin-top: 40px; }
+.intro-item {
+  display: flex; gap: 18px;
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(107,147,140,0.12);
+}
+.intro-item:first-child { border-top: 1px solid rgba(107,147,140,0.12); }
+.intro-num {
+  font-size: 0.75rem; font-weight: 700; color: var(--sage);
+  flex-shrink: 0; padding-top: 3px; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.intro-item p { font-size: 0.95rem; color: var(--slate); line-height: 1.75; }
+.intro-quote {
+  margin-top: 32px;
+  font-size: 1rem; color: var(--teal); font-style: italic;
+  line-height: 1.65; padding-left: 18px;
+  border-left: 3px solid var(--lime);
+}
+
+/* ─── GOAL SECTION ─── */
+.goal-section { background: var(--off); }
+.goal-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; align-items: start; margin-top: 64px;
+}
+.goal-cards { display: flex; flex-direction: column; gap: 3px; }
+.goal-card {
+  background: var(--white); padding: 26px 28px;
+  border-radius: 10px; display: flex; align-items: center; gap: 24px;
+  border: 1px solid rgba(107,147,140,0.1);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.goal-card:hover {
+  transform: translateX(6px);
+  border-color: var(--sage);
+  box-shadow: 0 8px 32px rgba(107,147,140,0.12);
+}
+.goal-num {
+  font-size: 1.8rem; font-weight: 700; color: var(--mist);
+  flex-shrink: 0; line-height: 1;
+  transition: color 0.2s;
+}
+.goal-card:hover .goal-num { color: var(--teal); }
+.goal-text h3 { font-size: 0.92rem; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+.goal-text p { font-size: 0.82rem; color: var(--dim); line-height: 1.65; }
+
+.goal-right h2 { margin-bottom: 20px; }
+.goal-body { font-size: 0.95rem; color: var(--slate); line-height: 1.85; margin-bottom: 28px; }
+.goal-callout {
+  background: var(--white); border-radius: 10px;
+  border-left: 3px solid var(--lime);
+  padding: 22px 24px;
+  font-size: 0.95rem; color: var(--teal); font-style: italic; line-height: 1.65;
+}
+
+/* ─── HOW IT WORKS ─── */
+.how-section { background: var(--white); }
+.how-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 3px; margin-top: 64px;
+}
+.how-step {
+  padding: 44px 28px; background: var(--off); border-radius: 10px;
+  transition: background 0.2s, transform 0.25s;
+}
+.how-step:hover { background: var(--cream); transform: translateY(-4px); }
+.step-num {
+  font-size: 2.4rem; font-weight: 700; color: var(--mist);
+  line-height: 1; margin-bottom: 24px;
+  transition: color 0.2s;
+}
+.how-step:hover .step-num { color: var(--teal); }
+.how-step h3 { font-size: 0.88rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; line-height: 1.4; }
+.how-step p { font-size: 0.8rem; color: var(--dim); line-height: 1.75; }
+
+/* ─── VIDEO ─── */
+.video-section { background: var(--navy); padding: 110px 80px; }
+.video-inner { max-width: 840px; margin: 0 auto; text-align: center; }
+.video-eyebrow {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--sage);
+  margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.video-inner h2 { color: var(--white); margin-bottom: 12px; }
+.video-sub { font-size: 0.85rem; color: rgba(255,255,255,0.35); margin-bottom: 48px; letter-spacing: 0.08em; text-transform: uppercase; }
+.video-frame {
+  width: 100%; aspect-ratio: 16/9;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: border-color 0.25s;
+}
+.video-frame:hover { border-color: rgba(107,147,140,0.4); }
+.video-frame::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(107,147,140,0.1) 0%, transparent 65%);
+}
+.play-wrap {
+  width: 76px; height: 76px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1; transition: border-color 0.2s, transform 0.2s;
+}
+.video-frame:hover .play-wrap { border-color: var(--lime); transform: scale(1.07); }
+.play-btn {
+  width: 34px; height: 34px; background: var(--lime); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.video-lbl { font-size: 0.68rem; color: rgba(255,255,255,0.22); z-index: 1; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ─── ARTICLES ─── */
+.articles-section { background: var(--off); }
+.articles-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 48px;
+}
+.articles-note { font-size: 0.8rem; color: var(--dim); max-width: 190px; text-align: right; line-height: 1.65; }
+.articles-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.article-card {
+  background: var(--white); border-radius: 12px; padding: 36px 28px;
+  border: 1px solid rgba(107,147,140,0.08);
+  display: flex; flex-direction: column;
+  text-decoration: none; color: inherit;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.article-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 56px rgba(49,58,67,0.1);
+  border-color: var(--sage);
+}
+.article-tag {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--teal);
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.article-tag::before { content: ''; width: 14px; height: 2px; background: var(--lime); display: block; }
+.article-card h3 { font-size: 1rem; font-weight: 700; color: var(--navy); line-height: 1.35; margin-bottom: 12px; }
+.article-card p { font-size: 0.82rem; color: var(--dim); line-height: 1.8; flex: 1; margin-bottom: 24px; }
+.article-cta { font-size: 0.76rem; font-weight: 700; color: var(--teal); display: flex; align-items: center; gap: 6px; letter-spacing: 0.04em; transition: gap 0.2s; }
+.article-card:hover .article-cta { gap: 10px; }
+.gate-line {
+  text-align: center; margin-top: 40px;
+  font-size: 0.82rem; color: var(--dim);
+}
+.gate-line a { color: var(--teal); text-decoration: none; font-weight: 700; border-bottom: 1px solid rgba(107,147,140,0.3); }
+.gate-line a:hover { border-color: var(--teal); }
+
+/* ─── TRUST / PLAIN LANGUAGE ─── */
+.trust-section { background: var(--white); }
+.trust-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; align-items: start; margin-top: 64px;
+}
+.dont-list { margin-top: 36px; }
+.dont-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 18px 0; border-bottom: 1px solid rgba(107,147,140,0.1);
+  font-size: 0.9rem; color: var(--slate); line-height: 1.65;
+}
+.dont-item:first-child { border-top: 1px solid rgba(107,147,140,0.1); }
+.x-icon {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid rgba(107,147,140,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.5rem; color: var(--teal); flex-shrink: 0; margin-top: 2px;
+}
+.plain-card { background: var(--navy); border-radius: 16px; padding: 48px 44px; }
+.plain-card h3 { font-size: 1.6rem; font-weight: 700; color: var(--white); margin-bottom: 14px; line-height: 1.2; }
+.plain-card > p { font-size: 0.88rem; color: rgba(255,255,255,0.45); line-height: 1.85; margin-bottom: 28px; }
+.plain-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.plain-list li { font-size: 0.86rem; color: rgba(255,255,255,0.65); display: flex; gap: 12px; line-height: 1.7; }
+.plain-list .arr { color: var(--lime); flex-shrink: 0; }
+.plain-closer { margin-top: 28px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem; color: rgba(255,255,255,0.35); font-style: italic; line-height: 1.65; }
+
+/* ─── NAVY FEATURES SECTION ─── */
+.features-section { background: var(--navy); padding: 110px 80px; }
+.features-inner { max-width: 1100px; margin: 0 auto; }
+.features-section h2 { color: var(--white); text-align: center; margin-bottom: 64px; }
+.features-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 64px 80px; }
+.feature-item { text-align: center; }
+.feature-icon { font-size: 2.2rem; margin-bottom: 16px; display: block; color: var(--lime); }
+.feature-item h3 { font-size: 1rem; font-weight: 700; color: var(--teal); margin-bottom: 10px; }
+.feature-item p { font-size: 0.88rem; color: rgba(255,255,255,0.5); line-height: 1.75; max-width: 320px; margin: 0 auto; }
+
+/* ─── MID CTA ─── */
+.mid-cta { background: var(--cream); padding: 120px 80px; text-align: center; }
+.mid-inner { max-width: 520px; margin: 0 auto; }
+.mid-inner h2 { margin-bottom: 16px; }
+.mid-inner p { font-size: 0.95rem; color: var(--slate); margin-bottom: 40px; line-height: 1.8; }
+
+/* ─── NEWSLETTER ─── */
+.newsletter { background: var(--white); padding: 110px 80px; }
+.nl-inner { max-width: 480px; margin: 0 auto; text-align: center; }
+.nl-inner h2 { margin-bottom: 14px; }
+.nl-body { font-size: 0.88rem; color: var(--dim); margin-bottom: 32px; line-height: 1.85; }
+.email-row {
+  display: flex;
+  border: 1.5px solid rgba(107,147,140,0.2); border-radius: 8px;
+  overflow: hidden; background: var(--off);
+  transition: border-color 0.2s;
+}
+.email-row:focus-within { border-color: var(--teal); }
+.email-row input {
+  flex: 1; background: transparent; border: none; outline: none;
+  padding: 14px 20px; font-size: 0.86rem; color: var(--text);
+  font-family: inherit;
+}
+.email-row input::placeholder { color: var(--mist); }
+.email-row button {
+  background: var(--lime); color: var(--navy); border: none;
+  padding: 14px 24px; font-size: 0.78rem; font-weight: 700;
+  font-family: inherit; cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.email-row button:hover { opacity: 0.85; }
+.fine { font-size: 0.68rem; color: var(--mist); margin-top: 12px; }
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--navy); padding: 56px 80px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo { height: 44px; display: block; margin-bottom: 10px; }
+.footer-tagline { font-size: 0.74rem; color: rgba(255,255,255,0.3); max-width: 300px; line-height: 1.75; }
+.footer-right { text-align: right; font-size: 0.72rem; color: rgba(255,255,255,0.3); line-height: 2.4; }
+.footer-right a { color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.2s; }
+.footer-right a:hover { color: rgba(255,255,255,0.7); }
+
+/* ─── REVEAL ─── */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 1024px) {
+  nav { padding: 0 24px; }
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { display: none; }
+  .hero-bg::before { background: linear-gradient(to right, var(--white) 0%, var(--white) 100%); }
+  .hero-left { padding: 60px 32px; }
+  .section { padding: 80px 32px; }
+  .intro-grid, .goal-layout, .trust-grid { grid-template-columns: 1fr; gap: 48px; }
+  .intro-photo { aspect-ratio: 16/9; }
+  .how-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .articles-grid { grid-template-columns: 1fr; }
+  .articles-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .articles-note { text-align: left; max-width: 100%; }
+  .features-grid { grid-template-columns: 1fr; gap: 48px; }
+  .video-section, .mid-cta, .newsletter, .features-section { padding: 80px 32px; }
+  footer { flex-direction: column; gap: 24px; align-items: flex-start; padding: 48px 32px; }
+  .footer-right { text-align: left; }
+  .trust-bar { gap: 20px; flex-wrap: wrap; padding: 16px 24px; justify-content: flex-start; }
+}
+@media (max-width: 640px) {
+  h1 { font-size: 2.4rem; }
+  .how-grid { grid-template-columns: 1fr; }
+  .nav-link { display: none; }
+  .trust-bar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav" class="over-photo">
+  <a href="/">
+    <img src="04_LIFTD__Logo_-_White.png"  class="nav-logo nav-logo-light" alt="LIFTD+" />
+    <img src="01_LIFTD__Logo_-_Primary.png" class="nav-logo nav-logo-dark"  alt="LIFTD+" style="display:none" />
+  </a>
+  <div class="nav-links">
+    <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="#learn" class="nav-link">Learn</a>
+    <a href="/login" class="nav-signin">Sign In</a>
+    <a href="/onboarding" class="nav-cta">Start Free &rarr;</a>
+  </div>
+</nav>
+
+<!-- HERO: text left, ocean photo bleeds in from right -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-left">
+    <div class="hero-eyebrow"><div class="hero-dot"></div>Cannabis education for adults</div>
+    <h1>Curious about cannabis for sleep, stress, or pain?</h1>
+    <p class="hero-sub">We help you understand what cannabis does &mdash; and whether it might work for you &mdash; before you walk into a dispensary.</p>
+    <a href="/onboarding" class="btn-primary">
+      Start Learning &mdash; It&rsquo;s Free
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="hero-trust">
+      <span class="hero-trust-check">&#10003;</span>
+      For adults who want to learn first. Nothing to buy here.
+      &nbsp;&middot;&nbsp;
+      <a href="/login">Already have an account? Sign in &rarr;</a>
+    </div>
+  </div>
+  <div class="hero-right"></div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="ti"><span class="ti-dot">&#9679;</span> Education first. Always.</div>
+  <div class="ti"><span class="ti-dot">&#9679;</span> Written for beginners</div>
+  <div class="ti"><span class="ti-dot">&#9679;</span> Nothing to buy</div>
+  <div class="ti"><span class="ti-dot">&#9679;</span> Plain language. Real answers.</div>
+  <div class="ti"><span class="ti-dot">&#9679;</span> Free to start</div>
+</div>
+
+<!-- WHAT TO EXPECT -->
+<section class="section intro-section">
+  <div class="si">
+    <div class="intro-grid">
+      <div class="intro-photo reveal">
+        <img src="yogi-riana-VcwfOoaHksQ-unsplash.jpg" alt="Ocean wave — clarity and calm" />
+        <div class="intro-photo-badge">LIFTD+ &middot; Learn before you decide</div>
+      </div>
+      <div class="reveal" style="transition-delay:0.15s">
+        <div class="eyebrow"><span class="eyebrow-line"></span>What to expect here</div>
+        <h2>We teach first.<br>We don&rsquo;t push products.</h2>
+        <div class="intro-list">
+          <div class="intro-item">
+            <span class="intro-num">01</span>
+            <p>Written for people who&rsquo;ve never tried cannabis &mdash; or haven&rsquo;t in years.</p>
+          </div>
+          <div class="intro-item">
+            <span class="intro-num">02</span>
+            <p>You&rsquo;ll learn before anyone tries to sell you anything.</p>
+          </div>
+          <div class="intro-item">
+            <span class="intro-num">03</span>
+            <p>Organized around your goals &mdash; not around what&rsquo;s on a shelf.</p>
+          </div>
+        </div>
+        <p class="intro-quote">&ldquo;We don&rsquo;t assume you already know this stuff. That&rsquo;s the whole point.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GOAL -->
+<section class="section goal-section">
+  <div class="si">
+    <div class="goal-layout">
+      <div>
+        <div class="eyebrow reveal"><span class="eyebrow-line"></span>Start with your goal</div>
+        <div class="goal-cards">
+          <div class="goal-card reveal" style="transition-delay:0.05s">
+            <div class="goal-num">01</div>
+            <div class="goal-text"><h3>Better Sleep</h3><p>You want better rest, but worry about feeling off the next day.</p></div>
+          </div>
+          <div class="goal-card reveal" style="transition-delay:0.1s">
+            <div class="goal-num">02</div>
+            <div class="goal-text"><h3>Stress Relief</h3><p>Manage stress and find calm &mdash; without losing your edge.</p></div>
+          </div>
+          <div class="goal-card reveal" style="transition-delay:0.15s">
+            <div class="goal-num">03</div>
+            <div class="goal-text"><h3>Pain Relief</h3><p>Curious about pain management but hesitant about side effects.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="goal-right reveal" style="transition-delay:0.1s">
+        <h2>Most cannabis info starts with products. We start with you.</h2>
+        <p class="goal-body">We organize everything around your goals &mdash; not around what&rsquo;s on a shelf. When you&rsquo;re ready to walk into a dispensary, you&rsquo;ll know exactly what you&rsquo;re looking for.</p>
+        <div class="goal-callout">&ldquo;We organize around your goals, not around products.&rdquo;</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES (mirrors the navy section from live site) -->
+<section class="features-section">
+  <div class="features-inner">
+    <h2 class="reveal">Why LIFTD+</h2>
+    <div class="features-grid">
+      <div class="feature-item reveal">
+        <span class="feature-icon">&#10003;</span>
+        <h3>Trusted, Plain-Language Education</h3>
+        <p>Learn without jargon. Evidence-based, approachable guidance that feels human and judgment-free.</p>
+      </div>
+      <div class="feature-item reveal" style="transition-delay:0.1s">
+        <span class="feature-icon">&#9685;</span>
+        <h3>Simplified Discovery</h3>
+        <p>Content that matches your goals &mdash; sleep, stress, pain. No more overwhelming dispensary menus.</p>
+      </div>
+      <div class="feature-item reveal" style="transition-delay:0.15s">
+        <span class="feature-icon">&#9733;</span>
+        <h3>Personalized Experience</h3>
+        <p>Curated feeds based on your interests. AI-assisted guidance that gets smarter the more you explore.</p>
+      </div>
+      <div class="feature-item reveal" style="transition-delay:0.2s">
+        <span class="feature-icon">&#9675;</span>
+        <h3>No Stigma. No Pressure.</h3>
+        <p>Real guidance from people who&rsquo;ve done the research. A space where curiosity is welcomed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section how-section" id="how-it-works">
+  <div class="si">
+    <div class="eyebrow reveal"><span class="eyebrow-line"></span>Here&rsquo;s how it works</div>
+    <h2 class="reveal">Four steps to feeling actually prepared</h2>
+    <div class="how-grid">
+      <div class="how-step reveal">
+        <div class="step-num">1</div>
+        <h3>Choose what you want to learn about</h3>
+        <p>Start with up to three topics like sleep, stress, or pain. We&rsquo;ll guide you from there.</p>
+      </div>
+      <div class="how-step reveal" style="transition-delay:0.07s">
+        <div class="step-num">2</div>
+        <h3>Learn at your own pace</h3>
+        <p>Explore formats, effects, dosing, and safety &mdash; written specifically for beginners.</p>
+      </div>
+      <div class="how-step reveal" style="transition-delay:0.14s">
+        <div class="step-num">3</div>
+        <h3>Get answers to your real questions</h3>
+        <p>&ldquo;Will I feel groggy?&rdquo; &ldquo;How much should I take?&rdquo; &ldquo;What if I haven&rsquo;t done this in 20 years?&rdquo;</p>
+      </div>
+      <div class="how-step reveal" style="transition-delay:0.21s">
+        <div class="step-num">4</div>
+        <h3>Feel prepared when you walk in</h3>
+        <p>You&rsquo;ll know what you&rsquo;re looking for &mdash; and what questions to ask.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<section class="video-section">
+  <div class="video-inner">
+    <div class="video-eyebrow reveal"><span class="eyebrow-line"></span>See how it works</div>
+    <h2 class="reveal">A short walkthrough of LIFTD+ in action</h2>
+    <p class="video-sub reveal">60&ndash;90 seconds &middot; No fluff</p>
+    <div class="video-frame reveal">
+      <div class="play-wrap">
+        <div class="play-btn">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M4 2.5l8 4.5-8 4.5V2.5z" fill="#2e3a45"/>
+          </svg>
+        </div>
+      </div>
+      <span class="video-lbl">Platform walkthrough &mdash; 60&ndash;90 seconds</span>
+    </div>
+  </div>
+</section>
+
+<!-- ARTICLES -->
+<section class="section articles-section" id="learn">
+  <div class="si">
+    <div class="articles-header reveal">
+      <div>
+        <div class="eyebrow"><span class="eyebrow-line"></span>See what you&rsquo;ll learn</div>
+        <h2>Beginner-friendly guides,<br>written like a knowledgeable friend</h2>
+      </div>
+      <p class="articles-note">A taste of our approach. Free account unlocks the full library.</p>
+    </div>
+    <div class="articles-grid">
+      <a href="/post/thc-vs-cbd-for-sleep-whats-the-difference" class="article-card reveal">
+        <div class="article-tag">Sleep</div>
+        <h3>THC vs. CBD for Sleep: What&rsquo;s the Difference?</h3>
+        <p>A clear breakdown of how THC and CBD affect sleep differently &mdash; when each might help, and how to choose what fits your needs.</p>
+        <span class="article-cta">Read the guide &rarr;</span>
+      </a>
+      <a href="/post/demystifying-microdosing-thc-for-calm-and-stress-relief" class="article-card reveal" style="transition-delay:0.08s">
+        <div class="article-tag">Stress</div>
+        <h3>Demystifying Microdosing THC for Calm and Stress Relief</h3>
+        <p>An approachable intro to microdosing &mdash; what it is, why people use it, and how it may support calm without feeling out of control.</p>
+        <span class="article-cta">Explore this topic &rarr;</span>
+      </a>
+      <a href="/post/why-cannabis-can-sometimes-feel-anxious--and-how-to-handle-it" class="article-card reveal" style="transition-delay:0.16s">
+        <div class="article-tag">Wellbeing</div>
+        <h3>Why Cannabis Can Sometimes Feel Anxious &mdash; and How to Handle It</h3>
+        <p>An honest look at why anxiety can happen, common beginner missteps, and practical ways to reduce discomfort.</p>
+        <span class="article-cta">Learn more &rarr;</span>
+      </a>
+    </div>
+    <p class="gate-line reveal">Want to go deeper? <a href="/onboarding">Create a free account</a> to unlock the full library.</p>
+  </div>
+</section>
+
+<!-- TRUST / PLAIN LANGUAGE -->
+<section class="section trust-section">
+  <div class="si">
+    <div class="trust-grid">
+      <div class="reveal">
+        <div class="eyebrow"><span class="eyebrow-line"></span>Learn before you buy</div>
+        <h2>Dispensaries help you choose. We help you understand.</h2>
+        <p style="font-size:0.92rem;color:var(--slate);margin-top:16px;line-height:1.85;max-width:380px">Dispensaries are designed to help you pick a product. LIFTD+ helps you understand what you&rsquo;re choosing &mdash; and why.</p>
+        <div class="dont-list">
+          <div class="dont-item"><div class="x-icon">&#10005;</div>Push you toward a purchase before you&rsquo;re ready</div>
+          <div class="dont-item"><div class="x-icon">&#10005;</div>Prioritize sales over your actual questions</div>
+          <div class="dont-item"><div class="x-icon">&#10005;</div>Hide who we work with or why</div>
+        </div>
+      </div>
+      <div class="plain-card reveal" style="transition-delay:0.12s">
+        <h3>Plain language.<br>Real answers.</h3>
+        <p>Cannabis education can feel intimidating. We explain things the way a friend would &mdash; if they&rsquo;d done the research and genuinely wanted to help.</p>
+        <ul class="plain-list">
+          <li><span class="arr">&rarr;</span>What cannabis effects actually feel like, and what&rsquo;s normal</li>
+          <li><span class="arr">&rarr;</span>How to dose gently if you&rsquo;re starting, or restarting after years</li>
+          <li><span class="arr">&rarr;</span>How cannabis affects sleep differently than stress or pain</li>
+          <li><span class="arr">&rarr;</span>Common mistakes beginners make &mdash; and how to avoid them</li>
+        </ul>
+        <p class="plain-closer">&ldquo;We don&rsquo;t assume you already know this stuff. That&rsquo;s the whole point.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID CTA -->
+<section class="mid-cta">
+  <div class="mid-inner reveal">
+    <div class="eyebrow" style="justify-content:center"><span class="eyebrow-line"></span>Ready when you are</div>
+    <h2>Start Learning &mdash; It&rsquo;s Free</h2>
+    <p>Start by choosing up to three topics you care about.<br>We&rsquo;ll guide you from there.</p>
+    <a href="/onboarding" class="btn-primary" style="margin:0 auto">Choose your topics &rarr;</a>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter">
+  <div class="nl-inner reveal">
+    <div class="eyebrow" style="justify-content:center"><span class="eyebrow-line"></span>Stay in the loop</div>
+    <h2>Get clear guidance in your inbox</h2>
+    <p class="nl-body">Monthly beginner-friendly guides on cannabis for sleep, stress, and pain &mdash; written by people who take the time to understand it.</p>
+    <div class="email-row">
+      <input type="email" placeholder="your@email.com" />
+      <button type="button">Get the Guides</button>
+    </div>
+    <p class="fine">No spam. Unsubscribe anytime.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <img src="04_LIFTD__Logo_-_White.png" alt="LIFTD+" class="footer-logo" />
+    <p class="footer-tagline">LIFTD+ is education, not retail. We&rsquo;re here to help you understand cannabis before you decide what&rsquo;s right for you.</p>
+  </div>
+  <div class="footer-right">
+    <div>&copy; 2026 LIFTD+</div>
+    <div><a href="/privacy">Privacy</a> &nbsp;&middot;&nbsp; <a href="/terms">Terms</a> &nbsp;&middot;&nbsp; <a href="mailto:support@liftdplus.com">Contact</a></div>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(
+  entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+  { threshold: 0.07, rootMargin: '0px 0px -40px 0px' }
+);
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Nav transition: transparent over hero → solid when scrolled
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  const past = window.scrollY > 80;
+  nav.classList.toggle('scrolled', past);
+  nav.classList.toggle('over-photo', !past);
+}, { passive: true });
+</script>
+</body>
+</html>

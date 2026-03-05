@@ -17,7 +17,7 @@ const NavBar: React.FC = () => {
 
   // Set active tab based on current pathname
   useEffect(() => {
-    if (pathname === "/") {
+    if (pathname === "/" || pathname === "/explore") {
       setActiveTab("explore");
     } else if (pathname === "/search") {
       setActiveTab("discover");
@@ -29,7 +29,7 @@ const NavBar: React.FC = () => {
   }, [pathname]);
 
   const navItems = [
-    { id: "explore", label: "Explore", icon: HiOutlineBookOpen, href: "/" },
+    { id: "explore", label: "Explore", icon: HiOutlineBookOpen, href: "/explore" },
     {
       id: "discover",
       label: "Discover",

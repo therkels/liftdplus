@@ -3,260 +3,207 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { HiOutlineArrowRight } from "react-icons/hi";
-import { createClient } from "@/utils/supabase/client";
+import { sendGAEvent } from "@next/third-parties/google";
+
+const DISCLAIMER_KEY = "liftd_disclaimer";
 
 export default function DisclaimerPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [ageVerified, setAgeVerified] = useState(false);
-  const [educationalAccepted, setEducationalAccepted] = useState(false);
+  const [checked, setChecked] = useState(false);
 
-  // Check authentication status
   useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = await createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        // Redirect to login if not authenticated
-        router.push("/login");
-        return;
-      }
-
-      setUser(user);
-      setLoading(false);
-    };
-
-    checkAuth();
-  }, [router]);
+    sendGAEvent("event", "disclaimer_viewed", {});
+  }, []);
 
   const handleContinue = () => {
-    if (ageVerified && educationalAccepted) {
-      router.push("/onboarding");
+    if (!checked) return;
+    sendGAEvent("event", "disclaimer_continued", {});
+    if (typeof window !== "undefined") {
+      localStorage.setItem(DISCLAIMER_KEY, JSON.stringify({ disclaimerAccepted: true }));
     }
+    router.push("/onboarding/q1");
   };
 
-  const canContinue = ageVerified && educationalAccepted;
-
-  // Show loading state while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <>
-      {/* Mobile View */}
-      <div className="min-h-screen flex flex-col bg-background lg:hidden">
-        {/* Main content */}
-        <div className="flex-1 flex flex-col pt-12">
-          <div className="flex-1 rounded-3xl p-8 text-center text-white relative bg-foreground">
-            {/* Icon */}
-            <div>
-              <div className="w-20 h-20 mx-auto flex items-center justify-center">
-                <Image
-                  src="/liftd-icon.svg"
-                  alt="LIFTD+ Icon"
-                  width={80}
-                  height={80}
-                />
-              </div>
-            </div>
+    <div className="relative m-0 min-h-screen h-screen w-[100vw] overflow-auto p-0" style={{ fontSize: "16px", WebkitTextSizeAdjust: "100%" }}>
+      {/* Full-screen background image */}
+      <div className="fixed inset-0 z-0">
+        <Image
+          src="/images/satria-perkasa-gIuRClqbqzQ-unsplash.jpg"
+          alt=""
+          fill
+          className="object-cover"
+          style={{ objectPosition: "40% 30%" }}
+          priority
+          sizes="100vw"
+        />
+      </div>
 
-            <h2 className="text-3xl font-[560] mb-6 text-white">
-              Important
-              <br />
-              Information
+      {/* Dark overlay */}
+      <div
+        className="fixed inset-0 z-[1]"
+        style={{
+          background:
+            "linear-gradient(175deg, rgba(8,16,26,0.45) 0%, rgba(8,16,26,0.65) 40%, rgba(6,12,22,0.92) 100%)",
+        }}
+      />
+
+      {/* Content */}
+      <div className="relative z-[2] min-h-screen flex flex-col items-center justify-center w-full text-[16px]">
+        <div className="flex flex-col" style={{ width: "100%", maxWidth: "540px", margin: "0 auto", padding: "40px 24px" }}>
+          {/* Icon */}
+          <div className="flex justify-center">
+            <div className="brightness-0 invert">
+              <Image
+                src="/liftd-icon.svg"
+                alt="LIFTD+"
+                width={52}
+                height={52}
+                className="w-[52px] h-[52px] lg:w-[60px] lg:h-[60px]"
+              />
+            </div>
+          </div>
+
+          {/* Label */}
+          <p
+            className="mt-4 text-[10px] uppercase tracking-widest text-center"
+            style={{ color: "#ccff33" }}
+          >
+            BEFORE WE BEGIN
+          </p>
+
+          {/* Card */}
+          <div
+            className="mt-6 w-full rounded-2xl border py-6 px-[26px] lg:px-10 lg:py-8"
+            style={{
+              background: "rgba(255,255,255,0.18)",
+              borderColor: "rgba(255,255,255,0.16)",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              width: "100%",
+              minWidth: "300px",
+              boxSizing: "border-box",
+            }}
+          >
+            <h2 className="text-xl font-bold text-white lg:text-2xl mb-4">
+              Important Information
             </h2>
 
-            <div className="text-left bg-white/10 rounded-2xl p-6 mb-8 backdrop-blur-sm">
-              <h3 className="text-xl font-semibold mb-4 text-accent">
-                Educational Disclaimer
-              </h3>
-              <p className="text-base text-white mb-4 leading-relaxed">
-                This application is designed for{" "}
-                <strong>educational purposes only</strong>. The content provided
-                is intended to inform and educate users about cannabis-related
-                topics and should not be considered as medical advice, treatment
-                recommendations, or professional guidance.
-              </p>
-              <p className="text-base text-white mb-4 leading-relaxed">
-                Always consult with qualified healthcare professionals before
-                making any decisions related to cannabis use or health matters.
-                The information provided here is not intended to diagnose,
-                treat, cure, or prevent any medical condition.
-              </p>
-            </div>
-
-            {/* Checkboxes */}
-            <div className="space-y-4 mb-8 text-left">
-              <label className="flex cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={ageVerified}
-                  onChange={(e) => setAgeVerified(e.target.checked)}
-                  className="mt-1 w-5 h-5 flex-shrink-0 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
-                />
-                <span className="ml-4 text-white text-base leading-relaxed">
-                  I confirm that I am <strong>18 years of age or older</strong>
-                </span>
-              </label>
-
-              <label className="flex cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={educationalAccepted}
-                  onChange={(e) => setEducationalAccepted(e.target.checked)}
-                  className="mt-1 w-5 h-5 flex-shrink-0 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
-                />
-                <span className="ml-4 text-white text-base leading-relaxed">
-                  I understand this application is for{" "}
-                  <strong>educational purposes only</strong> and does not
-                  provide medical advice
-                </span>
-              </label>
-            </div>
-
-            {/* Continue button */}
-            <div className="flex justify-center">
-              <button
-                onClick={handleContinue}
-                disabled={!canContinue}
-                className={`px-6 py-2 rounded-full text-sm flex items-center transition-all ${
-                  canContinue
-                    ? "bg-accentLight text-white hover:bg-accentLight/90"
-                    : "bg-gray-500 text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                Continue <HiOutlineArrowRight className="w-4 h-4 ml-1" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Desktop Web View */}
-      <div className="hidden lg:flex min-h-screen">
-        {/* Left side - Branding */}
-        <div className="w-2/5 bg-foreground text-white p-12 flex flex-col justify-center">
-          <div className="text-center">
-            <Image
-              src="/liftd-text.svg"
-              alt="LIFTD"
-              width={200}
-              height={96}
-              className="h-24 mb-8 mx-auto bg-white px-8 py-4 rounded-lg"
-            />
-            <h3 className="text-xl text-accent-light font-medium">
-              Educational Cannabis Platform
-            </h3>
-            <p className="text-gray-200 mt-2">
-              Learn about cannabis in a safe, educational environment.
+            {/* Section 1 */}
+            <p
+              className="text-[9px] font-extrabold uppercase tracking-wider mb-1"
+              style={{ color: "rgba(160,210,200,0.95)" }}
+            >
+              WHAT LIFTD+ IS
             </p>
+            <p className="text-sm lg:text-base text-white/70 leading-relaxed mb-0">
+              An educational platform to help you understand cannabis-related topics — not medical advice, treatment, or professional guidance.
+            </p>
+
+            <div className="border-t border-white/[0.06] my-3" />
+
+            {/* Section 2 */}
+            <p
+              className="text-[9px] font-extrabold uppercase tracking-wider mb-1"
+              style={{ color: "rgba(160,210,200,0.95)" }}
+            >
+              HEALTH GUIDANCE
+            </p>
+            <p className="text-sm lg:text-base text-white/70 leading-relaxed mb-0">
+              If you have questions about your health or medications, consult a qualified healthcare professional before making decisions about cannabis use.
+            </p>
+
+            <div className="border-t border-white/[0.06] my-3" />
+
+            {/* Section 3 */}
+            <p
+              className="text-[9px] font-extrabold uppercase tracking-wider mb-1"
+              style={{ color: "rgba(160,210,200,0.95)" }}
+            >
+              LEGAL STATEMENT
+            </p>
+            <p className="text-sm lg:text-base text-white/70 leading-relaxed mb-0">
+              Nothing here is intended to diagnose, treat, cure, or prevent any medical condition.
+            </p>
+
+            <div className="border-t border-white/[0.08] mt-6 mb-4" />
+
+            {/* Checkbox row */}
+            <label className="flex items-start gap-3 cursor-pointer rounded-xl px-3 py-2 -mx-3 hover:bg-white/[0.06] transition-colors duration-150">
+              <span className="relative flex-shrink-0 mt-0.5">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => setChecked(e.target.checked)}
+                  className="absolute opacity-0 w-6 h-6 cursor-pointer inset-0"
+                  aria-label="I confirm I'm 21 or older and understand LIFTD+ provides educational information, not medical advice"
+                />
+                <span
+                  className={`w-6 h-6 min-w-[24px] rounded-md flex items-center justify-center ${
+                    checked
+                      ? ""
+                      : "bg-white/20 border border-white/30"
+                  }`}
+                  style={
+                    checked
+                      ? {
+                          backgroundColor: "#ccff33",
+                          boxShadow: "0 0 12px rgba(204,255,51,0.32)",
+                        }
+                      : undefined
+                  }
+                >
+                  {checked && (
+                    <svg
+                      width="14"
+                      height="11"
+                      viewBox="0 0 14 11"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-[#1a2530]"
+                    >
+                      <path
+                        d="M1 5.5L5 9.5L13 1.5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </span>
+              </span>
+              <span className="text-sm text-white/80 leading-snug">
+                I confirm I&apos;m <span className="font-semibold text-white">21 or older</span> and understand LIFTD+ provides <span className="font-semibold text-white">educational information</span>, not medical advice
+              </span>
+            </label>
           </div>
-        </div>
 
-        {/* Right side - Disclaimer Form */}
-        <div className="w-3/5 bg-background p-12 flex flex-col justify-center">
-          <div className="max-w-2xl mx-auto w-full">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-[560] text-foreground mb-4">
-                Important Information
-              </h1>
-              <p className="text-lg text-subtext leading-relaxed">
-                Please read and acknowledge the following before continuing.
-              </p>
-            </div>
-
-            <div className="bg-backgroundLight rounded-2xl p-8 mb-8 border border-gray-200">
-              <h3 className="text-2xl font-semibold mb-4 text-foreground">
-                Educational Disclaimer
-              </h3>
-              <div className="space-y-4 text-subtext leading-relaxed">
-                <p>
-                  This application is designed for{" "}
-                  <strong>educational purposes only</strong>. The content
-                  provided is intended to inform and educate users about
-                  cannabis-related topics and should not be considered as
-                  medical advice, treatment recommendations, or professional
-                  guidance.
-                </p>
-                <p>
-                  Always consult with qualified healthcare professionals before
-                  making any decisions related to cannabis use or health
-                  matters. The information provided here is not intended to
-                  diagnose, treat, cure, or prevent any medical condition.
-                </p>
-                <p>
-                  By using this application, you acknowledge that you understand
-                  these limitations and agree to use the information
-                  responsibly.
-                </p>
-              </div>
-            </div>
-
-            {/* Checkboxes */}
-            <div className="space-y-6 mb-8">
-              <label className="flex cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={ageVerified}
-                  onChange={(e) => setAgeVerified(e.target.checked)}
-                  className="mt-1 w-5 h-5 flex-shrink-0 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
-                />
-                <span className="ml-4 text-foreground text-lg leading-relaxed">
-                  I confirm that I am <strong>18 years of age or older</strong>
-                </span>
-              </label>
-
-              <label className="flex cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={educationalAccepted}
-                  onChange={(e) => setEducationalAccepted(e.target.checked)}
-                  className="mt-1 w-5 h-5 flex-shrink-0 text-accent bg-white border-2 border-gray-300 rounded focus:ring-accent focus:ring-2 group-hover:border-accent transition-colors"
-                />
-                <span className="ml-4 text-foreground text-lg leading-relaxed">
-                  I understand this application is for{" "}
-                  <strong>educational purposes only</strong> and does not
-                  provide medical advice
-                </span>
-              </label>
-            </div>
-
-            {/* Continue button */}
-            <div className="flex justify-center">
-              <button
-                onClick={handleContinue}
-                disabled={!canContinue}
-                className={`px-8 py-3 rounded-lg text-lg font-medium flex items-center transition-all ${
-                  canContinue
-                    ? "bg-accent text-[#616161] hover:bg-accent/90"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                Continue <HiOutlineArrowRight className="w-5 h-5 ml-2" />
-              </button>
-            </div>
-
-            {canContinue && (
-              <p className="text-center text-sm text-subtext mt-4">
-                Ready to begin your educational journey
-              </p>
-            )}
+          {/* Continue */}
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={checked ? handleContinue : undefined}
+            onKeyDown={(e) => e.key === "Enter" && checked && handleContinue()}
+            className="mt-6"
+            style={{
+              backgroundColor: checked ? "#ccff33" : "rgba(255,255,255,0.12)",
+              color: checked ? "#1a2530" : "rgba(255,255,255,0.3)",
+              boxShadow: checked ? "0 0 28px rgba(204,255,51,0.3)" : "none",
+              cursor: checked ? "pointer" : "not-allowed",
+              transition: "all 0.2s ease",
+              width: "100%",
+              padding: "16px",
+              borderRadius: "9999px",
+              fontWeight: "700",
+              fontSize: "16px",
+              textAlign: "center",
+            }}
+          >
+            Continue →
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
