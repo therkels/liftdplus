@@ -8,6 +8,16 @@ import { createClient } from "@/utils/supabase/client";
 import { pageCache } from "@/utils/cache/PageCache";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+const TOPIC_MAP: Record<string, string> = {
+  "Sleep": "Sleep & Rest",
+  "Stress and anxiety": "Stress & Anxiety",
+  "Focus and productivity": "Focus & Creativity",
+  "Pain and recovery": "Pain Relief",
+  "Intimacy & Libido": "Intimacy & Libido",
+  "Hormonal Changes": "Hormonal Changes",
+  "Understanding cannabis basics": "Cannabis 101",
+  "General wellness": "Cannabis 101",
+};
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 20;
 
@@ -122,7 +132,9 @@ export default function OnboardingUsernamePage() {
       }
 
       // Same format as onboarding/page.tsx: POST preferences with { interests: array }
-      const selectedInterests = onboardingData.topics ?? [];
+      const selectedInterests = (onboardingData.topics ?? []).map(
+        (topic) => TOPIC_MAP[topic] ?? topic
+      );
       const prefRes = await fetch("/api/v0/preferences", {
         method: "POST",
         headers: {
