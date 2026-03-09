@@ -92,46 +92,134 @@ export default function LoginPage() {
 
       {/* Desktop Web View */}
       <div className="hidden lg:flex min-h-screen">
-        {/* Left Side - Hero/Branding */}
-        <div className="flex-1 bg-foreground flex flex-col justify-center items-center text-white px-12">
-          <div className="max-w-lg text-center">
-            <Image
-              src="/liftd-text.svg"
-              alt="LIFTD"
-              width={200}
-              height={96}
-              className="h-24 mb-8 mx-auto bg-white px-6 py-3 rounded-lg"
-            />
-            <h1 className="text-6xl font-[560] mb-6 text-accent-light leading-tight">
-              Explore
-              <br />
-              Your Way
-            </h1>
-            <p className="text-xl text-white mb-6 leading-relaxed">
-              Curious about what cannabis really has to offer? You&apos;re in
-              the right place.
-            </p>
-            <p className="text-lg text-gray-100">
-              We&apos;ll tailor your experience based on what you&apos;re
-              curious about.
-            </p>
+        {/* Left Side - Hero/Branding (60%) */}
+        <div
+          className="relative min-h-screen flex-[0_0_60%]"
+          style={{ width: "60%" }}
+        >
+          <Image
+            src="/images/uran-wang-EewJbSBL8ec-unsplash.jpg"
+            alt=""
+            fill
+            className="object-cover object-[50%_40%]"
+            priority
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(175deg, rgba(12,28,36,0.35) 0%, rgba(12,28,36,0.55) 40%, rgba(12,28,36,0.92) 100%)",
+            }}
+          />
+          <div
+            className="relative z-10 flex flex-col justify-center items-center text-white px-12"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              height: "100%",
+            }}
+          >
+            <div className="max-w-lg text-center">
+              <Image
+                src="/logos/04 LIFTD+ Logo - White.png"
+                alt="LIFTD+"
+                width={200}
+                height={96}
+                className="h-24 mx-auto w-auto"
+                style={{ marginBottom: "24px" }}
+              />
+              <h1 className="text-6xl font-[560] mb-6 text-white leading-tight">
+                Continue your journey
+              </h1>
+              <p className="text-xl text-white mb-6 leading-relaxed">
+                Save your preferences and explore cannabis education designed
+                for you.
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Right Side - Login Form */}
-        <div className="flex-1 bg-background flex flex-col justify-center items-center px-12">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-semibold text-foreground mb-2">
-                Welcome Back
-              </h2>
-              <p className="text-subtext">Sign in to continue your journey</p>
-            </div>
-
-            <div className="space-y-4">
+        {/* Right Side - Login Form (40%) */}
+        <div
+          className="flex flex-col min-h-screen flex-[0_0_40%]"
+          style={{ width: "40%", backgroundColor: "#f9f8f6" }}
+        >
+          <div
+            className="w-full"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              padding: "0 52px",
+            }}
+          >
+            <div
+              style={{
+                background: "rgba(255,255,255,0.7)",
+                borderRadius: "20px",
+                padding: "48px 40px",
+                boxShadow: "0 2px 16px rgba(0,0,0,0.04)",
+                maxWidth: "420px",
+                margin: "auto",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <p
+                className="uppercase"
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 500,
+                  letterSpacing: "0.12em",
+                  color: "#6b938c",
+                  marginBottom: "16px",
+                }}
+              >
+                WELCOME TO LIFTD+
+              </p>
+              <h1
+                style={{
+                  fontSize: "26px",
+                  fontWeight: 700,
+                  color: "#1a2530",
+                  marginBottom: "12px",
+                  textAlign: "center",
+                }}
+              >
+                Access your personalized experience
+              </h1>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "#6b7280",
+                  marginBottom: "32px",
+                  textAlign: "center",
+                  maxWidth: "300px",
+                }}
+              >
+                Sign in to save your preferences and access your personalized
+                education feed.
+              </p>
+              <p
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: "#1a2530",
+                  textAlign: "center",
+                  marginBottom: "24px",
+                  marginTop: "-8px",
+                }}
+              >
+                Your personalized feed is ready.
+              </p>
               <button
                 onClick={handleGoogleSignIn}
                 className="w-full py-4 px-6 rounded-lg font-medium text-black bg-accent hover:bg-accent/90 transition-colors text-lg flex items-center justify-center space-x-3"
+                style={{ maxWidth: "360px" }}
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path
@@ -151,24 +239,16 @@ export default function LoginPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span>Get Started with Google</span>
+                <span>Continue with Google</span>
               </button>
-
-              <div className="text-center">
-                <p className="text-subtext text-sm mb-2">
-                  Already have an account?
-                </p>
-                <button
-                  onClick={handleGoogleSignIn}
-                  className="w-full py-3 px-6 rounded-lg border-2 text-foreground border-foreground hover:bg-backgroundLight transition-colors text-lg"
-                >
-                  Sign In with Google
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-8 text-center">
-              <p className="text-subtext text-xs">
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#9ca3af",
+                  textAlign: "center",
+                  marginTop: "20px",
+                }}
+              >
                 By continuing, you agree to our Terms of Service and Privacy
                 Policy
               </p>
