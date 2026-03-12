@@ -12,8 +12,7 @@ const OPTIONS = [
   "Pain and recovery",
   "Intimacy & Libido",
   "Hormonal Changes",
-  "Understanding cannabis basics",
-  "General wellness",
+  "I'm not sure yet",
 ] as const;
 
 const STORAGE_KEY = "liftd_onboarding_q1";

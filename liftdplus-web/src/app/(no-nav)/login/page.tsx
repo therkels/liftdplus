@@ -182,6 +182,7 @@ export default function LoginPage() {
                 WELCOME TO LIFTD+
               </p>
               <h1
+                className="text-2xl font-bold"
                 style={{
                   fontSize: "26px",
                   fontWeight: 700,
@@ -190,20 +191,8 @@ export default function LoginPage() {
                   textAlign: "center",
                 }}
               >
-                Access your personalized experience
+                Your personalized feed is ready.
               </h1>
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: "#6b7280",
-                  marginBottom: "32px",
-                  textAlign: "center",
-                  maxWidth: "300px",
-                }}
-              >
-                Sign in to save your preferences and access your personalized
-                education feed.
-              </p>
               <p
                 style={{
                   fontSize: "13px",
@@ -214,7 +203,7 @@ export default function LoginPage() {
                   marginTop: "-8px",
                 }}
               >
-                Your personalized feed is ready.
+                Sign in to save your answers and access your feed.
               </p>
               <button
                 onClick={handleGoogleSignIn}

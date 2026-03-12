@@ -175,7 +175,7 @@ export default function OnboardingQ3Page() {
               QUESTION 3 OF 4
             </p>
             <h1 className="text-[22px] font-bold text-white leading-snug">
-              Have you ever purchased cannabis from a dispensary?
+              Have you visited a dispensary before?
             </h1>
           </div>
 

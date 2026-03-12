@@ -118,7 +118,7 @@
 /* ─── Hero ─── */
 .hero {
   position: relative;
-  min-height: auto;
+  min-height: 900px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
@@ -142,30 +142,31 @@
 .heroBg {
   position: absolute;
   inset: 0;
-  background-color: var(--off);
-  background-image: url('/images/matthew-mosbauer-ZlPQb7S9kuA-unsplash.jpg');
-  background-size: cover;
-  background-position: center 35%;
   z-index: 0;
 }
 
-.heroBg::before {
-  content: '';
+.heroBg img {
+  object-fit: cover !important;
+  object-position: 70% 30% !important;
+}
+
+.heroBgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to right,
-    var(--white) 0%,
-    var(--white) 48%,
-    rgba(255, 255, 255, 0) 70%
-  );
   z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.75) 25%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.08) 70%
+  );
 }
 
 .heroLeft {
   position: relative;
   z-index: 2;
-  padding: 80px 60px 40px 80px;
+  padding: 130px 60px 40px 80px;
 }
 
 .heroEyebrow {
@@ -198,6 +199,17 @@
     opacity: 0.35;
     transform: scale(0.75);
   }
+}
+
+.heroIntro {
+  font-size: 17px;
+  color: #4a5568;
+  max-width: 500px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.heroIntro:first-of-type {
+  margin-bottom: 8px;
 }
 
 .heroTitle {
@@ -241,6 +253,13 @@
   transform: translateY(-2px);
 }
 
+.heroCtaSubtext {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
 .heroBelowCta {
   margin-top: 14px;
 }
@@ -248,7 +267,7 @@
 .heroSignInLink {
   color: var(--teal);
   text-decoration: none;
-  font-size: 0.72rem;
+  font-size: 14px;
 }
 
 .heroSignInLink:hover {
@@ -260,6 +279,149 @@
   z-index: 2;
   height: 100%;
   min-height: 0;
+}
+
+.uiWrapper {
+  position: absolute;
+  right: 10%;
+  top: 53%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.blurSurface {
+  padding: 16px;
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+}
+
+.onboardingCard {
+  width: 248px;
+  border-radius: 20px;
+  overflow: hidden;
+  z-index: 10;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
+  background: rgba(12, 18, 14, 0.88);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  padding: 17px 14px 14px;
+}
+
+.onboardingCardLogo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.onboardingCardLogo img {
+  filter: brightness(0) invert(1);
+  width: 40px;
+  height: 40px;
+}
+
+.onboardingCardDots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.progressDot {
+  height: 6px;
+  width: 18px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.progressDotActive {
+  width: 26px;
+  height: 6px;
+  border-radius: 4px;
+  background: #b8f000;
+}
+
+.onboardingCardEyebrow {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b8f000;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.onboardingCardHeading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+
+.onboardingCardSubtext {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.onboardingCardOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.onboardingCardOptionSelected {
+  border-color: #b8f000;
+}
+
+.onboardingCardOptionCheck {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.onboardingCardOptionCheckSelected {
+  border-color: #b8f000;
+  background: #b8f000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #121418;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.onboardingCardCount {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.onboardingCardBtn {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 10px;
+  cursor: default;
 }
 
 /* ─── Trust bar (inside hero, below sign-in link) ─── */
@@ -276,7 +438,7 @@
 }
 
 .trustItem {
-  font-size: 0.82rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--slate);
   display: inline-flex;
@@ -293,6 +455,28 @@
   font-size: 1.2rem;
   margin: 0 20px;
   opacity: 0.6;
+}
+
+.trustStrip {
+  padding: 48px 20px;
+  text-align: center;
+  background-color: #f3f5f4;
+}
+
+.trustTagline {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f7f80;
+  margin-bottom: 8px;
+}
+
+.trustQuote {
+  font-size: 17px;
+  font-style: italic;
+  color: #2f3e3f;
+  margin-top: 10px;
 }
 
 /* ─── Section common ─── */
@@ -531,16 +715,13 @@
 }
 
 .stepNum {
-  font-size: 2.4rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  color: var(--mist);
+  color: #2d3e40;
+  opacity: 1;
   line-height: 1;
   margin-bottom: 24px;
   transition: color 0.2s;
-}
-
-.howStep:hover .stepNum {
-  color: var(--teal);
 }
 
 .howStep h3 {
@@ -782,26 +963,15 @@
 
 .gateLine {
   text-align: center;
-  margin-top: 40px;
+  margin-top: 56px;
   font-size: 0.82rem;
   color: #4a5568;
-}
-
-.gateLine a {
-  color: var(--teal);
-  text-decoration: none;
-  font-weight: 700;
-  border-bottom: 1px solid rgba(107, 147, 140, 0.3);
-}
-
-.gateLine a:hover {
-  border-color: var(--teal);
 }
 
 /* ─── Trust / plain language (Learn before you buy) ─── */
 .trustSection {
   background: var(--white);
-  padding-top: 40px;
+  padding-top: 24px !important;
 }
 
 .trustGrid {
@@ -809,7 +979,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 80px;
   align-items: start;
-  margin-top: 64px;
 }
 
 .trustBody {
@@ -828,7 +997,7 @@
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 18px 0;
+  padding: 10px 0;
   border-bottom: 1px solid rgba(107, 147, 140, 0.1);
   font-size: 0.9rem;
   color: #4a5568;
@@ -842,13 +1011,12 @@
 .xIcon {
   width: 20px;
   height: 20px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(107, 147, 140, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.5rem;
-  color: var(--teal);
+  font-size: 16px;
+  color: #8a9e9f;
+  font-weight: 400;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -909,22 +1077,23 @@
 /* ─── Mid CTA ─── */
 .midCta {
   position: relative;
-  padding: 88px 80px;
+  padding: 110px 20px;
   text-align: center;
   overflow: hidden;
   min-height: 420px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(
+    180deg,
+    #1e2d2f 0%,
+    #24383a 100%
+  );
 }
 
 .midCtaBg {
   position: absolute;
   inset: 0;
-  background-color: var(--off);
-  background-image: url('/images/yogi-riana-VcwfOoaHksQ-unsplash.jpg');
-  background-size: cover;
-  background-position: center;
   z-index: 0;
 }
 
@@ -945,7 +1114,7 @@
 
 .midInner .sectionTitle {
   margin-bottom: 16px;
-  color: var(--white);
+  color: #ffffff;
 }
 
 .midInner .eyebrow {
@@ -958,7 +1127,7 @@
 
 .midInner p {
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: #ffffff;
   margin-bottom: 40px;
   line-height: 1.8;
 }
@@ -1001,8 +1170,8 @@
 
 .emailRow input {
   flex: 1;
-  background: transparent;
-  border: none;
+  background: #ffffff;
+  border: 1px solid #C9D7D5;
   outline: none;
   padding: 14px 20px;
   font-size: 0.86rem;
@@ -1111,6 +1280,15 @@
 
   .hero {
     grid-template-columns: 1fr;
+    min-height: 820px;
+  }
+
+  .heroBg {
+    min-height: 820px;
+  }
+
+  .heroBg img {
+    object-position: 70% top !important;
   }
 
   .heroRight {
@@ -1193,6 +1371,15 @@
 
   .hero {
     padding-bottom: 0;
+    min-height: 620px;
+  }
+
+  .heroBg {
+    min-height: 620px;
+  }
+
+  .heroBg img {
+    object-position: 75% top !important;
   }
 
   /* Ensure dark gradient at top of hero on mobile (logo visibility) — same as desktop */

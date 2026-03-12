@@ -56,23 +56,23 @@ export default function WelcomePage() {
               Start your guided cannabis exploration.
             </h1>
             <p className="mt-4 text-lg text-white/90">
-              We&apos;ll personalize your experience based on what you&apos;re curious about and where you&apos;re starting from.
+              Answer 4 quick questions. We&apos;ll build your personalized guide from there.
             </p>
-            <p className="mt-3 text-base text-white/60">
-              3 quick questions. Takes about 2 minutes.
+            <p className="mt-2 text-[0.85rem] text-white/60">
+              Takes about 2 minutes.
             </p>
             <ul className="mt-4 space-y-3 mb-6">
               <li className="flex items-start gap-2">
                 <span className="text-accent shrink-0 mt-0.5">✓</span>
-                <span className="text-base text-white/90">Learn how cannabis may support sleep, stress, and focus</span>
+                <span className="text-base text-white/90">Understand what cannabis actually does, in plain language</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-accent shrink-0 mt-0.5">✓</span>
-                <span className="text-base text-white/90">Understand dosing and product formats before trying anything</span>
+                <span className="text-base text-white/90">Learn about dosing and formats before you try anything</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-accent shrink-0 mt-0.5">✓</span>
-                <span className="text-base text-white/90">Build confidence before you ever walk into a dispensary</span>
+                <span className="text-base text-white/90">Feel prepared the next time you walk into a dispensary</span>
               </li>
             </ul>
           </div>

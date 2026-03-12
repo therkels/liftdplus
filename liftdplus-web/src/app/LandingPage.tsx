@@ -97,7 +97,24 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className={styles.hero}>
-        <div className={styles.heroBg} />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0) 65%)",
+            zIndex: 1,
+          }}
+        />
+        <Image
+          src="/images/hero updated 3.jpg"
+          alt=""
+          fill
+          priority
+          className={styles.heroBg}
+          style={{ objectFit: "cover", objectPosition: "60% top" }}
+        />
+        <div className={styles.heroBgGradient} />
         <div className={styles.heroLeft}>
           <div className={styles.heroEyebrow}>
             <span className={styles.heroDot} />
@@ -106,9 +123,11 @@ export default function LandingPage() {
           <h1 className={styles.heroTitle}>
             Curious about cannabis for sleep, stress, or pain?
           </h1>
-          <p className={styles.heroSub}>
-            We help you understand what cannabis does — and whether it might
-            work for you — before you walk into a dispensary.
+          <p className={styles.heroIntro}>
+            LIFTD+ is a beginner-friendly learning platform that explains cannabis in plain language.
+          </p>
+          <p className={styles.heroIntro}>
+            Understand effects, dosage, and product types — before you walk into a dispensary.
           </p>
           <Link
             href="/welcome"
@@ -126,6 +145,7 @@ export default function LandingPage() {
               />
             </svg>
           </Link>
+          <p className={styles.heroCtaSubtext}>Start with 4 quick questions.</p>
           <div className={styles.heroBelowCta}>
             <Link
               href="/login"
@@ -152,8 +172,62 @@ export default function LandingPage() {
             </span>
           </div>
         </div>
-        <div className={styles.heroRight} style={{ minHeight: 0 }} />
+        <div className={styles.uiWrapper}>
+          <div className={styles.blurSurface}>
+            <div className={styles.onboardingCard}>
+              <div className={styles.onboardingCardLogo}>
+                <Image
+                  src="/liftd-icon.svg"
+                  alt="LIFTD+"
+                  width={40}
+                  height={40}
+                />
+              </div>
+              <div className={styles.onboardingCardDots}>
+                <span className={styles.progressDotActive} aria-hidden />
+                <span className={styles.progressDot} aria-hidden />
+                <span className={styles.progressDot} aria-hidden />
+                <span className={styles.progressDot} aria-hidden />
+              </div>
+              <p className={styles.onboardingCardEyebrow}>QUESTION 1 OF 4</p>
+              <h2 className={styles.onboardingCardHeading}>What would you like to explore?</h2>
+              <p className={styles.onboardingCardSubtext}>
+                Choose 3 topics you&apos;d like to explore first. We&apos;ll personalize your feed around your top priorities.
+              </p>
+              <div className={`${styles.onboardingCardOption} ${styles.onboardingCardOptionSelected}`}>
+                <span>Sleep</span>
+                <span className={styles.onboardingCardOptionCheckSelected}>✓</span>
+              </div>
+              <div className={`${styles.onboardingCardOption} ${styles.onboardingCardOptionSelected}`}>
+                <span>Stress and anxiety</span>
+                <span className={styles.onboardingCardOptionCheckSelected}>✓</span>
+              </div>
+              <div className={styles.onboardingCardOption}>
+                <span>Pain and recovery</span>
+                <span className={styles.onboardingCardOptionCheck} />
+              </div>
+              <div className={styles.onboardingCardOption}>
+                <span>Focus and productivity</span>
+                <span className={styles.onboardingCardOptionCheck} />
+              </div>
+              <div className={styles.onboardingCardOption}>
+                <span>General wellness</span>
+                <span className={styles.onboardingCardOptionCheck} />
+              </div>
+              <p className={styles.onboardingCardCount}>2 of 3 selected</p>
+              <button type="button" className={styles.onboardingCardBtn} disabled>
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className={styles.heroRight} />
       </section>
+
+      <div className={styles.trustStrip}>
+        <p className={styles.trustTagline}>Education-first cannabis guidance — without the dispensary pressure.</p>
+        <p className={styles.trustQuote}>&quot;Finally a cannabis guide that actually made sense to me.&quot; — Early LIFTD+ reader</p>
+      </div>
 
       {/* Learn before you buy */}
       <section className={`${styles.section} ${styles.trustSection}`}>
@@ -173,16 +247,16 @@ export default function LandingPage() {
               </p>
               <div className={styles.dontList}>
                 <div className={styles.dontItem}>
-                  <div className={styles.xIcon}>✕</div>
-                  Push you toward a purchase before you&apos;re ready
+                  <div className={styles.xIcon}>—</div>
+                  Expect you to decide quickly in-store
                 </div>
                 <div className={styles.dontItem}>
-                  <div className={styles.xIcon}>✕</div>
-                  Prioritize sales over your actual questions
+                  <div className={styles.xIcon}>—</div>
+                  Focus on products more than education
                 </div>
                 <div className={styles.dontItem}>
-                  <div className={styles.xIcon}>✕</div>
-                  Hide who we work with or why
+                  <div className={styles.xIcon}>—</div>
+                  Leave the deeper questions unanswered
                 </div>
               </div>
             </div>
@@ -223,6 +297,75 @@ export default function LandingPage() {
               <p className={styles.plainCloser}>
                 &quot;We don&apos;t assume you already know this stuff.
                 That&apos;s the whole point.&quot;
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section
+        className={`${styles.section} ${styles.howSection}`}
+        id="how-it-works"
+      >
+        <div className={styles.sectionInner}>
+          <div className={`${styles.eyebrow} ${styles.reveal}`}>
+            <span className={styles.eyebrowLine} />
+            Here&apos;s how it works
+          </div>
+          <h2 className={`${styles.sectionTitle} ${styles.reveal}`}>
+            Four steps to feeling actually prepared
+          </h2>
+          <div className={`${styles.howMockupWrap} ${styles.reveal}`}>
+            <Image
+              src="/images/app mockup 2.png"
+              alt="LIFTD+ app preview"
+              width={320}
+              height={240}
+              className={styles.howMockupImg}
+            />
+          </div>
+          <div className={styles.howGrid}>
+            <div className={`${styles.howStep} ${styles.reveal}`}>
+              <div className={styles.stepNum}>1</div>
+              <h3>Choose what you want to learn about</h3>
+              <p>
+                Start with up to three topics like sleep, stress, or pain.
+                We&apos;ll guide you from there.
+              </p>
+            </div>
+            <div
+              className={`${styles.howStep} ${styles.reveal}`}
+              style={{ transitionDelay: "0.07s" }}
+            >
+              <div className={styles.stepNum}>2</div>
+              <h3>Learn at your own pace</h3>
+              <p>
+                Explore formats, effects, dosing, and safety — written
+                specifically for beginners.
+              </p>
+            </div>
+            <div
+              className={`${styles.howStep} ${styles.reveal}`}
+              style={{ transitionDelay: "0.14s" }}
+            >
+              <div className={styles.stepNum}>3</div>
+              <h3>Get answers to your real questions</h3>
+              <p>
+                &quot;Will I feel groggy?&quot; &quot;How much should I
+                take?&quot; &quot;What if I haven&apos;t done this in 20
+                years?&quot;
+              </p>
+            </div>
+            <div
+              className={`${styles.howStep} ${styles.reveal}`}
+              style={{ transitionDelay: "0.21s" }}
+            >
+              <div className={styles.stepNum}>4</div>
+              <h3>Feel prepared when you walk in</h3>
+              <p>
+                You&apos;ll know what you&apos;re looking for — and what
+                questions to ask.
               </p>
             </div>
           </div>
@@ -303,123 +446,6 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section
-        className={`${styles.section} ${styles.howSection}`}
-        id="how-it-works"
-      >
-        <div className={styles.sectionInner}>
-          <div className={`${styles.eyebrow} ${styles.reveal}`}>
-            <span className={styles.eyebrowLine} />
-            Here&apos;s how it works
-          </div>
-          <h2 className={`${styles.sectionTitle} ${styles.reveal}`}>
-            Four steps to feeling actually prepared
-          </h2>
-          <div className={`${styles.howMockupWrap} ${styles.reveal}`}>
-            <Image
-              src="/images/app mockup 2.png"
-              alt="LIFTD+ app preview"
-              width={320}
-              height={240}
-              className={styles.howMockupImg}
-            />
-          </div>
-          <div className={`${styles.howChipsWrap} ${styles.reveal}`}>
-            <p className={styles.howChipsLabel}>
-              Start by choosing what matters to you
-            </p>
-            <div className={styles.howChips}>
-              <span className={styles.howChip}>Sleep & Rest</span>
-              <span className={styles.howChip}>Stress & Anxiety</span>
-              <span className={styles.howChip}>Pain Relief</span>
-              <span className={styles.howChip}>Focus & Creativity</span>
-              <span className={styles.howChip}>Hormonal Changes</span>
-              <span className={styles.howChip}>I&apos;m Not Sure Yet</span>
-            </div>
-          </div>
-          <div className={styles.howGrid}>
-            <div className={`${styles.howStep} ${styles.reveal}`}>
-              <div className={styles.stepNum}>1</div>
-              <h3>Choose what you want to learn about</h3>
-              <p>
-                Start with up to three topics like sleep, stress, or pain.
-                We&apos;ll guide you from there.
-              </p>
-            </div>
-            <div
-              className={`${styles.howStep} ${styles.reveal}`}
-              style={{ transitionDelay: "0.07s" }}
-            >
-              <div className={styles.stepNum}>2</div>
-              <h3>Learn at your own pace</h3>
-              <p>
-                Explore formats, effects, dosing, and safety — written
-                specifically for beginners.
-              </p>
-            </div>
-            <div
-              className={`${styles.howStep} ${styles.reveal}`}
-              style={{ transitionDelay: "0.14s" }}
-            >
-              <div className={styles.stepNum}>3</div>
-              <h3>Get answers to your real questions</h3>
-              <p>
-                &quot;Will I feel groggy?&quot; &quot;How much should I
-                take?&quot; &quot;What if I haven&apos;t done this in 20
-                years?&quot;
-              </p>
-            </div>
-            <div
-              className={`${styles.howStep} ${styles.reveal}`}
-              style={{ transitionDelay: "0.21s" }}
-            >
-              <div className={styles.stepNum}>4</div>
-              <h3>Feel prepared when you walk in</h3>
-              <p>
-                You&apos;ll know what you&apos;re looking for — and what
-                questions to ask.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Video */}
-      <section className={styles.videoSection}>
-        <div className={styles.videoInner}>
-          <div
-            className={`${styles.videoEyebrow} ${styles.reveal}`}
-          >
-            <span className={styles.eyebrowLine} />
-            See how it works
-          </div>
-          <h2 className={`${styles.sectionTitle} ${styles.reveal}`}>
-            A short walkthrough of LIFTD+ in action
-          </h2>
-          <div className={`${styles.videoFrame} ${styles.reveal}`}>
-            <div className={styles.playWrap}>
-              <div className={styles.playBtn}>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                >
-                  <path
-                    d="M4 2.5l8 4.5-8 4.5V2.5z"
-                    fill="#2e3a45"
-                  />
-                </svg>
-              </div>
-            </div>
-            <span className={styles.videoLbl}>
-              Platform walkthrough — 60–90 seconds
-            </span>
           </div>
         </div>
       </section>
@@ -522,11 +548,46 @@ export default function LandingPage() {
               </div>
             </Link>
           </div>
-          <p className={`${styles.gateLine} ${styles.reveal}`}>
-            Want to go deeper?{" "}
-            <Link href="/welcome">Create a free account</Link> to unlock the
-            full library.
-          </p>
+          <div className={`${styles.gateLine} ${styles.reveal}`}>
+            <Link href="/welcome" className={styles.btnPrimary}>
+              See more beginner guides →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Video */}
+      <section className={styles.videoSection}>
+        <div className={styles.videoInner}>
+          <div
+            className={`${styles.videoEyebrow} ${styles.reveal}`}
+          >
+            <span className={styles.eyebrowLine} />
+            See how it works
+          </div>
+          <h2 className={`${styles.sectionTitle} ${styles.reveal}`}>
+            A short walkthrough of LIFTD+ in action
+          </h2>
+          <div className={`${styles.videoFrame} ${styles.reveal}`}>
+            <div className={styles.playWrap}>
+              <div className={styles.playBtn}>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                >
+                  <path
+                    d="M4 2.5l8 4.5-8 4.5V2.5z"
+                    fill="#2e3a45"
+                  />
+                </svg>
+              </div>
+            </div>
+            <span className={styles.videoLbl}>
+              Platform walkthrough — 60–90 seconds
+            </span>
+          </div>
         </div>
       </section>
 
@@ -545,7 +606,7 @@ export default function LandingPage() {
             Start Learning — It&apos;s Free
           </h2>
           <p>
-            Start by choosing up to three topics you care about.
+            Start with 4 quick questions.
             <br />
             We&apos;ll guide you from there.
           </p>
@@ -555,7 +616,7 @@ export default function LandingPage() {
             style={{ margin: "0 auto" }}
             onClick={() => trackCta("mid_page_cta")}
           >
-            Choose your topics →
+            Start Learning — It&apos;s Free →
           </Link>
         </div>
       </section>
@@ -588,7 +649,7 @@ export default function LandingPage() {
             />
             <button type="submit">Send Me the Guides →</button>
           </form>
-          <p className={styles.fine}>No spam. Unsubscribe anytime.</p>
+          <p className={styles.fine}>No spam. Unsubscribe anytime. Built for adults exploring cannabis for the first time.</p>
         </div>
       </section>
 

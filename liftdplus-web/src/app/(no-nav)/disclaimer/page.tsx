@@ -89,57 +89,23 @@ export default function DisclaimerPage() {
               Important Information
             </h2>
 
-            {/* Section 1 */}
-            <p
-              className="text-[9px] font-extrabold uppercase tracking-wider mb-1"
-              style={{ color: "rgba(160,210,200,0.95)" }}
-            >
-              WHAT LIFTD+ IS
-            </p>
             <p className="text-sm lg:text-base text-white/70 leading-relaxed mb-0">
-              An educational platform to help you understand cannabis-related topics — not medical advice, treatment, or professional guidance.
+              LIFTD+ is an educational platform for understanding cannabis — not medical advice, treatment, or professional guidance. If you have health or medication questions, consult a qualified healthcare professional. Nothing here is intended to diagnose, treat, cure, or prevent any medical condition.
             </p>
-
-            <div className="border-t border-white/[0.06] my-3" />
-
-            {/* Section 2 */}
-            <p
-              className="text-[9px] font-extrabold uppercase tracking-wider mb-1"
-              style={{ color: "rgba(160,210,200,0.95)" }}
-            >
-              HEALTH GUIDANCE
-            </p>
-            <p className="text-sm lg:text-base text-white/70 leading-relaxed mb-0">
-              If you have questions about your health or medications, consult a qualified healthcare professional before making decisions about cannabis use.
-            </p>
-
-            <div className="border-t border-white/[0.06] my-3" />
-
-            {/* Section 3 */}
-            <p
-              className="text-[9px] font-extrabold uppercase tracking-wider mb-1"
-              style={{ color: "rgba(160,210,200,0.95)" }}
-            >
-              LEGAL STATEMENT
-            </p>
-            <p className="text-sm lg:text-base text-white/70 leading-relaxed mb-0">
-              Nothing here is intended to diagnose, treat, cure, or prevent any medical condition.
-            </p>
-
             <div className="border-t border-white/[0.08] mt-6 mb-4" />
 
             {/* Checkbox row */}
-            <label className="flex items-start gap-3 cursor-pointer rounded-xl px-3 py-2 -mx-3 hover:bg-white/[0.06] transition-colors duration-150">
+            <label className="flex items-start gap-3 cursor-pointer rounded-xl p-3 bg-white/[0.08] hover:bg-white/[0.06] transition-colors duration-150">
               <span className="relative flex-shrink-0 mt-0.5">
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={(e) => setChecked(e.target.checked)}
-                  className="absolute opacity-0 w-6 h-6 cursor-pointer inset-0"
+                  className="absolute opacity-0 w-7 h-7 cursor-pointer inset-0"
                   aria-label="I confirm I'm 21 or older and understand LIFTD+ provides educational information, not medical advice"
                 />
                 <span
-                  className={`w-6 h-6 min-w-[24px] rounded-md flex items-center justify-center ${
+                  className={`w-7 h-7 min-w-[28px] rounded-md flex items-center justify-center ${
                     checked
                       ? ""
                       : "bg-white/20 border border-white/30"
