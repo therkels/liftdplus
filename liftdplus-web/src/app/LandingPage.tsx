@@ -715,7 +715,7 @@ export default function LandingPage() {
         <div className={styles.footerRight}>
           <div>© 2026 LIFTD+</div>
           <div>
-            <Link href="/privacy">Privacy</Link>
+            <Link href="/privacy">Privacy Policy</Link>
             &nbsp;·&nbsp;
             <Link href="/terms">Terms</Link>
             &nbsp;·&nbsp;

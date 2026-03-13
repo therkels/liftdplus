@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
@@ -238,8 +239,10 @@ export default function LoginPage() {
                   marginTop: "20px",
                 }}
               >
-                By continuing, you agree to our Terms of Service and Privacy
-                Policy
+                By continuing, you agree to our{" "}
+                <Link href="/terms" className="underline hover:no-underline">Terms of Service</Link>
+                {" "}and{" "}
+                <Link href="/privacy" className="underline hover:no-underline">Privacy Policy</Link>
               </p>
             </div>
           </div>
