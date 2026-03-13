@@ -10,7 +10,7 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "https://app.liftdplus.com/api/v0/auth/callback",
+        redirectTo: "https://liftdplus.com/api/v0/auth/callback",
       },
     });
     if (data?.url) {
