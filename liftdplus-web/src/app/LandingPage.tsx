@@ -20,6 +20,9 @@ const TRUST_ITEMS = [
 export default function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [newsletterError, setNewsletterError] = useState<string | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -640,15 +643,56 @@ export default function LandingPage() {
           </p>
           <form
             className={styles.emailRow}
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!newsletterEmail.trim() || newsletterStatus === "loading") return;
+              setNewsletterStatus("loading");
+              setNewsletterError(null);
+              try {
+                const res = await fetch("/api/newsletter", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: newsletterEmail.trim() }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok) {
+                  setNewsletterStatus("success");
+                  setNewsletterEmail("");
+                } else if (data.error === "already_subscribed") {
+                  setNewsletterStatus("error");
+                  setNewsletterError("This email is already subscribed.");
+                } else {
+                  setNewsletterStatus("error");
+                  setNewsletterError(typeof data.error === "string" ? data.error : "Something went wrong. Please try again.");
+                }
+              } catch {
+                setNewsletterStatus("error");
+                setNewsletterError("Something went wrong. Please try again.");
+              }
+            }}
           >
             <input
               type="email"
               placeholder="your@email.com"
               aria-label="Email for newsletter"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              disabled={newsletterStatus === "loading"}
             />
-            <button type="submit">Send Me the Guides →</button>
+            <button type="submit" disabled={newsletterStatus === "loading"}>
+              {newsletterStatus === "loading" ? "Sending…" : "Send Me the Guides →"}
+            </button>
           </form>
+          {newsletterStatus === "success" && (
+            <p className={styles.nlBody} style={{ marginTop: 12, color: "var(--lime)", fontWeight: 600 }}>
+              Thanks! You&apos;re on the list.
+            </p>
+          )}
+          {newsletterStatus === "error" && newsletterError && (
+            <p className={styles.nlBody} style={{ marginTop: 12, color: "#e57373" }}>
+              {newsletterError}
+            </p>
+          )}
           <p className={styles.fine}>No spam. Unsubscribe anytime. Built for adults exploring cannabis for the first time.</p>
         </div>
       </section>
