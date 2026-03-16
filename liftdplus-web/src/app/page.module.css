@@ -158,6 +158,18 @@
   padding: 130px 60px 40px 80px;
 }
 
+.heroOverlay {
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(0, 0, 0, 0.08) 55%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.heroImage {
+}
+
 .heroEyebrow {
   display: inline-flex;
   align-items: center;
@@ -1356,35 +1368,69 @@
   }
 
   .hero {
-    padding-bottom: 0;
+    grid-template-columns: 1fr;
     min-height: 620px;
+    padding-bottom: 40px;
   }
 
-  .heroBg {
-    min-height: 620px;
+  /* Hero image crop: focus on left/darker portion on mobile */
+  .hero img {
+    object-position: 20% center !important;
   }
 
-  /* Ensure dark gradient at top of hero on mobile (logo visibility) — same as desktop */
-  .hero::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 160px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  /* Show ocean at top of hero on mobile (override 1024px solid white) */
-  .heroBg::before {
+  .heroOverlay {
     background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      rgba(255, 255, 255, 0.35) 20%,
-      var(--white) 55%
-    );
+      160deg,
+      rgba(0, 0, 0, 0.52) 0%,
+      rgba(0, 0, 0, 0.40) 45%,
+      rgba(0, 0, 0, 0.25) 100%
+    ) !important;
+  }
+
+  .heroBgGradient {
+    display: none;
+  }
+
+  .heroLeft {
+    padding: 96px 24px 40px 24px;
+  }
+
+  /* Mobile text colors over dark hero image */
+  .heroEyebrow {
+    color: #ffffff;
+  }
+
+  .heroDot {
+    background: #b8f000;
+  }
+
+  .heroTitle {
+    color: #ffffff;
+  }
+
+  .heroIntro {
+    color: #ffffff;
+  }
+
+  .heroCtaSubtext {
+    color: rgba(255, 255, 255, 0.80);
+  }
+
+  .heroSignInLink {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .trustItem {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .trustCheck {
+    color: #b8f000;
+  }
+
+  /* Hide UI card on mobile */
+  .uiWrapper {
+    display: none;
   }
 
   /* Trust bar: stack vertically with 8px gap on mobile */

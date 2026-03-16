@@ -101,15 +101,15 @@ export default function LandingPage() {
       {/* Hero */}
       <section className={styles.hero}>
         <div
+          className={styles.heroOverlay}
           style={{
             position: "absolute",
             inset: 0,
-            background:
-              "linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.0) 60%, rgba(0,0,0,0) 100%)",
             zIndex: 1,
           }}
         />
         <img
+          className={styles.heroImage}
           src="/images/surface-QDFjQTUGYAQ-unsplash.jpg"
           alt=""
           style={{
