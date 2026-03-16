@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://liftdplus.com/images/surface-QDFjQTUGYAQ-unsplash.jpg",
+        url: "https://liftdplus.com/images/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "LIFTD+ | Cannabis Education for Adults",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title: "LIFTD+ | Cannabis Education for Adults",
     description:
       "Learn about cannabis for sleep, stress, and pain. Free to start.",
-    images: ["https://liftdplus.com/images/surface-QDFjQTUGYAQ-unsplash.jpg"],
+    images: ["https://liftdplus.com/images/og-image.jpg"],
   },
 };
 
