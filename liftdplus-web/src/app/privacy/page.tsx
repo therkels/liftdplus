@@ -1,8 +1,16 @@
-import fs from "fs";
-import path from "path";
+ "use client";
+
+import { useEffect, useState } from "react";
 
 export default function PrivacyPage() {
-  const html = fs.readFileSync(path.join(process.cwd(), "public/privacy.html"), "utf8");
+  const [html, setHtml] = useState("");
+
+  useEffect(() => {
+    fetch("/privacy.html")
+      .then((res) => res.text())
+      .then((text) => setHtml(text));
+  }, []);
+
   return (
     <div style={{ maxWidth: "860px", margin: "0 auto", padding: "60px 24px 80px" }}>
       <div dangerouslySetInnerHTML={{ __html: html }} />
