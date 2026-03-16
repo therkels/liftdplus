@@ -82,7 +82,7 @@ export default function LandingPage() {
             Learn
           </Link>
           <Link
-            href="/login"
+            href="/login?ref=returning"
             className={styles.navSignIn}
             onClick={() => trackCta("returning_user_signin")}
           >
@@ -156,7 +156,7 @@ export default function LandingPage() {
           <p className={styles.heroCtaSubtext}>Start with 4 quick questions.</p>
           <div className={styles.heroBelowCta}>
             <Link
-              href="/login"
+              href="/login?ref=returning"
               className={styles.heroSignInLink}
               onClick={() => trackCta("returning_user_signin")}
             >
