@@ -105,17 +105,22 @@ export default function LandingPage() {
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0) 65%)",
+              "linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.0) 60%, rgba(0,0,0,0) 100%)",
             zIndex: 1,
           }}
         />
-        <Image
-          src="/images/hero updated 3.jpg"
+        <img
+          src="/images/surface-QDFjQTUGYAQ-unsplash.jpg"
           alt=""
-          fill
-          priority
-          className={styles.heroBg}
-          style={{ objectFit: "cover", objectPosition: "60% top" }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "90% center",
+            zIndex: 0,
+          }}
         />
         <div className={styles.heroBgGradient} />
         <div className={styles.heroLeft}>
@@ -205,19 +210,27 @@ export default function LandingPage() {
                 <span>Stress and anxiety</span>
                 <span className={styles.onboardingCardOptionCheckSelected}>✓</span>
               </div>
-              <div className={styles.onboardingCardOption}>
+              <div className={`${styles.onboardingCardOption} ${styles.onboardingCardOptionSelected}`}>
                 <span>Pain and recovery</span>
-                <span className={styles.onboardingCardOptionCheck} />
+                <span className={styles.onboardingCardOptionCheckSelected}>✓</span>
               </div>
               <div className={styles.onboardingCardOption}>
                 <span>Focus and productivity</span>
                 <span className={styles.onboardingCardOptionCheck} />
               </div>
               <div className={styles.onboardingCardOption}>
-                <span>General wellness</span>
+                <span>Intimacy &amp; Libido</span>
                 <span className={styles.onboardingCardOptionCheck} />
               </div>
-              <p className={styles.onboardingCardCount}>2 of 3 selected</p>
+              <div className={styles.onboardingCardOption}>
+                <span>Hormonal Changes</span>
+                <span className={styles.onboardingCardOptionCheck} />
+              </div>
+              <div className={styles.onboardingCardOption}>
+                <span>I&apos;m not sure yet</span>
+                <span className={styles.onboardingCardOptionCheck} />
+              </div>
+              <p className={styles.onboardingCardCount}>3 of 3 selected</p>
               <button type="button" className={styles.onboardingCardBtn} disabled>
                 Continue
               </button>

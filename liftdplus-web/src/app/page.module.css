@@ -139,17 +139,6 @@
   pointer-events: none;
 }
 
-.heroBg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
-.heroBg img {
-  object-fit: cover !important;
-  object-position: 70% 30% !important;
-}
-
 .heroBgGradient {
   position: absolute;
   inset: 0;
@@ -177,7 +166,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--teal);
+  color: #4a7a74;
   margin-bottom: 24px;
 }
 
@@ -185,7 +174,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--lime);
+  background: #8faa1e;
   animation: pulse 2.5s ease-in-out infinite;
 }
 
@@ -203,7 +192,7 @@
 
 .heroIntro {
   font-size: 17px;
-  color: #4a5568;
+  color: #1e3530;
   max-width: 500px;
   line-height: 1.6;
   margin-bottom: 20px;
@@ -217,7 +206,7 @@
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  color: var(--teal);
+  color: #313a43;
   margin-bottom: 24px;
 }
 
@@ -265,8 +254,8 @@
 }
 
 .heroSignInLink {
-  color: var(--teal);
-  text-decoration: none;
+  color: #2d3d3a;
+  text-decoration: underline;
   font-size: 14px;
 }
 
@@ -283,7 +272,7 @@
 
 .uiWrapper {
   position: absolute;
-  right: 10%;
+  right: calc(10% + 84px);
   top: 53%;
   transform: translateY(-50%);
   z-index: 2;
@@ -295,17 +284,20 @@
   backdrop-filter: blur(12px);
   background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+  align-self: flex-start;
+  margin-top: 36px;
 }
 
 .onboardingCard {
   width: 248px;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   z-index: 10;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
-  background: rgba(12, 18, 14, 0.88);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  background: rgba(30, 40, 30, 0.92);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 17px 14px 14px;
 }
 
@@ -379,10 +371,12 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .onboardingCardOptionSelected {
-  border-color: #b8f000;
+  border-color: #c8f135;
+  background: rgba(200, 241, 53, 0.2);
 }
 
 .onboardingCardOptionCheck {
@@ -394,8 +388,8 @@
 }
 
 .onboardingCardOptionCheckSelected {
-  border-color: #b8f000;
-  background: #b8f000;
+  border-color: #c8f135;
+  background: #c8f135;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1283,14 +1277,6 @@
     min-height: 820px;
   }
 
-  .heroBg {
-    min-height: 820px;
-  }
-
-  .heroBg img {
-    object-position: 70% top !important;
-  }
-
   .heroRight {
     display: none;
   }
@@ -1376,10 +1362,6 @@
 
   .heroBg {
     min-height: 620px;
-  }
-
-  .heroBg img {
-    object-position: 75% top !important;
   }
 
   /* Ensure dark gradient at top of hero on mobile (logo visibility) — same as desktop */
