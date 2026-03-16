@@ -29,12 +29,21 @@ export const metadata: Metadata = {
     url: "https://liftdplus.com",
     siteName: "LIFTD+",
     type: "website",
+    images: [
+      {
+        url: "/images/surface-QDFjQTUGYAQ-unsplash.jpg",
+        width: 1200,
+        height: 630,
+        alt: "LIFTD+ | Cannabis Education for Adults",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "LIFTD+ | Cannabis Education for Adults",
     description:
       "Learn about cannabis for sleep, stress, and pain. Free to start.",
+    images: ["/images/surface-QDFjQTUGYAQ-unsplash.jpg"],
   },
   robots: {
     index: true,
