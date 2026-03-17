@@ -1,12 +1,14 @@
 import { createClient } from "@/utils/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export async function trackUserEvent(
   userId: string,
   eventName: string,
-  properties: Record<string, unknown> = {}
+  properties: Record<string, unknown> = {},
+  supabaseClient?: SupabaseClient
 ) {
   try {
-    const supabase = await createClient();
+    const supabase = supabaseClient ?? (await createClient());
     await supabase
       .schema("private")
       .from("user_events")
@@ -16,7 +18,6 @@ export async function trackUserEvent(
         properties,
       });
   } catch (e) {
-    // Fire and forget — never block the main action
     console.error("[trackUserEvent] failed:", e);
   }
 }

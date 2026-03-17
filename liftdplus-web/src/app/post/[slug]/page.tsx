@@ -79,10 +79,15 @@ export default async function Page({ params }: { params: { slug: string } }) {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    void trackUserEvent(user.id, "article_viewed", {
-      slug: params.slug,
-      post_id: post.id,
-    });
+    void trackUserEvent(
+      user.id,
+      "article_viewed",
+      {
+        slug: params.slug,
+        post_id: post.id,
+      },
+      supabase
+    );
   }
 
   const checklistItem = CHECKLIST_ITEMS.find(
