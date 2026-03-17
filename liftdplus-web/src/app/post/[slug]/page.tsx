@@ -6,9 +6,9 @@ import { ArticleReadTracker } from "@/components/ArticleReadTracker";
 export const dynamic = "force-dynamic";
 
 async function getPost(slug: string) {
-  // 1) Try PRODUCTION first (has the complete data), then Preview
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://liftdplus.com";
   const urls = [
-    `/api/v0/post/${encodeURIComponent(slug)}`,
+    `${baseUrl}/api/v0/post/${encodeURIComponent(slug)}`,
   ];
 
   for (const url of urls) {
