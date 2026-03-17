@@ -29,9 +29,6 @@ async function getPost(slug: string) {
         p.author?.photo_url ??
         null;
 
-      // If this source doesn't include an author photo, try next URL
-      if (!author_photo) continue;
-
       return { ...p, author_photo };
     } catch {
       // try the next URL
