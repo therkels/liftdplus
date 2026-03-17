@@ -26,7 +26,7 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
 
   useEffect(() => {
     async function loadProgress() {
-      const supabase = await createClient();
+      const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -36,6 +36,7 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
       }
 
       const { data } = await supabase
+        .schema("private")
         .from("user_checklist_progress")
         .select("item_id, completed, completed_at")
         .eq("user_id", user.id);
@@ -54,8 +55,11 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
     }
 
     loadProgress();
+    // Refetch when user returns to the tab/page
+    window.addEventListener("focus", loadProgress);
+    return () => window.removeEventListener("focus", loadProgress);
   }, []);
-
+@@
   const markComplete = useCallback(async (itemId: ChecklistItemId) => {
     const res = await fetch("/api/v0/checklist/complete", {
       method: "POST",
