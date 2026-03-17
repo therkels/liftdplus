@@ -3,13 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { trackEvent } from "@/utils/analytics";
 import styles from "./page.module.css";
-
-function trackCta(label: string) {
-  if (typeof window !== "undefined" && (window as unknown as { gtag?: (a: string, b: string, c: object) => void }).gtag) {
-    (window as unknown as { gtag: (a: string, b: string, c: object) => void }).gtag("event", "cta_click", { event_label: label });
-  }
-}
 
 const TRUST_ITEMS = [
   "Free to join",
@@ -84,14 +79,14 @@ export default function LandingPage() {
           <Link
             href="/login?ref=returning"
             className={styles.navSignIn}
-            onClick={() => trackCta("returning_user_signin")}
+            onClick={() => trackEvent("cta_click", { label: "returning_user_signin" })}
           >
             Sign In
           </Link>
           <Link
             href="/welcome"
             className={styles.navCta}
-            onClick={() => trackCta("nav_start_free")}
+            onClick={() => trackEvent("cta_click", { label: "nav_start_free" })}
           >
             Start Learning →
           </Link>
@@ -140,7 +135,7 @@ export default function LandingPage() {
           <Link
             href="/welcome"
             className={styles.btnPrimary}
-            onClick={() => trackCta("hero_start_learning")}
+            onClick={() => trackEvent("cta_click", { label: "hero_start_learning" })}
           >
             Start Learning — It&apos;s Free
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -158,7 +153,7 @@ export default function LandingPage() {
             <Link
               href="/login?ref=returning"
               className={styles.heroSignInLink}
-              onClick={() => trackCta("returning_user_signin")}
+              onClick={() => trackEvent("cta_click", { label: "returning_user_signin" })}
             >
               Already have an account? Sign in →
             </Link>
@@ -492,6 +487,7 @@ export default function LandingPage() {
             <Link
               href="/post/thc-vs-cbd-for-sleep-whats-the-difference"
               className={`${styles.articleCard} ${styles.reveal}`}
+              onClick={() => trackEvent("article_clicked", { slug: "thc-vs-cbd-for-sleep-whats-the-difference", source: "landing_page" })}
             >
               <div className={styles.articleCardImageWrap}>
                 <Image
@@ -516,6 +512,7 @@ export default function LandingPage() {
               href="/post/demystifying-microdosing-thc-for-calm-and-stress-relief"
               className={`${styles.articleCard} ${styles.reveal}`}
               style={{ transitionDelay: "0.08s" }}
+              onClick={() => trackEvent("article_clicked", { slug: "demystifying-microdosing-thc-for-calm-and-stress-relief", source: "landing_page" })}
             >
               <div className={styles.articleCardImageWrap}>
                 <Image
@@ -541,6 +538,7 @@ export default function LandingPage() {
               href="/post/why-cannabis-can-sometimes-feel-anxious--and-how-to-handle-it"
               className={`${styles.articleCard} ${styles.reveal}`}
               style={{ transitionDelay: "0.16s" }}
+              onClick={() => trackEvent("article_clicked", { slug: "why-cannabis-can-sometimes-feel-anxious--and-how-to-handle-it", source: "landing_page" })}
             >
               <div className={styles.articleCardImageWrap}>
                 <Image
@@ -630,7 +628,7 @@ export default function LandingPage() {
             href="/welcome"
             className={styles.btnPrimary}
             style={{ margin: "0 auto" }}
-            onClick={() => trackCta("mid_page_cta")}
+            onClick={() => trackEvent("cta_click", { label: "mid_page_cta" })}
           >
             Start Learning — It&apos;s Free →
           </Link>
@@ -659,6 +657,7 @@ export default function LandingPage() {
             onSubmit={async (e) => {
               e.preventDefault();
               if (!newsletterEmail.trim() || newsletterStatus === "loading") return;
+              trackEvent("newsletter_signup_attempted", { source: "landing_page" });
               setNewsletterStatus("loading");
               setNewsletterError(null);
               try {

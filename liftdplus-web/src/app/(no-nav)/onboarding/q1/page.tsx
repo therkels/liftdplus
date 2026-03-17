@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { sendGAEvent } from "@next/third-parties/google";
+import { trackEvent } from "@/utils/analytics";
 
 const OPTIONS = [
   "Sleep",
@@ -26,7 +27,12 @@ export default function OnboardingQ1Page() {
     sendGAEvent("event", "onboarding_q1_viewed", {});
   }, []);
 
+  useEffect(() => {
+    trackEvent("onboarding_step_viewed", { step: "q1_topics" });
+  }, []);
+
   const toggle = (option: string) => {
+    trackEvent("onboarding_answer_selected", { step: "q1_topics", answer: option });
     setSelected((prev) => {
       if (prev.has(option)) {
         const next = new Set(prev);

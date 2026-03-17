@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { sendGAEvent } from "@next/third-parties/google";
+import { trackEvent } from "@/utils/analytics";
 import { createClient } from "@/utils/supabase/client";
 import { pageCache } from "@/utils/cache/PageCache";
 
@@ -156,6 +157,9 @@ export default function OnboardingUsernamePage() {
         localStorage.removeItem("liftd_onboarding_q3");
         localStorage.removeItem("liftd_onboarding_q4");
       }
+
+      trackEvent("onboarding_completed", { source: "username_step" });
+      trackEvent("signup_completed", { method: "google" });
 
       sendGAEvent("event", "onboarding_completed", {
         experienceLevel: onboardingData.experienceLevel,

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { sendGAEvent } from "@next/third-parties/google";
+import { trackEvent } from "@/utils/analytics";
 
 const OPTIONS = [
   "No, and I'm not sure yet",
@@ -22,8 +23,13 @@ export default function OnboardingQ3Page() {
     sendGAEvent("event", "onboarding_q3_viewed", {});
   }, []);
 
+  useEffect(() => {
+    trackEvent("onboarding_step_viewed", { step: "q3_purchase" });
+  }, []);
+
   const select = (option: string) => {
     setSelected(option);
+    trackEvent("onboarding_answer_selected", { step: "q3_purchase", answer: option });
   };
 
   const handleContinue = () => {

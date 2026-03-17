@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { sendGAEvent } from "@next/third-parties/google";
+import { trackEvent } from "@/utils/analytics";
 
 const OPTIONS = [
   "I've never tried cannabis",
@@ -23,8 +24,13 @@ export default function OnboardingQ2Page() {
     sendGAEvent("event", "onboarding_q2_viewed", {});
   }, []);
 
+  useEffect(() => {
+    trackEvent("onboarding_step_viewed", { step: "q2_experience" });
+  }, []);
+
   const select = (option: string) => {
     setSelected(option);
+    trackEvent("onboarding_answer_selected", { step: "q2_experience", answer: option });
   };
 
   const handleContinue = () => {

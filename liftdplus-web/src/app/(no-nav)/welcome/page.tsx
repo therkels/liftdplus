@@ -4,12 +4,17 @@ import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { sendGAEvent } from "@next/third-parties/google";
+import { trackEvent } from "@/utils/analytics";
 
 export default function WelcomePage() {
   const router = useRouter();
 
   useEffect(() => {
     sendGAEvent("event", "welcome_viewed", { page: "/welcome" });
+  }, []);
+
+  useEffect(() => {
+    trackEvent("onboarding_step_viewed", { step: "welcome" });
   }, []);
 
   return (

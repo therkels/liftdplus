@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { sendGAEvent } from "@next/third-parties/google";
+import { trackEvent } from "@/utils/analytics";
 
 const DISCLAIMER_KEY = "liftd_disclaimer";
 
@@ -13,6 +14,10 @@ export default function DisclaimerPage() {
 
   useEffect(() => {
     sendGAEvent("event", "disclaimer_viewed", {});
+  }, []);
+
+  useEffect(() => {
+    trackEvent("onboarding_step_viewed", { step: "disclaimer" });
   }, []);
 
   const handleContinue = () => {

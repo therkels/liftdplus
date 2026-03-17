@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { sendGAEvent } from "@next/third-parties/google";
+import { trackEvent } from "@/utils/analytics";
 
 const OPTIONS = [
   "How to avoid feeling mentally foggy",
@@ -23,8 +24,13 @@ export default function OnboardingQ4Page() {
     sendGAEvent("event", "onboarding_q4_viewed", {});
   }, []);
 
+  useEffect(() => {
+    trackEvent("onboarding_step_viewed", { step: "q4_goal" });
+  }, []);
+
   const select = (option: string) => {
     setSelected(option);
+    trackEvent("onboarding_answer_selected", { step: "q4_goal", answer: option });
   };
 
   const handleContinue = () => {
