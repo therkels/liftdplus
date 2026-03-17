@@ -59,7 +59,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ArticleReadTracker slug={params.slug} />
+      <ArticleReadTracker slug={params.slug} postId={Number((post as any).post_id)} />
       <div className="container mx-auto px-4 md:px-0 py-6">
         <PostContent post={normalized as any} />
       </div>

@@ -167,7 +167,7 @@ export default function OnboardingUsernamePage() {
         learningGoal: onboardingData.learningGoal,
       });
 
-      router.push("/");
+      router.push("/getting-started");
     } catch {
       setApiError("Something went wrong. Please try again.");
     } finally {

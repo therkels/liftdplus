@@ -7,6 +7,7 @@ import { HiOutlineCog } from "react-icons/hi";
 
 import { createClient } from "@/utils/supabase/client";
 
+import { ChecklistCard } from "@/components/ChecklistCard";
 import Card from "@/components/site_core/Card";
 import InterestTags from "@/components/site_core/InterestTags";
 import InterestTagsSkeleton from "@/components/site_core/InterestTagsSkeleton";
@@ -205,6 +206,7 @@ export default function ExplorePage() {
     user_metadata?: { name?: string; avatar_url?: string };
   } | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [userGoal, setUserGoal] = useState<string>("sleep");
 
   const { selectedPost, isModalOpen, openPostModal, closePostModal } =
     usePostModal();
@@ -246,6 +248,22 @@ export default function ExplorePage() {
     if (!authReady || user !== null) return;
     router.replace("/");
   }, [authReady, user, router]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadPreferencesAndGoal = async () => {
+      const supabase = await createClient();
+      const { data: prefs } = await supabase
+        .from("private.preferences")
+        .select("topics")
+        .eq("user_id", user.id)
+        .single();
+      const goal = prefs?.topics?.[0]?.toLowerCase() ?? "sleep";
+      setUserGoal(goal);
+    };
+    loadPreferencesAndGoal();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -386,6 +404,8 @@ export default function ExplorePage() {
             </button>
           </div>
         </div>
+
+        <ChecklistCard userGoal={userGoal} />
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
