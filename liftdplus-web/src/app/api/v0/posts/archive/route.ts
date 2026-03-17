@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { trackUserEvent } from "@/utils/trackUserEvent";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,11 @@ export async function PUT(req: NextRequest) {
     return json({ error: error.message }, 500);
   }
 
+  void trackUserEvent(user.id, "post_archived", {
+    post_id,
+    category: effectiveCategory,
+  });
+
   return json({ ok: true });
 }
 
@@ -78,6 +84,8 @@ export async function DELETE(req: NextRequest) {
     console.error("[archive DELETE] Supabase error:", error);
     return json({ error: error.message }, 500);
   }
+
+  void trackUserEvent(user.id, "post_unarchived", { post_id });
 
   return json({ ok: true });
 }

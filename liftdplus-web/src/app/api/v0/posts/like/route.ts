@@ -1,6 +1,7 @@
 // src/app/api/v0/posts/like/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { trackUserEvent } from "@/utils/trackUserEvent";
 
 function toNumber(id: unknown): number {
   const n = Number(id);
@@ -53,6 +54,8 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    void trackUserEvent(user.id, "post_liked", { post_id });
+
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     console.error("[PUT /api/v0/posts/like] Unexpected error:", err);
@@ -100,6 +103,8 @@ export async function DELETE(req: NextRequest) {
       console.error("[DELETE /api/v0/posts/like] Supabase error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    void trackUserEvent(user.id, "post_unliked", { post_id });
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
