@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { CHECKLIST_ITEMS, type ChecklistItemId } from "@/types/checklist";
 
 export interface ChecklistProgress {
