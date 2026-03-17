@@ -2,39 +2,69 @@
 import { notFound } from "next/navigation";
 import PostContent from "@/components/site_core/PostContent";
 import { ArticleReadTracker } from "@/components/ArticleReadTracker";
+import { createClient } from "@/utils/supabase/server";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
 async function getPost(slug: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://liftdplus.com";
-  const urls = [
-    `${baseUrl}/api/v0/post/${encodeURIComponent(slug)}`,
-  ];
+  const supabase = await createClient();
 
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) continue;
+  const { data: row, error } = await supabase
+    .schema("private")
+    .from("post")
+    .select(`
+      id, title, secondary_title, cover_image_url, author,
+      contributor_name, post_template_id, markdown, config,
+      created_at, published_at, display_id, slug
+    `)
+    .eq("slug", slug)
+    .maybeSingle();
 
-      const json = await res.json().catch(() => null);
-      if (!json?.post) continue;
+  if (error || !row) return null;
 
-      const p = json.post;
+  const cfg = row.config && typeof row.config === "object" ? row.config : null;
+  const isCarousel = row.post_template_id === "carousel_block";
+  const images = Array.isArray((cfg as any)?.images) ? (cfg as any).images : [];
 
-      // Normalize/collect potential author photo fields
-      const author_photo =
-        p.author_photo ??
-        p.author_photo_url ??
-        p.author?.photo ??
-        p.author?.photo_url ??
-        null;
+  let author_name: string | null = row.contributor_name ?? null;
+  let author_photo: string | null = null;
 
-      return { ...p, author_photo };
-    } catch {
-      // try the next URL
+  if (row.author) {
+    const { data: user } = await supabaseAdmin
+      .schema("private")
+      .from("users")
+      .select("id, username, profile_icon_url")
+      .eq("id", row.author)
+      .maybeSingle();
+
+    if (user) {
+      author_name = author_name ?? user.username ?? null;
+      author_photo =
+        typeof user.profile_icon_url === "string" &&
+        /^https?:\/\//i.test(user.profile_icon_url)
+          ? user.profile_icon_url
+          : null;
     }
   }
-  return null;
+
+  return {
+    id: row.id,
+    title: row.title,
+    secondary_title: row.secondary_title,
+    cover_image_url: row.cover_image_url ?? null,
+    author_name,
+    author_photo,
+    post_template_id: row.post_template_id,
+    content_type: isCarousel ? "image" : "text",
+    content: isCarousel ? null : row.markdown ?? null,
+    images,
+    created_at: row.created_at,
+    published_at: row.published_at,
+    display_id: row.display_id ?? null,
+    slug: row.slug ?? null,
+    config: cfg ?? null,
+  };
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
