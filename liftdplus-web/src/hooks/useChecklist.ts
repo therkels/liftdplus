@@ -17,7 +17,7 @@ export interface UseChecklistReturn {
   isComplete: boolean;
   isLoading: boolean;
   markComplete: (itemId: ChecklistItemId) => Promise<void>;
-  getPostIdForItem: (itemId: ChecklistItemId, userGoal?: string) => number;
+  getSlugForItem: (itemId: ChecklistItemId, userGoal?: string) => string;
 }
 
 export function useChecklist(userGoal?: string): UseChecklistReturn {
@@ -85,14 +85,14 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
     );
   }, []);
 
-  const getPostIdForItem = useCallback(
-    (itemId: ChecklistItemId, goal?: string): number => {
+  const getSlugForItem = useCallback(
+    (itemId: ChecklistItemId, goal?: string): string => {
       const item = CHECKLIST_ITEMS.find((i) => i.id === itemId);
-      if (!item) return 0;
-      if (item.goalPostMap && goal && item.goalPostMap[goal]) {
-        return item.goalPostMap[goal];
+      if (!item) return "";
+      if (item.goalSlugMap && goal && item.goalSlugMap[goal]) {
+        return item.goalSlugMap[goal];
       }
-      return item.postId;
+      return item.slug;
     },
     []
   );
@@ -108,7 +108,7 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
     isComplete,
     isLoading,
     markComplete,
-    getPostIdForItem,
+    getSlugForItem,
   };
 }
 

@@ -6,13 +6,11 @@ import { useChecklist, type ChecklistItemId } from "@/hooks/useChecklist";
 
 interface ArticleReadTrackerProps {
   slug: string;
-  postId?: number;
   checklistItemId?: ChecklistItemId;
 }
 
 export function ArticleReadTracker({
   slug,
-  postId,
   checklistItemId,
 }: ArticleReadTrackerProps) {
   const { markComplete } = useChecklist();
@@ -32,7 +30,6 @@ export function ArticleReadTracker({
         qualifiedReadFired.current = true;
         trackEvent("article_read", {
           slug,
-          post_id: postId ?? 0,
           depth_percent: 75,
           qualified_read: true,
         });
@@ -54,7 +51,6 @@ export function ArticleReadTracker({
           milestoneReached.current.add(milestone);
           trackEvent("article_read", {
             slug,
-            post_id: postId ?? 0,
             depth_percent: milestone,
             qualified_read: false,
           });
@@ -81,7 +77,7 @@ export function ArticleReadTracker({
       window.removeEventListener("scroll", onScroll);
       clearInterval(timer);
     };
-  }, [slug, postId, checklistItemId, markComplete]);
+  }, [slug, checklistItemId, markComplete]);
 
   return null;
 }

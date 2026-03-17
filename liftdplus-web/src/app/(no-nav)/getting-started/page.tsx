@@ -105,11 +105,11 @@ export default function GettingStartedPage() {
           }}
         >
           {CHECKLIST_ITEMS.map((item, index) => {
-            const postId = item.goalPostMap?.[userGoal] ?? item.postId;
+            const slug = item.goalSlugMap?.[userGoal ?? ""] ?? item.slug;
             return (
               <Link
                 key={item.id}
-                href={`/post/${postId}`}
+                href={`/post/${slug}`}
                 style={{
                   display: "flex",
                   alignItems: "flex-start",

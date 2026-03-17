@@ -161,12 +161,12 @@ export function ChecklistCard({ userGoal }: ChecklistCardProps) {
             {CHECKLIST_ITEMS.map((item) => {
               const itemProgress = progress.find((p) => p.itemId === item.id);
               const isItemComplete = itemProgress?.completed ?? false;
-              const postId = item.goalPostMap?.[userGoal ?? ""] ?? item.postId;
+              const slug = item.goalSlugMap?.[userGoal ?? ""] ?? item.slug;
 
               return (
                 <Link
                   key={item.id}
-                  href={isItemComplete ? "#" : `/post/${postId}`}
+                  href={isItemComplete ? "#" : `/post/${slug}`}
                   style={{
                     display: "flex",
                     alignItems: "center",

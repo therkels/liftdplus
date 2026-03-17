@@ -9,8 +9,8 @@ export interface ChecklistItem {
   id: ChecklistItemId;
   title: string;
   description: string;
-  postId: number;
-  goalPostMap?: Record<string, number>;
+  slug: string;
+  goalSlugMap?: Record<string, string>;
 }
 
 export const CHECKLIST_ITEMS: ChecklistItem[] = [
@@ -18,39 +18,39 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
     id: "understand_basics",
     title: "Understand the basics",
     description: "Learn the difference between THC and CBD — the two most important things to know before anything else.",
-    postId: 14,
+    slug: "thc-vs-cbd-whats-the-difference",
   },
   {
     id: "know_your_formats",
     title: "Know your format options",
     description: "Edibles, tinctures, flower — each one works differently. Find out which might suit you.",
-    postId: 40,
+    slug: "edibles-demystified",
   },
   {
     id: "understand_dosing",
     title: "Learn how to dose safely",
     description: "Understand why less is more, and what to do if cannabis ever feels overwhelming.",
-    postId: 18,
+    slug: "why-cannabis-can-sometimes-feel-anxious--and-how-to-handle-it",
   },
   {
     id: "match_to_your_goal",
     title: "Match cannabis to your goal",
     description: "Get the guide that's most relevant to what you're trying to achieve.",
-    postId: 15, // default: sleep
-    goalPostMap: {
-      sleep: 15,       // THC vs. CBD for Sleep
-      stress: 17,      // THC vs. CBD for Stress
-      pain: 41,        // Cannabis for Pain Relief
-      focus: 43,       // Microdosing for Focus
-      intimacy: 20,    // Cannabis & Sex: What the Research Says
-      hormonal: 23,    // Cannabis and Your Cycle
+    slug: "thc-vs-cbd-for-sleep-whats-the-difference",
+    goalSlugMap: {
+      sleep: "thc-vs-cbd-for-sleep-whats-the-difference",
+      stress: "thc-vs-cbd-for-stress-which-one-helps-you-chill-without-the-fog",
+      pain: "cannabis-for-pain-relief-a-beginners-guide-to-aches-inflammation--ev",
+      focus: "microdosing-for-focus-creativity-and-flow-a-beginner-playbook",
+      intimacy: "cannabis-sex-what-the-research-actually-says",
+      hormonal: "cannabis-and-your-cycle-products-that-support-hormonal-balance",
     },
   },
   {
     id: "know_the_lingo",
     title: "Learn the lingo",
     description: "Know what budtenders are talking about so you can ask the right questions when you walk in.",
-    postId: 31,
+    slug: "know-the-lingo",
   },
 ];
 
