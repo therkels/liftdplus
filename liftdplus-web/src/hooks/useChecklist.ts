@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { CHECKLIST_ITEMS, type ChecklistItemId } from "@/types/checklist";
 
 export interface ChecklistProgress {
@@ -26,19 +25,12 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
 
   useEffect(() => {
     async function loadProgress() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
+      const res = await fetch("/api/v0/checklist/progress");
+      if (!res.ok) {
         setIsLoading(false);
         return;
       }
-      const { data } = await supabase
-        .schema("private")
-        .from("user_checklist_progress")
-        .select("item_id, completed, completed_at")
-        .eq("user_id", user.id);
+      const { progress: data } = await res.json();
 
       const loaded: ChecklistProgress[] = CHECKLIST_ITEMS.map((item) => {
         const row = data?.find((r: any) => r.item_id === item.id);
@@ -56,7 +48,7 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
     window.addEventListener("focus", loadProgress);
     return () => window.removeEventListener("focus", loadProgress);
   }, []);
-@@
+
   const markComplete = useCallback(async (itemId: ChecklistItemId) => {
     const res = await fetch("/api/v0/checklist/complete", {
       method: "POST",
