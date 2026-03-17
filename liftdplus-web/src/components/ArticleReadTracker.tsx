@@ -25,6 +25,14 @@ export function ArticleReadTracker({
     const milestones = [25, 50, 75, 100];
 
     function checkQualifiedRead() {
+      if (process.env.NODE_ENV === "development") {
+        console.log("[ArticleReadTracker] checkQualifiedRead called", {
+          qualifiedReadFired: qualifiedReadFired.current,
+          hasReached75: hasReached75.current,
+          hasReached60s: hasReached60s.current,
+          checklistItemId,
+        });
+      }
       if (qualifiedReadFired.current) return;
       if (hasReached75.current && hasReached60s.current) {
         qualifiedReadFired.current = true;
@@ -34,6 +42,12 @@ export function ArticleReadTracker({
           qualified_read: true,
         });
         if (checklistItemId) {
+          if (process.env.NODE_ENV === "development") {
+            console.log(
+              "[ArticleReadTracker] calling markComplete with",
+              checklistItemId
+            );
+          }
           void markComplete(checklistItemId);
         }
       }
