@@ -4,6 +4,7 @@ import PostContent from "@/components/site_core/PostContent";
 import { ArticleReadTracker } from "@/components/ArticleReadTracker";
 import { createClient } from "@/utils/supabase/server";
 import { supabaseAdmin } from "@/utils/supabase/admin";
+import { CHECKLIST_ITEMS } from "@/types/checklist";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,13 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
+  const checklistItem = CHECKLIST_ITEMS.find(
+    (item) =>
+      item.slug === params.slug ||
+      (item.goalSlugMap &&
+        Object.values(item.goalSlugMap).includes(params.slug))
+  );
+
   // Normalize carousel images: [cover, ...config.images]
   const cfgImages =
     post?.config && Array.isArray(post.config.images) ? post.config.images : [];
@@ -85,7 +93,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ArticleReadTracker slug={params.slug} />
+      <ArticleReadTracker
+        slug={params.slug}
+        checklistItemId={checklistItem?.id}
+      />
       <div className="container mx-auto px-4 md:px-0 py-6">
         <PostContent post={normalized as any} />
       </div>
