@@ -8,8 +8,7 @@ export const dynamic = "force-dynamic";
 async function getPost(slug: string) {
   // 1) Try PRODUCTION first (has the complete data), then Preview
   const urls = [
-    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(slug)}`, // PROD
-    `/api/v0/post/${encodeURIComponent(slug)}`,                          // PREVIEW
+    `/api/v0/post/${encodeURIComponent(slug)}`,
   ];
 
   for (const url of urls) {
