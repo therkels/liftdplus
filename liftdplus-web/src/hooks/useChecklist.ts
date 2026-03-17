@@ -34,7 +34,6 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
         setIsLoading(false);
         return;
       }
-
       const { data } = await supabase
         .schema("private")
         .from("user_checklist_progress")
@@ -49,13 +48,11 @@ export function useChecklist(userGoal?: string): UseChecklistReturn {
           completedAt: row?.completed_at ?? null,
         };
       });
-
       setProgress(loaded);
       setIsLoading(false);
     }
 
     loadProgress();
-    // Refetch when user returns to the tab/page
     window.addEventListener("focus", loadProgress);
     return () => window.removeEventListener("focus", loadProgress);
   }, []);
