@@ -69,7 +69,13 @@ async function getPost(slug: string) {
   };
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams?: { source?: string };
+}) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
@@ -98,7 +104,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
         slug={params.slug}
         checklistItemId={checklistItem?.id}
       />
-      <ArticleViewTracker slug={params.slug} postId={post.id} />
+      <ArticleViewTracker
+        slug={params.slug}
+        postId={post.id}
+        source={searchParams?.source ?? "direct"}
+      />
       <div className="container mx-auto px-4 md:px-0 py-6">
         <PostContent post={normalized as any} />
       </div>
