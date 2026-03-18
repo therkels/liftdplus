@@ -1,8 +1,8 @@
 // src/app/post/[slug]/page.tsx
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
 import PostContent from "@/components/site_core/PostContent";
 import { ArticleReadTracker } from "@/components/ArticleReadTracker";
+import { ArticleViewTracker } from "@/components/ArticleViewTracker";
 import { createClient } from "@/utils/supabase/server";
 import { supabaseAdmin } from "@/utils/supabase/admin";
 import { CHECKLIST_ITEMS } from "@/types/checklist";
@@ -73,24 +73,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // Fire article_viewed event via API route (session from cookies)
-  const cookieHeader = headers().get("cookie") ?? "";
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://liftdplus.com";
-  void fetch(`${baseUrl}/api/v0/events/track`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieHeader,
-    },
-    body: JSON.stringify({
-      eventName: "article_viewed",
-      properties: {
-        slug: params.slug,
-        post_id: post.id,
-      },
-    }),
-  });
-
   const checklistItem = CHECKLIST_ITEMS.find(
     (item) =>
       item.slug === params.slug ||
@@ -116,6 +98,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
         slug={params.slug}
         checklistItemId={checklistItem?.id}
       />
+      <ArticleViewTracker slug={params.slug} postId={post.id} />
       <div className="container mx-auto px-4 md:px-0 py-6">
         <PostContent post={normalized as any} />
       </div>
