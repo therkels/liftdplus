@@ -5,7 +5,6 @@ import { ArticleReadTracker } from "@/components/ArticleReadTracker";
 import { createClient } from "@/utils/supabase/server";
 import { supabaseAdmin } from "@/utils/supabase/admin";
 import { CHECKLIST_ITEMS } from "@/types/checklist";
-import { trackUserEvent } from "@/utils/trackUserEvent";
 
 export const dynamic = "force-dynamic";
 
@@ -79,15 +78,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    void trackUserEvent(
-      user.id,
-      "article_viewed",
-      {
-        slug: params.slug,
-        post_id: post.id,
-      },
-      supabase
-    );
+    void supabase
+      .schema("private")
+      .from("user_events")
+      .insert({
+        user_id: user.id,
+        event_name: "article_viewed",
+        properties: {
+          slug: params.slug,
+          post_id: post.id,
+        },
+      });
   }
 
   const checklistItem = CHECKLIST_ITEMS.find(
