@@ -1,5 +1,6 @@
 // src/app/post/[slug]/page.tsx
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import PostContent from "@/components/site_core/PostContent";
 import { ArticleReadTracker } from "@/components/ArticleReadTracker";
 import { createClient } from "@/utils/supabase/server";
@@ -72,24 +73,23 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
-  // Track article view for logged-in users
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (user) {
-    void supabase
-      .schema("private")
-      .from("user_events")
-      .insert({
-        user_id: user.id,
-        event_name: "article_viewed",
-        properties: {
-          slug: params.slug,
-          post_id: post.id,
-        },
-      });
-  }
+  // Fire article_viewed event via API route (session from cookies)
+  const cookieHeader = headers().get("cookie") ?? "";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://liftdplus.com";
+  void fetch(`${baseUrl}/api/v0/events/track`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: cookieHeader,
+    },
+    body: JSON.stringify({
+      eventName: "article_viewed",
+      properties: {
+        slug: params.slug,
+        post_id: post.id,
+      },
+    }),
+  });
 
   const checklistItem = CHECKLIST_ITEMS.find(
     (item) =>
