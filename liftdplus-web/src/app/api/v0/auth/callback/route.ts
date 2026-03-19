@@ -43,9 +43,12 @@ export async function GET(request: Request) {
       isNewUser = true;
     } else {
       // Check if existing user has preferences
-      const { data: preferences } = await supabase.rpc("get_user_preferences", {
-        user_id: user.id,
-      });
+      const { data: preferences } = await supabase
+        .schema("private")
+        .from("preferences")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .limit(1);
       if (!preferences || preferences.length === 0) {
         isNewUser = true;
       }
