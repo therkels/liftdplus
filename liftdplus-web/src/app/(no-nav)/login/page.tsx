@@ -13,6 +13,9 @@ function LoginPageInner() {
       provider: "google",
       options: {
         redirectTo: "https://liftdplus.com/api/v0/auth/callback",
+        queryParams: {
+          prompt: "select_account",
+        },
       },
     });
     if (data?.url) {
