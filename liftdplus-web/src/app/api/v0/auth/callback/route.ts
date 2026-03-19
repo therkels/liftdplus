@@ -26,9 +26,6 @@ export async function GET(request: Request) {
       .select("id, username")
       .eq("id", user.id)
       .maybeSingle();
-
-    console.log("[auth callback] user.id:", user.id);
-    console.log("[auth callback] userData:", JSON.stringify(userData));
     let isNewUser = false;
 
     if (!userData) {
@@ -46,16 +43,10 @@ export async function GET(request: Request) {
       }
       isNewUser = true;
     } else {
-      // Check if existing user has preferences using admin client
-      const { data: preferences } = await supabaseAdmin
-        .from("preferences")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .limit(1);
-
-      console.log("[auth callback] preferences:", JSON.stringify(preferences));
-      console.log("[auth callback] isNewUser will be:", !preferences || preferences.length === 0);
-      if (!preferences || preferences.length === 0) {
+      // If user has a username that starts with "user_" they haven't completed onboarding
+      // Otherwise they're an existing user — send to explore
+      const username = userData?.username ?? "";
+      if (username.startsWith("user_") || username === "") {
         isNewUser = true;
       }
     }
