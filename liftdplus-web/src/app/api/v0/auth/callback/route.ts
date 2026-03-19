@@ -22,7 +22,6 @@ export async function GET(request: Request) {
 
     // Use admin client to bypass RLS for user checks
     const { data: userData } = await supabaseAdmin
-      .schema("private")
       .from("users")
       .select("id, username")
       .eq("id", user.id)
@@ -46,7 +45,6 @@ export async function GET(request: Request) {
     } else {
       // Check if existing user has preferences using admin client
       const { data: preferences } = await supabaseAdmin
-        .schema("private")
         .from("preferences")
         .select("user_id")
         .eq("user_id", user.id)
