@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
-// The client you created from the Server-Side Auth instructions
 import { createClient } from "@/utils/supabase/server";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  // if "next" is in param, use it as the redirect URL
   let next = searchParams.get("next") ?? "/";
   if (!next.startsWith("/")) {
-    // if "next" is not a relative URL, use the default
     next = "/";
   }
   if (code) {
@@ -22,28 +20,32 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/auth/auth-code-error`);
     }
 
-    const { data: userData } = await supabase.rpc("get_user", {
-      user_id: user.id,
-    });
+    // Use admin client to bypass RLS for user checks
+    const { data: userData } = await supabaseAdmin
+      .schema("private")
+      .from("users")
+      .select("id, username")
+      .eq("id", user.id)
+      .maybeSingle();
     let isNewUser = false;
 
-    if (!userData || userData.length === 0) {
+    if (!userData) {
       // Create new user
-      const { data, error } = await supabase.rpc("create_user", {
+      const { error: createError } = await supabaseAdmin.rpc("create_user", {
         user_id: user.id,
         username: "user_" + Math.random().toString(36).substring(2, 10),
         profile_icon_url: user.user_metadata?.avatar_url,
       });
-      if (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+      if (createError && !createError.message.includes("duplicate key")) {
+        return new Response(JSON.stringify({ error: createError.message }), {
           status: 500,
           headers: { "Content-Type": "application/json" },
         });
       }
       isNewUser = true;
     } else {
-      // Check if existing user has preferences
-      const { data: preferences } = await supabase
+      // Check if existing user has preferences using admin client
+      const { data: preferences } = await supabaseAdmin
         .schema("private")
         .from("preferences")
         .select("user_id")
@@ -55,13 +57,11 @@ export async function GET(request: Request) {
     }
 
     if (!error) {
-      // Redirect new users to username step (Q1–Q4 already done pre-auth), existing users to main app
       const redirectPath = isNewUser ? "/onboarding/username" : "/explore";
 
-      const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
+      const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";
       if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
         return NextResponse.redirect(`${origin}${redirectPath}`);
       } else if (forwardedHost) {
         return NextResponse.redirect(`https://${forwardedHost}${redirectPath}`);
@@ -70,7 +70,5 @@ export async function GET(request: Request) {
       }
     }
   }
-
-  // return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
