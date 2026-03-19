@@ -26,6 +26,9 @@ export async function GET(request: Request) {
       .select("id, username")
       .eq("id", user.id)
       .maybeSingle();
+
+    console.log("[auth callback] user.id:", user.id);
+    console.log("[auth callback] userData:", JSON.stringify(userData));
     let isNewUser = false;
 
     if (!userData) {
@@ -49,6 +52,9 @@ export async function GET(request: Request) {
         .select("user_id")
         .eq("user_id", user.id)
         .limit(1);
+
+      console.log("[auth callback] preferences:", JSON.stringify(preferences));
+      console.log("[auth callback] isNewUser will be:", !preferences || preferences.length === 0);
       if (!preferences || preferences.length === 0) {
         isNewUser = true;
       }
