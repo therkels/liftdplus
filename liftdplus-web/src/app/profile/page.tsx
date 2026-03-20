@@ -278,7 +278,7 @@ export default function Profile() {
             const response = await fetch("/api/v0/preferences", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ interests: sel }),
+              body: JSON.stringify({ interests: sel, overwrite: true }),
             });
             if (!response.ok) {
               const err = await response.json().catch(() => ({}));

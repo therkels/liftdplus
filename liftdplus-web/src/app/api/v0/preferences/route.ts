@@ -55,13 +55,31 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { interests } = body; // Array of interest display names
+  const { interests, overwrite = false } = body;
 
   if (!Array.isArray(interests)) {
     return new Response(JSON.stringify({ error: "Invalid interests format" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  // If not explicitly overwriting, check if user already has preferences
+  if (!overwrite) {
+    const { data: existing } = await supabase.rpc("get_user_preferences", {
+      user_id: user.id,
+    });
+    if (existing && existing.length > 0) {
+      return new Response(
+        JSON.stringify({
+          message: "Preferences already exist",
+          saved_preferences: existing.map(
+            (t: { display_name: string }) => t.display_name
+          ),
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
   }
 
   console.log("Saving preferences for user:", user.id, "interests:", interests);
