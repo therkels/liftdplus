@@ -208,6 +208,8 @@ export default function ExplorePage() {
   const [authReady, setAuthReady] = useState(false);
   const [userGoal, setUserGoal] = useState<string>("sleep");
 
+  const [checklistHidden, setChecklistHidden] = useState(false);
+
   const { selectedPost, isModalOpen, openPostModal, closePostModal } =
     usePostModal();
 
@@ -264,6 +266,15 @@ export default function ExplorePage() {
     };
     loadPreferencesAndGoal();
   }, [user]);
+
+  useEffect(() => {
+    const CHECKLIST_HIDDEN_KEY = "checklist_hidden";
+    try {
+      setChecklistHidden(localStorage.getItem(CHECKLIST_HIDDEN_KEY) === "true");
+    } catch {
+      setChecklistHidden(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -405,7 +416,53 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <ChecklistCard userGoal={userGoal} />
+        {checklistHidden && (
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid #e8e8e8",
+              borderRadius: 16,
+              padding: "12px 16px",
+              marginBottom: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <span style={{ fontWeight: 650, color: "#1e3530", fontSize: "0.95rem", whiteSpace: "nowrap" }}>
+              📋 Get dispensary ready
+            </span>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                const CHECKLIST_HIDDEN_KEY = "checklist_hidden";
+                try {
+                  localStorage.setItem(CHECKLIST_HIDDEN_KEY, "false");
+                } catch {
+                  /* no-op */
+                }
+                setChecklistHidden(false);
+              }}
+              style={{
+                fontSize: "0.85rem",
+                color: "#4a7a74",
+                textDecoration: "none",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Show
+            </a>
+          </div>
+        )}
+
+        <ChecklistCard
+          userGoal={userGoal}
+          hidden={checklistHidden}
+          onHide={() => setChecklistHidden(true)}
+        />
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">

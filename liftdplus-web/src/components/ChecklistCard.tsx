@@ -1,22 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useChecklist } from "@/hooks/useChecklist";
 import { CHECKLIST_ITEMS, CHECKLIST_COMPLETION_MESSAGE } from "@/types/checklist";
 
 interface ChecklistCardProps {
   userGoal?: string;
+  hidden?: boolean;
+  onHide?: () => void;
+  onCompletionChange?: (isComplete: boolean) => void;
 }
 
-export function ChecklistCard({ userGoal }: ChecklistCardProps) {
+const CHECKLIST_HIDDEN_KEY = "checklist_hidden";
+
+export function ChecklistCard({
+  userGoal,
+  hidden = false,
+  onHide,
+  onCompletionChange,
+}: ChecklistCardProps) {
   const { progress, completedCount, totalCount, isComplete, isLoading } =
     useChecklist(userGoal);
   const [collapsed, setCollapsed] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    onCompletionChange?.(isComplete);
+  }, [isComplete, onCompletionChange]);
 
   if (isLoading) return null;
-  if (dismissed) return null;
+
+  // If hidden, hide the entire card (completion and in-progress).
+  if (hidden) return null;
 
   const progressPercent = Math.round((completedCount / totalCount) * 100);
 
@@ -35,7 +50,7 @@ export function ChecklistCard({ userGoal }: ChecklistCardProps) {
           gap: 16,
         }}
       >
-        <div>
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 16 }}>
           <p
             style={{
               fontSize: "1.1rem",
@@ -55,21 +70,28 @@ export function ChecklistCard({ userGoal }: ChecklistCardProps) {
           >
             {CHECKLIST_COMPLETION_MESSAGE.subtext}
           </p>
-        </div>
-        <button
-          onClick={() => setDismissed(true)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "rgba(255,255,255,0.5)",
-            fontSize: "1.2rem",
-            cursor: "pointer",
-            flexShrink: 0,
+
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            try {
+              localStorage.setItem(CHECKLIST_HIDDEN_KEY, "true");
+            } catch {
+              // Ignore; parent state can still hide via onHide.
+            }
+            onHide?.();
           }}
-          aria-label="Dismiss"
+          style={{
+            fontSize: "0.75rem",
+            color: "rgba(255,255,255,0.6)",
+            cursor: "pointer",
+            textDecoration: "none",
+          }}
         >
-          ×
-        </button>
+          Hide
+        </a>
+        </div>
       </div>
     );
   }
@@ -225,6 +247,30 @@ export function ChecklistCard({ userGoal }: ChecklistCardProps) {
           </div>
         </>
       )}
+
+      {/* Hide the entire checklist card (toggle, persisted in localStorage) */}
+      <div style={{ marginTop: collapsed ? 12 : 16, paddingTop: 12 }}>
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            try {
+              localStorage.setItem(CHECKLIST_HIDDEN_KEY, "true");
+            } catch {
+              // Ignore; parent state can still hide via onHide.
+            }
+            onHide?.();
+          }}
+          style={{
+            fontSize: "0.75rem",
+            color: "#9ca3af",
+            cursor: "pointer",
+            textDecoration: "none",
+          }}
+        >
+          Hide
+        </a>
+      </div>
     </div>
   );
 }
