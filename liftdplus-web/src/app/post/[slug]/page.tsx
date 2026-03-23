@@ -1,6 +1,7 @@
 // src/app/post/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import PostContent from "@/components/site_core/PostContent";
+import BackButton from "@/components/BackButton";
 import { ArticleReadTracker } from "@/components/ArticleReadTracker";
 import { ArticleViewTracker } from "@/components/ArticleViewTracker";
 import { createClient } from "@/utils/supabase/server";
@@ -110,6 +111,7 @@ export default async function Page({
         source={searchParams?.source ?? "direct"}
       />
       <div className="container mx-auto px-4 md:px-0 py-6">
+        <BackButton />
         <PostContent post={normalized as any} />
       </div>
     </div>
