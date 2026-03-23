@@ -315,7 +315,6 @@ export default function Favorites() {
                           "linear-gradient(135deg, #eef0e9 0%, #bac8b2 100%)",
                       }}
                     />
-                    </div>
                   )}
                 </div>
                 <div className="p-3 bg-white text-left">
