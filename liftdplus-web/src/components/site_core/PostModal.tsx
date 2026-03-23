@@ -32,7 +32,7 @@ const PostModal: React.FC<PostModalProps> = ({ isOpen, onClose, children }) => {
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="bg-white w-full h-full overflow-hidden">
+      <div className="relative z-10 bg-white w-full h-full overflow-hidden">
         <div className="overflow-y-auto h-full">{children}</div>
       </div>
     </div>
