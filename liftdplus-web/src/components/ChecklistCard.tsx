@@ -142,16 +142,18 @@ export function ChecklistCard({
           </span>
         </div>
         <button
+          type="button"
           onClick={() => setCollapsed(!collapsed)}
           style={{
             background: "none",
             border: "none",
-            color: "#999",
-            fontSize: "0.85rem",
+            color: "#9ca3af",
+            fontSize: "0.75rem",
             cursor: "pointer",
+            padding: 0,
           }}
         >
-          {collapsed ? "Show ↓" : "Hide ↑"}
+          {collapsed ? "Show" : "Hide"}
         </button>
       </div>
 

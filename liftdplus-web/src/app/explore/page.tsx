@@ -209,6 +209,7 @@ export default function ExplorePage() {
   const [userGoal, setUserGoal] = useState<string>("sleep");
 
   const [checklistHidden, setChecklistHidden] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const { selectedPost, isModalOpen, openPostModal, closePostModal } =
     usePostModal();
@@ -268,6 +269,7 @@ export default function ExplorePage() {
   }, [user]);
 
   useEffect(() => {
+    setMounted(true);
     const CHECKLIST_HIDDEN_KEY = "checklist_hidden";
     try {
       setChecklistHidden(localStorage.getItem(CHECKLIST_HIDDEN_KEY) === "true");
@@ -416,13 +418,13 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {checklistHidden && (
+        {mounted && checklistHidden && (
           <div
             style={{
               background: "#ffffff",
               border: "1px solid #e8e8e8",
               borderRadius: 16,
-              padding: "12px 16px",
+              padding: "20px 24px",
               marginBottom: 24,
               display: "flex",
               alignItems: "center",
@@ -446,8 +448,8 @@ export default function ExplorePage() {
                 setChecklistHidden(false);
               }}
               style={{
-                fontSize: "0.85rem",
-                color: "#4a7a74",
+                fontSize: "0.75rem",
+                color: "#9ca3af",
                 textDecoration: "none",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
@@ -460,7 +462,7 @@ export default function ExplorePage() {
 
         <ChecklistCard
           userGoal={userGoal}
-          hidden={checklistHidden}
+          hidden={mounted ? checklistHidden : false}
           onHide={() => setChecklistHidden(true)}
         />
 
