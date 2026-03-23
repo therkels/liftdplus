@@ -358,7 +358,8 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 md:px-0 py-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="container mx-auto px-4 md:px-0 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-semibold text-gray-800">
             Hello, {displayName}
@@ -566,6 +567,7 @@ export default function ExplorePage() {
         </PostModal>
 
         <InstallPrompt />
+        </div>
       </div>
     </div>
   );

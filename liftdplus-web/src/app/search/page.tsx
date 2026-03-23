@@ -184,15 +184,17 @@ export default function Search() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Sign In Required</h2>
-          <p className="text-gray-600 mb-4">Please sign in to search and discover content.</p>
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
-          >
-            Go to Home
-          </button>
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Sign In Required</h2>
+            <p className="text-gray-600 mb-4">Please sign in to search and discover content.</p>
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
+            >
+              Go to Home
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -201,6 +203,7 @@ export default function Search() {
   /* ----------------------------------- UI ----------------------------------- */
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
         <div className="flex items-center justify-between">
@@ -384,6 +387,7 @@ export default function Search() {
           {selectedPost && <PostContent post={selectedPost as any} />}
         </PostModal>
       )}
+      </div>
     </div>
   );
 }

@@ -222,9 +222,11 @@ export default function Favorites() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f5f6f2] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
       </div>
     );
@@ -234,19 +236,21 @@ export default function Favorites() {
   if (!user) {
     return (
       <div className="min-h-screen bg-[#f5f6f2] flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Sign In Required
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Please sign in to view your favorites.
-          </p>
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
-          >
-            Go to Home
-          </button>
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Sign In Required
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Please sign in to view your favorites.
+            </p>
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="px-4 py-2 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors duration-200"
+            >
+              Go to Home
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -254,6 +258,7 @@ export default function Favorites() {
 
   return (
     <div className="min-h-screen bg-[#f5f6f2]">
+      <div className="max-w-3xl mx-auto">
       {/* Header Section */}
       <div className="bg-[#f5f6f2] px-4 md:px-0 py-4">
         <div className="flex items-center justify-between">
@@ -394,6 +399,7 @@ export default function Favorites() {
       <PostModal isOpen={isPostModalOpen} onClose={closePostModal}>
         {selectedPost && <PostContent post={selectedPost} />}
       </PostModal>
+      </div>
     </div>
   );
 }
