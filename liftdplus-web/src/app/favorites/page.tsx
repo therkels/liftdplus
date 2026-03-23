@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { HiX } from "react-icons/hi";
 import { createClient } from "@/utils/supabase/client";
 import PostModal from "@/components/site_core/PostModal";
 import PostContent, { PostData } from "@/components/site_core/PostContent";
@@ -187,7 +186,7 @@ export default function Favorites() {
   // Show loading state while fetching user data
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f5f6f2] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -199,7 +198,7 @@ export default function Favorites() {
   // Show sign-in prompt if user is not authenticated
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f5f6f2] flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
             Sign In Required
@@ -219,24 +218,11 @@ export default function Favorites() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f5f6f2]">
       {/* Header Section */}
-      <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
+      <div className="bg-[#f5f6f2] border-b border-gray-200 px-4 md:px-0 py-4">
         <div className="flex items-center justify-between">
-          <h1
-            style={{
-              width: "262px",
-              height: "34px",
-              fontWeight: 700,
-              fontStyle: "normal",
-              fontSize: "40px",
-              lineHeight: "46px",
-              letterSpacing: "0.3%",
-              verticalAlign: "middle",
-              textTransform: "capitalize",
-              color: "var(--foreground)",
-            }}
-          >
+          <h1 className="text-4xl font-bold text-foreground">
             Favorites
           </h1>
           <button
@@ -254,7 +240,7 @@ export default function Favorites() {
       </div>
 
       {/* Profile Section */}
-      <div className="bg-[#f9fafb] px-4 md:px-0 py-6">
+      <div className="bg-[#f5f6f2] px-4 md:px-0 py-6">
         <div className="flex flex-col items-center md:items-start">
           <span className="text-sm text-gray-600 mt-2">
             {totalPosts} Saved Posts
@@ -287,15 +273,22 @@ export default function Favorites() {
                       className="object-cover"
                     />
                   ) : (
-                    <div
-                      className="w-full h-full"
-                      style={{ backgroundColor: "#475a6b" }}
-                    />
+                    <div className="flex h-full w-full items-center justify-center bg-[#eef0e9]">
+                      <span
+                        className="text-2xl font-semibold"
+                        style={{ color: "var(--accent-light)" }}
+                        aria-hidden
+                      >
+                        {category.name.trim().charAt(0).toUpperCase()}
+                      </span>
+                    </div>
                   )}
                 </div>
                 <div className="p-3 bg-white text-left">
                   <div className="text-gray-500 text-xs mb-1">
-                    {category.postCount} Posts
+                    {category.postCount === 0
+                      ? "Start saving"
+                      : `${category.postCount} Posts`}
                   </div>
                   <div
                     className="font-semibold text-sm"
@@ -318,15 +311,15 @@ export default function Favorites() {
             onClick={closeCategoryModal}
           />
           <div className="relative bg-white w-full h-full flex flex-col">
-            <button
-              onClick={closeCategoryModal}
-              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-accent hover:bg-accent/90 transition-all duration-200 shadow-lg"
-              aria-label="Close modal"
-            >
-              <HiX className="w-7 h-7 text-foreground" />
-            </button>
-
             <div className="p-6 border-b">
+              <button
+                type="button"
+                onClick={closeCategoryModal}
+                className="relative z-10 mb-4 block w-max max-w-full bg-transparent border-0 p-0 text-left text-sm font-medium text-gray-700 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400 cursor-pointer"
+                aria-label="Back"
+              >
+                ← Back
+              </button>
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 {selectedCategory?.name || "Loading..."}
               </h2>
