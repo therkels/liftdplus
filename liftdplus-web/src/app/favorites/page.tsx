@@ -120,7 +120,42 @@ export default function Favorites() {
         coverImage: likedCoverImage,
       });
 
-      setCategories(favoriteCategories);
+      const categoriesMissingCovers = favoriteCategories.filter(
+        (category) => category.postCount > 0 && category.coverImage === null
+      );
+
+      if (categoriesMissingCovers.length > 0) {
+        const coverImageResults = await Promise.all(
+          categoriesMissingCovers.map(async (category) => {
+            const posts = await getArchivedPosts(category.name);
+            return {
+              id: category.id,
+              coverImage: posts?.[0]?.cover_image_url || null,
+            };
+          })
+        );
+
+        const coverImageById = new Map(
+          coverImageResults.map((result) => [result.id, result.coverImage])
+        );
+
+        const updatedFavoriteCategories = favoriteCategories.map((category) => {
+          if (
+            category.postCount > 0 &&
+            category.coverImage === null
+          ) {
+            return {
+              ...category,
+              coverImage: coverImageById.get(category.id) ?? null,
+            };
+          }
+          return category;
+        });
+
+        setCategories(updatedFavoriteCategories);
+      } else {
+        setCategories(favoriteCategories);
+      }
       setUniquePostsCount(uniqueCount);
     } catch (error) {
       console.error("Error loading categories:", error);
@@ -220,7 +255,7 @@ export default function Favorites() {
   return (
     <div className="min-h-screen bg-[#f5f6f2]">
       {/* Header Section */}
-      <div className="bg-[#f5f6f2] border-b border-gray-200 px-4 md:px-0 py-4">
+      <div className="bg-[#f5f6f2] px-4 md:px-0 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-4xl font-bold text-foreground">
             Favorites
@@ -273,14 +308,13 @@ export default function Favorites() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-[#eef0e9]">
-                      <span
-                        className="text-2xl font-semibold"
-                        style={{ color: "var(--accent-light)" }}
-                        aria-hidden
-                      >
-                        {category.name.trim().charAt(0).toUpperCase()}
-                      </span>
+                    <div
+                      className="flex h-full w-full items-center justify-center"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #eef0e9 0%, #bac8b2 100%)",
+                      }}
+                    />
                     </div>
                   )}
                 </div>
