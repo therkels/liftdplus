@@ -4,7 +4,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
-  HiOutlineCog,
   HiOutlineHeart,
   HiOutlineLogout,
   HiOutlineTrash,
@@ -128,11 +127,12 @@ export default function Profile() {
     loadUserData();
   }, []);
 
-  const menuItems = [
-    { id: "account-settings", label: "Account Settings", icon: HiOutlineCog, action: () => console.log("Account Settings") },
+  const primaryMenuItems = [
     { id: "update-username", label: "Update Username", icon: HiOutlineUser, action: () => setIsUpdateUsernameOpen(true) },
     { id: "edit-interests", label: "Edit Interests", icon: HiOutlineHeart, action: () => setIsEditInterestsOpen(true) },
     { id: "log-out", label: "Log Out", icon: HiOutlineLogout, action: () => setIsLogoutOpen(true) },
+  ];
+  const destructiveMenuItems = [
     { id: "delete-account", label: "Delete Account", icon: HiOutlineTrash, action: () => setIsDeleteAccountOpen(true) },
   ];
 
@@ -181,7 +181,10 @@ export default function Profile() {
           </div>
 
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2
+              className="text-2xl font-bold text-gray-800"
+              style={{ color: "var(--accent-light)" }}
+            >
               {userProfile?.username || user.user_metadata?.name || user.email || "User"}
             </h2>
             {userProfile?.username && (
@@ -198,19 +201,73 @@ export default function Profile() {
         </div>
       </div>
 
-      <hr className="border-gray-200 mb-6" />
+      <hr className="mb-6" style={{ borderColor: "var(--rule)" }} />
 
-      {/* Menu */}
-      <div className="space-y-4">
-        {menuItems.map((item) => (
+      {selectedInterests.length > 0 ? (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your Interests</h3>
+          <div className="flex flex-wrap gap-2">
+            {selectedInterests.map((interest) => (
+              <span
+                key={interest}
+                className="px-3 py-1 rounded-full text-sm font-medium text-foreground bg-accent"
+              >
+                {interest}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="mb-6">
+          <p className="text-sm text-gray-500">No interests selected yet.</p>
+        </div>
+      )}
+
+      {/* ── Initiative 5: Dispensary Profile teaser card ── */}
+      <div
+        className="mb-6 rounded-xl p-5 border"
+        style={{
+          backgroundColor: "var(--foreground)",
+          borderColor: "var(--accent-light)",
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-white mb-1">
+              Your Dispensary Profile
+            </h3>
+            <p className="text-sm" style={{ color: "var(--onboarding-header)" }}>
+              Coming soon — personalized recommendations for your next dispensary visit.
+            </p>
+          </div>
+          <span className="text-xs font-medium px-2 py-1 rounded-full bg-accent text-foreground ml-4 whitespace-nowrap">
+            Coming soon
+          </span>
+        </div>
+      </div>
+      {/* ── End Initiative 5 placeholder ── */}
+
+      <div className="space-y-4 mb-6">
+        {primaryMenuItems.map((item) => (
           <button
             key={item.id}
             onClick={item.action}
             className="block text-left w-full md:hover:shadow-md md:transition-shadow md:duration-200 md:rounded-lg md:p-2 md:-m-2"
           >
-            <span className={`text-base ${item.id === "account-settings" ? "font-[550]" : "font-normal"} text-gray-800`}>
-              {item.label}
-            </span>
+            <span className="text-base font-normal text-gray-800">{item.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <hr className="mb-6" style={{ borderColor: "var(--rule)" }} />
+      <div className="space-y-4">
+        {destructiveMenuItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={item.action}
+            className="block text-left w-full md:hover:shadow-md md:transition-shadow md:duration-200 md:rounded-lg md:p-2 md:-m-2"
+          >
+            <span className="text-base font-normal text-red-500">{item.label}</span>
           </button>
         ))}
       </div>
