@@ -167,8 +167,8 @@ export function ChecklistCard({
       {!collapsed && (
         <>
           {/* Horizontal scrolling checklist cards */}
-          <div className="overflow-x-auto touch-scroll -mx-6 px-6">
-            <div className="flex space-x-3 pb-2" style={{ width: "max-content" }}>
+          <div className="overflow-x-auto touch-scroll -mx-2 px-2">
+            <div className="flex space-x-3 pb-3" style={{ width: "max-content", paddingRight: "24px" }}>
               {CHECKLIST_ITEMS.map((item) => {
                 const itemProgress = progress.find((p) => p.itemId === item.id);
                 const isItemComplete = itemProgress?.completed ?? false;
@@ -181,31 +181,32 @@ export function ChecklistCard({
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
-                    width: 180,
-                    minHeight: 150,
-                    padding: "16px",
+                      width: 160,
+                      minHeight: 160,
+                      padding: "16px",
                       borderRadius: 12,
-                    background: isItemComplete ? "#f0f2ee" : "#ffffff",
+                      background: isItemComplete ? "#f0f2ee" : "#ffffff",
                       boxShadow: isItemComplete
                         ? "none"
-                      : "0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
-                    borderTop: `3px solid ${isItemComplete ? "var(--accent)" : "var(--accent-light)"}`,
-                      border: `1px solid ${isItemComplete ? "var(--rule)" : "transparent"}`,
-                    borderTop: `3px solid ${isItemComplete ? "var(--accent)" : "var(--accent-light)"}`,
-                    textDecoration: "none",
-                    opacity: isItemComplete ? 0.65 : 1,
+                        : "0 4px 12px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)",
+                      borderTop: `3px solid ${isItemComplete ? "var(--accent)" : "var(--accent-light)"}`,
+                      border: `1px solid ${isItemComplete ? "var(--rule)" : "rgba(107,147,140,0.15)"}`,
+                      borderTop: `3px solid ${isItemComplete ? "var(--accent)" : "var(--accent-light)"}`,
+                      textDecoration: "none",
+                      opacity: isItemComplete ? 0.65 : 1,
                       flexShrink: 0,
-                      transition: "box-shadow 0.2s ease, opacity 0.2s ease",
+                      transition: "box-shadow 0.2s ease, transform 0.2s ease",
                     }}
                   >
                     {/* Middle — title */}
                     <span
                       style={{
-                        fontSize: "0.825rem",
+                        fontSize: "0.9rem",
                         color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
-                        fontWeight: isItemComplete ? 400 : 500,
+                        fontWeight: isItemComplete ? 400 : 600,
                         lineHeight: 1.4,
                         flex: 1,
+                        display: "block",
                       }}
                     >
                       {item.title}
@@ -225,10 +226,13 @@ export function ChecklistCard({
                       </span>
                     ) : (
                       <span style={{
-                        fontSize: "0.7rem",
-                        color: "var(--subtext)",
+                        fontSize: "0.68rem",
+                        color: "var(--accent-light)",
+                        fontWeight: 600,
+                        display: "block",
+                        marginTop: 8,
                       }}>
-                        {item.readTime}
+                        {item.readTime} read →
                       </span>
                     )}
                   </div>
