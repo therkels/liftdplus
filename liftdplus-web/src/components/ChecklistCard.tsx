@@ -40,24 +40,20 @@ export function ChecklistCard({
     return (
       <div
         style={{
-          background: "var(--foreground)",
+          background: "var(--cream)",
           borderRadius: 16,
-          borderTop: "3px solid var(--accent)",
+          border: "1px solid var(--rule)",
+          borderLeft: "4px solid var(--accent-light)",
           padding: "20px 24px",
           marginBottom: 24,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
         }}
       >
         <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 16 }}>
-          <span style={{ fontSize: "1rem", marginBottom: 4, display: "block" }}>✓</span>
           <p
             style={{
               fontSize: "1rem",
               fontWeight: 700,
-              color: "#ffffff",
+              color: "var(--foreground)",
               marginBottom: 4,
             }}
           >
@@ -66,7 +62,7 @@ export function ChecklistCard({
           <p
             style={{
               fontSize: "0.8rem",
-              color: "rgba(255,255,255,0.65)",
+              color: "var(--subtext)",
               lineHeight: 1.5,
             }}
           >

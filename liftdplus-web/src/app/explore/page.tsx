@@ -434,7 +434,7 @@ export default function ExplorePage() {
             }}
           >
             <span style={{ fontWeight: 650, color: "#1e3530", fontSize: "0.95rem", whiteSpace: "nowrap" }}>
-              📋 Get dispensary ready
+              A few things worth knowing first
             </span>
             <a
               href="#"
