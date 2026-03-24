@@ -200,6 +200,11 @@ export default function Search() {
     );
   }
 
+  const hasActiveFilters =
+    currentFilters.sortBy !== "Most Popular" ||
+    currentFilters.audience.length > 0 ||
+    currentFilters.category.length > 0;
+
   /* ----------------------------------- UI ----------------------------------- */
   return (
     <div className="min-h-screen bg-gray-50">
@@ -250,32 +255,39 @@ export default function Search() {
       {/* Filter Summary */}
       <div className="bg-[#f9fafb] px-4 md:px-0 py-3 border-b border-gray-200">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-gray-600">Current filters:</span>
+          {hasActiveFilters ? (
+            <>
+              <span className="text-sm text-gray-600">Current filters:</span>
 
-          {/* Sort */}
-          <div className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
-            {getSortDisplayName(currentFilters.sortBy)}
-          </div>
+              {currentFilters.sortBy !== "Most Popular" && (
+                <div className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent">
+                  {getSortDisplayName(currentFilters.sortBy)}
+                </div>
+              )}
 
-          {/* Audience */}
-          {currentFilters.audience.map((a) => (
-            <div
-              key={a}
-              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-            >
-              {a}
-            </div>
-          ))}
+              {/* Audience */}
+              {currentFilters.audience.map((a) => (
+                <div
+                  key={a}
+                  className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
+                >
+                  {a}
+                </div>
+              ))}
 
-          {/* Category */}
-          {currentFilters.category.map((c) => (
-            <div
-              key={c}
-              className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
-            >
-              {c}
-            </div>
-          ))}
+              {/* Category */}
+              {currentFilters.category.map((c) => (
+                <div
+                  key={c}
+                  className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 text-slate-900 bg-accent"
+                >
+                  {c}
+                </div>
+              ))}
+            </>
+          ) : (
+            <span className="text-sm text-gray-500">No filters applied</span>
+          )}
         </div>
       </div>
 
