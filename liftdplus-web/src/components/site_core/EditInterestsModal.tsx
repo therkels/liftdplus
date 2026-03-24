@@ -17,7 +17,7 @@ const EditInterestsModal: React.FC<EditInterestsModalProps> = ({
   onClose,
   availableInterests,
   selected,
-  maxSelectable = 3,
+  maxSelectable = 7,
   onSubmit,
 }) => {
   const [current, setCurrent] = useState<string[]>(selected);
@@ -45,17 +45,24 @@ const EditInterestsModal: React.FC<EditInterestsModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Interests"
-      subtitle={`Select ${maxSelectable}`}
+      subtitle={`Choose up to ${maxSelectable} topics`}
       size="lg"
       footer={
         <button
           onClick={handleSubmit}
-          className="mx-auto w-56 rounded-full bg-accentLight text-white font-medium py-3 flex items-center justify-center"
+          className="mx-auto w-full rounded-full font-semibold py-3 flex items-center justify-center transition-colors"
+          style={{
+            background: "var(--accent)",
+            color: "var(--foreground)",
+          }}
         >
-          <span>Update</span>
+          Save my interests
         </button>
       }
     >
+      <p className="text-center text-sm mb-4" style={{ color: "var(--subtext)" }}>
+        {current.length} of {maxSelectable} selected
+      </p>
       <div className="grid grid-cols-1 gap-3 px-6 md:px-16">
         {availableInterests.map((name) => {
           const selected = current.includes(name);
@@ -66,7 +73,9 @@ const EditInterestsModal: React.FC<EditInterestsModalProps> = ({
               className={`px-6 py-3 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 border ${
                 selected
                   ? "bg-accent text-foreground border-accent"
-                  : "bg-white text-foreground border-foreground hover:bg-backgroundLight"
+                  : !canSelectMore
+                    ? "bg-white text-gray-400 border-gray-200 cursor-not-allowed"
+                    : "bg-white text-foreground border-foreground hover:bg-backgroundLight"
               }`}
             >
               {name}

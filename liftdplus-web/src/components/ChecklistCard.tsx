@@ -42,7 +42,8 @@ export function ChecklistCard({
         style={{
           background: "var(--foreground)",
           borderRadius: 16,
-          padding: "24px",
+          borderTop: "3px solid var(--accent)",
+          padding: "20px 24px",
           marginBottom: 24,
           display: "flex",
           alignItems: "center",
@@ -51,9 +52,10 @@ export function ChecklistCard({
         }}
       >
         <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 16 }}>
+          <span style={{ fontSize: "1rem", marginBottom: 4, display: "block" }}>✓</span>
           <p
             style={{
-              fontSize: "1.1rem",
+              fontSize: "1rem",
               fontWeight: 700,
               color: "#ffffff",
               marginBottom: 4,
@@ -63,8 +65,8 @@ export function ChecklistCard({
           </p>
           <p
             style={{
-              fontSize: "0.85rem",
-              color: "rgba(255,255,255,0.7)",
+              fontSize: "0.8rem",
+              color: "rgba(255,255,255,0.65)",
               lineHeight: 1.5,
             }}
           >
@@ -100,8 +102,9 @@ export function ChecklistCard({
   return (
     <div
       style={{
-        background: "#ffffff",
-        border: "1px solid #e8e8e8",
+        background: "var(--cream)",
+        border: "1px solid var(--rule)",
+        borderLeft: "4px solid var(--accent-light)",
         borderRadius: 16,
         padding: collapsed ? "16px 20px" : "20px 24px",
         marginBottom: 24,
@@ -119,9 +122,9 @@ export function ChecklistCard({
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span
             style={{
-              fontSize: "0.8rem",
-              fontWeight: 700,
-              color: "#4a7a74",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              color: "var(--accent-light)",
             }}
           >
             A few things worth knowing first
@@ -130,8 +133,8 @@ export function ChecklistCard({
             style={{
               fontSize: "0.7rem",
               fontWeight: 600,
-              color: "#b8f000",
-              background: "#1e3530",
+              color: "var(--foreground)",
+              background: "var(--accent)",
               padding: "2px 8px",
               borderRadius: 999,
             }}
@@ -195,8 +198,8 @@ export function ChecklistCard({
                     gap: 12,
                     padding: "10px 12px",
                     borderRadius: 8,
-                    background: isItemComplete ? "var(--cream)" : "#fafafa",
-                    border: `1px solid ${isItemComplete ? "rgba(184, 240, 0, 0.3)" : "#f0f0f0"}`,
+                    background: isItemComplete ? "rgba(255,255,255,0.5)" : "#ffffff",
+                    border: `1px solid ${isItemComplete ? "rgba(184,240,0,0.3)" : "var(--rule)"}`,
                     textDecoration: "none",
                     pointerEvents: isItemComplete ? "none" : "auto",
                   }}
