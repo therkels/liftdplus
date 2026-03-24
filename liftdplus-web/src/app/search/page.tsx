@@ -183,7 +183,7 @@ export default function Search() {
   /* --------------------------- Not signed-in fallback -------------------------- */
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f5f6f2] flex items-center justify-center">
         <div className="max-w-3xl mx-auto">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Sign In Required</h2>
@@ -207,24 +207,12 @@ export default function Search() {
 
   /* ----------------------------------- UI ----------------------------------- */
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f5f6f2]">
       <div className="max-w-3xl mx-auto">
       {/* Header */}
-      <div className="bg-[#f9fafb] border-b border-gray-200 px-4 md:px-0 py-4">
+      <div className="bg-[#f5f6f2] px-4 md:px-0 py-4">
         <div className="flex items-center justify-between">
-          <h1
-            style={{
-              width: "262px",
-              height: "34px",
-              fontWeight: 700,
-              fontStyle: "normal",
-              fontSize: "40px",
-              letterSpacing: "0.3%",
-              verticalAlign: "middle",
-              textTransform: "capitalize",
-              color: "var(--foreground)",
-            }}
-          >
+          <h1 className="text-4xl font-bold text-foreground">
             Search
           </h1>
 
@@ -253,7 +241,7 @@ export default function Search() {
       </div>
 
       {/* Filter Summary */}
-      <div className="bg-[#f9fafb] px-4 md:px-0 py-3 border-b border-gray-200">
+      <div className="bg-[#f5f6f2] px-4 md:px-0 py-3 border-b border-gray-200">
         <div className="flex flex-wrap items-center gap-2">
           {hasActiveFilters ? (
             <>

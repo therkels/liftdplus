@@ -88,13 +88,6 @@
   --rule: rgba(107,147,140,0.18);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-mono);
-}
-
 /* Dark mode disabled - application will always use light mode colors
 @media (prefers-color-scheme: dark) {
   :root {

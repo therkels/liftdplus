@@ -357,7 +357,7 @@ export default function ExplorePage() {
     user.user_metadata?.name || user.email?.split("@")[0] || "there";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f5f6f2]">
       <div className="max-w-3xl mx-auto">
         <div className="container mx-auto px-4 md:px-0 py-8">
         <div className="flex items-center justify-between mb-8">
