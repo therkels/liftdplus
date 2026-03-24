@@ -40,7 +40,7 @@ export function ChecklistCard({
     return (
       <div
         style={{
-          background: "#1e3530",
+          background: "var(--foreground)",
           borderRadius: 16,
           padding: "24px",
           marginBottom: 24,
@@ -119,14 +119,12 @@ export function ChecklistCard({
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span
             style={{
-              fontSize: "0.7rem",
+              fontSize: "0.8rem",
               fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
               color: "#4a7a74",
             }}
           >
-            Dispensary Ready
+            A few things worth knowing first
           </span>
           <span
             style={{
@@ -138,7 +136,7 @@ export function ChecklistCard({
               borderRadius: 999,
             }}
           >
-            {completedCount}/{totalCount}
+            {completedCount} of {totalCount} completed
           </span>
         </div>
         <button
@@ -173,7 +171,7 @@ export function ChecklistCard({
               style={{
                 height: "100%",
                 width: `${progressPercent}%`,
-                background: "#b8f000",
+                background: "var(--accent)",
                 borderRadius: 2,
                 transition: "width 0.4s ease",
               }}
@@ -197,8 +195,8 @@ export function ChecklistCard({
                     gap: 12,
                     padding: "10px 12px",
                     borderRadius: 8,
-                    background: isItemComplete ? "#f7faf0" : "#fafafa",
-                    border: `1px solid ${isItemComplete ? "#d4ed8a" : "#f0f0f0"}`,
+                    background: isItemComplete ? "var(--cream)" : "#fafafa",
+                    border: `1px solid ${isItemComplete ? "rgba(184, 240, 0, 0.3)" : "#f0f0f0"}`,
                     textDecoration: "none",
                     pointerEvents: isItemComplete ? "none" : "auto",
                   }}
@@ -236,7 +234,7 @@ export function ChecklistCard({
                     <span
                       style={{
                         marginLeft: "auto",
-                        color: "#ccc",
+                        color: "var(--accent-light)",
                         fontSize: "0.8rem",
                       }}
                     >

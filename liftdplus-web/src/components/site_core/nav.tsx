@@ -50,13 +50,13 @@ const NavBar: React.FC = () => {
       {/* Desktop Navigation - Top */}
       <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-foreground shadow-sm">
         <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center bg-white rounded-lg p-2">
+          <div className="flex items-center">
             <Image
-              src="/liftd-text.svg"
-              alt="Liftd+ Logo"
-              width={64}
-              height={64}
-              className="h-8 w-24"
+              src="/logos/04 LIFTD+ Logo - White.png"
+              alt="LIFTD+"
+              width={120}
+              height={40}
+              className="h-8 w-auto"
             />
           </div>
 

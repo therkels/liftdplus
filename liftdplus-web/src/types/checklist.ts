@@ -17,25 +17,25 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
   {
     id: "understand_basics",
     title: "Understand the basics",
-    description: "Learn the difference between THC and CBD — the two most important things to know before anything else.",
+    description: "Get clear on THC vs. CBD. The two things everything else builds on.",
     slug: "thc-vs-cbd-whats-the-difference",
   },
   {
     id: "know_your_formats",
-    title: "Know your format options",
-    description: "Edibles, tinctures, flower — each one works differently. Find out which might suit you.",
+    title: "Explore your options",
+    description: "Edibles, tinctures, flower. Each feels different. See what might fit you.",
     slug: "edibles-demystified",
   },
   {
     id: "understand_dosing",
-    title: "Learn how to dose safely",
-    description: "Understand why less is more, and what to do if cannabis ever feels overwhelming.",
+    title: "Dose with confidence",
+    description: "Why less is more and what to do if it ever feels like too much.",
     slug: "why-cannabis-can-sometimes-feel-anxious--and-how-to-handle-it",
   },
   {
     id: "match_to_your_goal",
-    title: "Match cannabis to your goal",
-    description: "Get the guide that's most relevant to what you're trying to achieve.",
+    title: "Find what fits your goals",
+    description: "Better sleep, less stress, more ease. Start with what matters to you.",
     slug: "thc-vs-cbd-for-sleep-whats-the-difference",
     goalSlugMap: {
       sleep: "thc-vs-cbd-for-sleep-whats-the-difference",
@@ -48,13 +48,13 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: "know_the_lingo",
-    title: "Learn the lingo",
-    description: "Know what budtenders are talking about so you can ask the right questions when you walk in.",
+    title: "Make sense of the lingo",
+    description: "So nothing feels confusing when you need it most.",
     slug: "know-the-lingo",
   },
 ];
 
 export const CHECKLIST_COMPLETION_MESSAGE = {
-  headline: "You're dispensary ready. 🌿",
-  subtext: "You've covered the essentials. You know what to look for, how to dose safely, and how to have a real conversation when you walk in.",
+  headline: "That's the important stuff covered.",
+  subtext: "You know what cannabis does, how to use it safely, and what to look for. Everything else builds from here.",
 };
