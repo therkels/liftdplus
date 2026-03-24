@@ -20,7 +20,7 @@ interface PostContentBaseProps {
 
 const PostContentBase: React.FC<PostContentBaseProps> = ({ post, onShare }) => {
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-3xl mx-auto">
       {/* Pass onShare down to the header/metadata */}
       <PostMetadata post={post} onShare={onShare} />
 
