@@ -33,8 +33,6 @@ export function ChecklistCard({
   // If hidden, hide the entire card (completion and in-progress).
   if (hidden) return null;
 
-  const progressPercent = Math.round((completedCount / totalCount) * 100);
-
   // Completion state
   if (isComplete) {
     return (
@@ -102,7 +100,7 @@ export function ChecklistCard({
         border: "1px solid var(--rule)",
         borderLeft: "4px solid var(--accent-light)",
         borderRadius: 16,
-        padding: collapsed ? "16px 20px" : "20px 24px",
+        padding: "20px 24px 16px 24px",
         marginBottom: 24,
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
       }}
@@ -171,111 +169,84 @@ export function ChecklistCard({
 
       {!collapsed && (
         <>
-          {/* Progress bar */}
-          <div
-            style={{
-              height: 4,
-              background: "#f0f0f0",
-              borderRadius: 2,
-              marginBottom: 16,
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${progressPercent}%`,
-                background: "var(--accent)",
-                borderRadius: 2,
-                transition: "width 0.4s ease",
-              }}
-            />
-          </div>
-
-          {/* Checklist items */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {CHECKLIST_ITEMS.map((item) => {
-              const itemProgress = progress.find((p) => p.itemId === item.id);
-              const isItemComplete = itemProgress?.completed ?? false;
-              const slug = item.goalSlugMap?.[userGoal ?? ""] ?? item.slug;
-
-              return (
-                <Link
-                  key={item.id}
-                  href={`/post/${slug}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "14px 16px",
-                    borderRadius: 8,
-                    background: isItemComplete ? "#f5f6f2" : "#ffffff",
-                    textDecoration: "none",
-                    boxShadow: isItemComplete
-                      ? "none"
-                      : "0 1px 3px rgba(0,0,0,0.08)",
-                    border: `1px solid ${isItemComplete ? "var(--rule)" : "transparent"}`,
-                    transition: "box-shadow 0.2s ease, background 0.2s ease",
-                    opacity: isItemComplete ? 0.7 : 1,
-                  }}
-                >
-                  {/* Checkmark or circle */}
-                  <span
+          {/* Horizontal scrolling checklist cards */}
+          <div className="overflow-x-auto touch-scroll -mx-6 px-6">
+            <div className="flex space-x-3 pb-2" style={{ width: "max-content" }}>
+              {CHECKLIST_ITEMS.map((item) => {
+                const itemProgress = progress.find((p) => p.itemId === item.id);
+                const isItemComplete = itemProgress?.completed ?? false;
+                const slug = item.goalSlugMap?.[userGoal ?? ""] ?? item.slug;
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/post/${slug}`}
                     style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: "50%",
-                      background: isItemComplete ? "var(--accent)" : "transparent",
-                      border: `2px solid ${isItemComplete ? "var(--accent)" : "#d1d5db"}`,
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      width: 160,
+                      minHeight: 130,
+                      padding: "14px",
+                      borderRadius: 12,
+                      background: isItemComplete ? "#f5f6f2" : "#ffffff",
+                      boxShadow: isItemComplete
+                        ? "none"
+                        : "0 2px 6px rgba(0,0,0,0.08)",
+                      border: `1px solid ${isItemComplete ? "var(--rule)" : "transparent"}`,
+                      textDecoration: "none",
+                      opacity: isItemComplete ? 0.7 : 1,
                       flexShrink: 0,
-                      fontSize: "0.65rem",
-                      color: "var(--foreground)",
-                      fontWeight: 700,
-                      transition: "background 0.2s ease, border 0.2s ease",
+                      transition: "box-shadow 0.2s ease, opacity 0.2s ease",
                     }}
                   >
-                    {isItemComplete ? "✓" : ""}
-                  </span>
-                  {/* Title and read time */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {/* Top — checkbox */}
                     <span
                       style={{
-                        fontSize: "0.875rem",
+                        width: 22,
+                        height: 22,
+                        borderRadius: "50%",
+                        background: isItemComplete ? "var(--accent)" : "transparent",
+                        border: `2px solid ${isItemComplete ? "var(--accent)" : "#d1d5db"}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "0.65rem",
+                        color: "var(--foreground)",
+                        fontWeight: 700,
+                        flexShrink: 0,
+                        marginBottom: 8,
+                      }}
+                    >
+                      {isItemComplete ? "✓" : ""}
+                    </span>
+                    {/* Middle — title */}
+                    <span
+                      style={{
+                        fontSize: "0.825rem",
                         color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
                         fontWeight: isItemComplete ? 400 : 500,
                         textDecoration: isItemComplete ? "line-through" : "none",
-                        display: "block",
                         lineHeight: 1.4,
+                        flex: 1,
                       }}
                     >
                       {item.title}
                     </span>
-                    {!isItemComplete && (
-                      <span style={{
-                        fontSize: "0.72rem",
+                    {/* Bottom — read time or done */}
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
                         color: "var(--subtext)",
+                        marginTop: 8,
                         display: "block",
-                        marginTop: 2,
-                      }}>
-                        {item.readTime}
-                      </span>
-                    )}
-                  </div>
-                  {!isItemComplete && (
-                    <span style={{
-                      color: "var(--accent-light)",
-                      fontSize: "0.9rem",
-                      flexShrink: 0,
-                    }}>
-                      →
+                      }}
+                    >
+                      {isItemComplete ? "Done" : item.readTime}
                     </span>
-                  )}
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </>
       )}
