@@ -84,8 +84,13 @@ export function buildPostsQueryParams(filters: {
 }): URLSearchParams {
   const params = new URLSearchParams();
 
-  // Always add sort_by
-  params.append("sort_by", filters.sortBy || "popular");
+  const sortMap: Record<string, string> = {
+    "Most Popular": "popular",
+    "Most Recent": "recent",
+    "Oldest": "oldest",
+  };
+  const sortValue = sortMap[filters.sortBy || "Most Popular"] ?? "popular";
+  params.append("sort_by", sortValue);
 
   // Map display names to tag IDs for each filter type
   if (filters.category && filters.category.length > 0) {

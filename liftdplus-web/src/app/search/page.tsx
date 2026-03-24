@@ -52,7 +52,7 @@ export default function Search() {
 
   // filters + data
   const [currentFilters, setCurrentFilters] = useState<CurrentFilters>({
-    sortBy: "popular",
+    sortBy: "Most Popular",
     audience: [],
     category: [],
   });

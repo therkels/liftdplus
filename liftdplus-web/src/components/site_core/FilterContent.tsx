@@ -31,7 +31,6 @@ const FilterContent: React.FC<FilterContentProps> = ({
   const handleSortByChange = (value: string) => {
     const newFilters = { ...filters, sortBy: value };
     setFilters(newFilters);
-    onFiltersUpdate(newFilters);
   };
 
   const handleAudienceChange = (value: string) => {
@@ -42,7 +41,6 @@ const FilterContent: React.FC<FilterContentProps> = ({
         : [...filters.audience, value],
     };
     setFilters(newFilters);
-    onFiltersUpdate(newFilters);
   };
 
   const handleCategoryChange = (value: string) => {
@@ -53,13 +51,26 @@ const FilterContent: React.FC<FilterContentProps> = ({
         : [...filters.category, value],
     };
     setFilters(newFilters);
-    onFiltersUpdate(newFilters);
   };
+
+  const activeFilterCount =
+    (filters.sortBy !== "Most Popular" ? 1 : 0) +
+    filters.audience.length +
+    filters.category.length;
 
   return (
     <div className="h-full bg-white">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <button
+          type="button"
+          onClick={() => {
+            setFilters({ sortBy: "Most Popular", audience: [], category: [] });
+          }}
+          className="text-sm text-gray-500 hover:text-gray-700 bg-transparent border-0 p-0 cursor-pointer"
+        >
+          Clear all
+        </button>
         <h2
           className="text-gray-800"
           style={{
@@ -70,6 +81,13 @@ const FilterContent: React.FC<FilterContentProps> = ({
         >
           Filters
         </h2>
+        <button
+          type="button"
+          onClick={() => onFiltersUpdate(filters)}
+          className="px-4 py-2 rounded-full text-sm font-semibold bg-accent text-foreground hover:bg-accent/90 transition-colors"
+        >
+          Apply{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+        </button>
       </div>
 
       {/* Content */}
