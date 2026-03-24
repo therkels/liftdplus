@@ -98,12 +98,13 @@ export function ChecklistCard({
   return (
     <div
       style={{
-        background: "var(--cream)",
+        background: "#ffffff",
         border: "1px solid var(--rule)",
         borderLeft: "4px solid var(--accent-light)",
         borderRadius: 16,
         padding: collapsed ? "16px 20px" : "20px 24px",
         marginBottom: 24,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
       }}
     >
       {/* Header row */}
@@ -135,7 +136,9 @@ export function ChecklistCard({
               borderRadius: 999,
             }}
           >
-            {completedCount} of {totalCount} completed
+            {completedCount === 0
+              ? "Start here — takes ~15 min"
+              : `${completedCount} of ${totalCount} done — keep going`}
           </span>
         </div>
         <button
@@ -153,6 +156,18 @@ export function ChecklistCard({
           {collapsed ? "Show" : "Hide"}
         </button>
       </div>
+
+      {!collapsed && (
+        <p style={{
+          fontSize: "0.78rem",
+          color: "var(--subtext)",
+          marginBottom: 12,
+          marginTop: -4,
+          lineHeight: 1.5,
+        }}>
+          The more you explore, the more we can tailor what you see.
+        </p>
+      )}
 
       {!collapsed && (
         <>
@@ -192,51 +207,65 @@ export function ChecklistCard({
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
-                    padding: "10px 12px",
-                    borderRadius: 8,
-                    background: isItemComplete ? "rgba(255,255,255,0.5)" : "#ffffff",
+                    padding: "12px 14px",
+                    borderRadius: 10,
+                    background: isItemComplete ? "rgba(255,255,255,0.6)" : "#ffffff",
                     border: `1px solid ${isItemComplete ? "rgba(184,240,0,0.3)" : "var(--rule)"}`,
                     textDecoration: "none",
                     pointerEvents: isItemComplete ? "none" : "auto",
+                    boxShadow: isItemComplete ? "none" : "0 1px 3px rgba(0,0,0,0.04)",
+                    transition: "box-shadow 0.2s ease",
                   }}
                 >
                   {/* Checkmark or circle */}
                   <span
                     style={{
-                      width: 20,
-                      height: 20,
+                      width: 22,
+                      height: 22,
                       borderRadius: "50%",
-                      background: isItemComplete ? "#b8f000" : "transparent",
-                      border: `2px solid ${isItemComplete ? "#b8f000" : "#ccc"}`,
+                      background: isItemComplete ? "var(--accent)" : "transparent",
+                      border: `2px solid ${isItemComplete ? "var(--accent)" : "#d1d5db"}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
                       fontSize: "0.65rem",
-                      color: "#1e3530",
+                      color: "var(--foreground)",
                       fontWeight: 700,
                     }}
                   >
                     {isItemComplete ? "✓" : ""}
                   </span>
-                  <span
-                    style={{
-                      fontSize: "0.85rem",
-                      color: isItemComplete ? "#888" : "#313a43",
-                      fontWeight: isItemComplete ? 400 : 500,
-                      textDecoration: isItemComplete ? "line-through" : "none",
-                    }}
-                  >
-                    {item.title}
-                  </span>
-                  {!isItemComplete && (
+                  {/* Title and read time */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <span
                       style={{
-                        marginLeft: "auto",
-                        color: "var(--accent-light)",
-                        fontSize: "0.8rem",
+                        fontSize: "0.875rem",
+                        color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
+                        fontWeight: isItemComplete ? 400 : 500,
+                        textDecoration: isItemComplete ? "line-through" : "none",
+                        display: "block",
                       }}
                     >
+                      {item.title}
+                    </span>
+                    {!isItemComplete && (
+                      <span style={{
+                        fontSize: "0.72rem",
+                        color: "var(--subtext)",
+                        display: "block",
+                        marginTop: 1,
+                      }}>
+                        {item.readTime}
+                      </span>
+                    )}
+                  </div>
+                  {!isItemComplete && (
+                    <span style={{
+                      color: "var(--accent-light)",
+                      fontSize: "0.85rem",
+                      flexShrink: 0,
+                    }}>
                       →
                     </span>
                   )}

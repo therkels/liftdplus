@@ -209,6 +209,7 @@ export default function ExplorePage() {
   const [userGoal, setUserGoal] = useState<string>("sleep");
 
   const [checklistHidden, setChecklistHidden] = useState(false);
+  const [checklistComplete, setChecklistComplete] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const { selectedPost, isModalOpen, openPostModal, closePostModal } =
@@ -461,12 +462,6 @@ export default function ExplorePage() {
           </div>
         )}
 
-        <ChecklistCard
-          userGoal={userGoal}
-          hidden={mounted ? checklistHidden : false}
-          onHide={() => setChecklistHidden(true)}
-        />
-
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-800">
@@ -487,6 +482,32 @@ export default function ExplorePage() {
             <InterestTags interests={interestsData} />
           )}
         </div>
+
+        {!checklistComplete && !checklistHidden && (
+          <div style={{ marginBottom: 8 }}>
+            <p style={{
+              fontSize: "0.85rem",
+              color: "var(--subtext)",
+              marginBottom: 4,
+            }}>
+              Not sure where to start?
+            </p>
+            <p style={{
+              fontSize: "0.78rem",
+              color: "var(--subtext)",
+              opacity: 0.8,
+            }}>
+              Work through these five reads first — or explore by topic below.
+            </p>
+          </div>
+        )}
+
+        <ChecklistCard
+          userGoal={userGoal}
+          hidden={mounted ? checklistHidden : false}
+          onHide={() => setChecklistHidden(true)}
+          onCompletionChange={setChecklistComplete}
+        />
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
