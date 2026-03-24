@@ -97,12 +97,9 @@ export function ChecklistCard({
     <div
       style={{
         background: "var(--cream)",
-        border: "1px solid var(--rule)",
-        borderLeft: "4px solid var(--accent-light)",
         borderRadius: 16,
         padding: "20px 24px 16px 24px",
         marginBottom: 24,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
       }}
     >
       {/* Header row */}
@@ -184,65 +181,57 @@ export function ChecklistCard({
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
-                      width: 160,
-                      minHeight: 130,
-                      padding: "14px",
+                    width: 180,
+                    minHeight: 150,
+                    padding: "16px",
                       borderRadius: 12,
-                      background: isItemComplete ? "#f5f6f2" : "#ffffff",
+                    background: isItemComplete ? "#f0f2ee" : "#ffffff",
                       boxShadow: isItemComplete
                         ? "none"
-                        : "0 2px 6px rgba(0,0,0,0.08)",
+                      : "0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
+                    borderTop: `3px solid ${isItemComplete ? "var(--accent)" : "var(--accent-light)"}`,
                       border: `1px solid ${isItemComplete ? "var(--rule)" : "transparent"}`,
-                      textDecoration: "none",
-                      opacity: isItemComplete ? 0.7 : 1,
+                    borderTop: `3px solid ${isItemComplete ? "var(--accent)" : "var(--accent-light)"}`,
+                    textDecoration: "none",
+                    opacity: isItemComplete ? 0.65 : 1,
                       flexShrink: 0,
                       transition: "box-shadow 0.2s ease, opacity 0.2s ease",
                     }}
                   >
-                    {/* Top — checkbox */}
-                    <span
-                      style={{
-                        width: 22,
-                        height: 22,
-                        borderRadius: "50%",
-                        background: isItemComplete ? "var(--accent)" : "transparent",
-                        border: `2px solid ${isItemComplete ? "var(--accent)" : "#d1d5db"}`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "0.65rem",
-                        color: "var(--foreground)",
-                        fontWeight: 700,
-                        flexShrink: 0,
-                        marginBottom: 8,
-                      }}
-                    >
-                      {isItemComplete ? "✓" : ""}
-                    </span>
                     {/* Middle — title */}
                     <span
                       style={{
                         fontSize: "0.825rem",
                         color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
                         fontWeight: isItemComplete ? 400 : 500,
-                        textDecoration: isItemComplete ? "line-through" : "none",
                         lineHeight: 1.4,
                         flex: 1,
                       }}
                     >
                       {item.title}
                     </span>
-                    {/* Bottom — read time or done */}
-                    <span
-                      style={{
+                  {/* Bottom */}
+                  <div style={{ marginTop: 8 }}>
+                    {isItemComplete ? (
+                      <span style={{
+                        fontSize: "0.7rem",
+                        color: "var(--foreground)",
+                        background: "var(--accent)",
+                        padding: "2px 8px",
+                        borderRadius: 999,
+                        fontWeight: 600,
+                      }}>
+                        ✓ Done
+                      </span>
+                    ) : (
+                      <span style={{
                         fontSize: "0.7rem",
                         color: "var(--subtext)",
-                        marginTop: 8,
-                        display: "block",
-                      }}
-                    >
-                      {isItemComplete ? "Done" : item.readTime}
-                    </span>
+                      }}>
+                        {item.readTime}
+                      </span>
+                    )}
+                  </div>
                   </Link>
                 );
               })}
