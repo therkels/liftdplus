@@ -319,7 +319,20 @@ export default function Favorites() {
                         background:
                           "linear-gradient(135deg, #eef0e9 0%, #bac8b2 100%)",
                       }}
-                    />
+                    >
+                      <img
+                        src="/liftd-icon.svg"
+                        alt=""
+                        aria-hidden
+                        style={{
+                          width: "36px",
+                          height: "36px",
+                          opacity: 0.45,
+                          filter:
+                            "brightness(0) saturate(100%) invert(47%) sepia(22%) saturate(486%) hue-rotate(118deg) brightness(88%) contrast(86%)",
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
                 <div className="p-3 bg-white text-left">

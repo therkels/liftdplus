@@ -3,7 +3,7 @@ import { Post } from "./postTransformers";
 
 export interface ArchiveCategory {
   category: string;
-  cover_image_url: string;
+  cover_image_url: string | null;
   cat_count: number;
 }
 
@@ -244,7 +244,7 @@ export async function getArchiveCategories(): Promise<ArchiveCategory[]> {
 
     return categories.map((cat: any) => ({
       category: cat.category,
-      cover_image_url: cat.cover_image_url || "/dandelion.jpg",
+      cover_image_url: cat.cover_image_url || null,
       cat_count: cat.cat_count || 0,
     })) as ArchiveCategory[];
   } catch (error) {
