@@ -20,11 +20,11 @@ interface PostContentBaseProps {
 
 const PostContentBase: React.FC<PostContentBaseProps> = ({ post, onShare }) => {
   return (
-    <div className="w-full">
+    <div className="w-full max-w-2xl mx-auto">
       {/* Pass onShare down to the header/metadata */}
       <PostMetadata post={post} onShare={onShare} />
 
-      <div className="relative w-full h-64 md:h-80">
+      <div className="relative w-full h-64 md:h-80 md:max-h-96">
         <Image
           src={post.cover_image_url}
           alt={post.title}
@@ -35,7 +35,7 @@ const PostContentBase: React.FC<PostContentBaseProps> = ({ post, onShare }) => {
 
       <div className="p-6 md:p-8">
         {post.content && (
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-lg max-w-none w-full">
             <ReactMarkdown
               components={{
                 h1: ({ children, ...props }: any) => (
