@@ -98,7 +98,7 @@ export function ChecklistCard({
   return (
     <div
       style={{
-        background: "#ffffff",
+        background: "var(--cream)",
         border: "1px solid var(--rule)",
         borderLeft: "4px solid var(--accent-light)",
         borderRadius: 16,
@@ -193,7 +193,7 @@ export function ChecklistCard({
           </div>
 
           {/* Checklist items */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {CHECKLIST_ITEMS.map((item) => {
               const itemProgress = progress.find((p) => p.itemId === item.id);
               const isItemComplete = itemProgress?.completed ?? false;
@@ -202,19 +202,21 @@ export function ChecklistCard({
               return (
                 <Link
                   key={item.id}
-                  href={isItemComplete ? "#" : `/post/${slug}`}
+                  href={`/post/${slug}`}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
-                    padding: "12px 14px",
-                    borderRadius: 10,
-                    background: isItemComplete ? "rgba(255,255,255,0.6)" : "#ffffff",
-                    border: `1px solid ${isItemComplete ? "rgba(184,240,0,0.3)" : "var(--rule)"}`,
+                    padding: "14px 16px",
+                    borderRadius: 8,
+                    background: isItemComplete ? "#f5f6f2" : "#ffffff",
                     textDecoration: "none",
-                    pointerEvents: isItemComplete ? "none" : "auto",
-                    boxShadow: isItemComplete ? "none" : "0 1px 3px rgba(0,0,0,0.04)",
-                    transition: "box-shadow 0.2s ease",
+                    boxShadow: isItemComplete
+                      ? "none"
+                      : "0 1px 3px rgba(0,0,0,0.08)",
+                    border: `1px solid ${isItemComplete ? "var(--rule)" : "transparent"}`,
+                    transition: "box-shadow 0.2s ease, background 0.2s ease",
+                    opacity: isItemComplete ? 0.7 : 1,
                   }}
                 >
                   {/* Checkmark or circle */}
@@ -232,6 +234,7 @@ export function ChecklistCard({
                       fontSize: "0.65rem",
                       color: "var(--foreground)",
                       fontWeight: 700,
+                      transition: "background 0.2s ease, border 0.2s ease",
                     }}
                   >
                     {isItemComplete ? "✓" : ""}
@@ -245,6 +248,7 @@ export function ChecklistCard({
                         fontWeight: isItemComplete ? 400 : 500,
                         textDecoration: isItemComplete ? "line-through" : "none",
                         display: "block",
+                        lineHeight: 1.4,
                       }}
                     >
                       {item.title}
@@ -254,7 +258,7 @@ export function ChecklistCard({
                         fontSize: "0.72rem",
                         color: "var(--subtext)",
                         display: "block",
-                        marginTop: 1,
+                        marginTop: 2,
                       }}>
                         {item.readTime}
                       </span>
@@ -263,7 +267,7 @@ export function ChecklistCard({
                   {!isItemComplete && (
                     <span style={{
                       color: "var(--accent-light)",
-                      fontSize: "0.85rem",
+                      fontSize: "0.9rem",
                       flexShrink: 0,
                     }}>
                       →
