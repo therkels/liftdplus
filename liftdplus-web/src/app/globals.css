@@ -90,14 +90,19 @@
 
 .checklist-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr auto 1fr;
+  gap: 6px;
   margin-top: 12px;
+  align-items: center;
 }
 
 @media (max-width: 640px) {
   .checklist-grid {
     grid-template-columns: 1fr;
+  }
+
+  .checklist-connector {
+    display: none;
   }
 }
 

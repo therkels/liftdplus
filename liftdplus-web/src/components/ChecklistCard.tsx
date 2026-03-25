@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { useChecklist } from "@/hooks/useChecklist";
 import { CHECKLIST_ITEMS, CHECKLIST_COMPLETION_MESSAGE } from "@/types/checklist";
@@ -167,29 +167,58 @@ export function ChecklistCard({
       </div>
 
       {!collapsed && (
-        <p style={{
-          fontSize: "0.78rem",
-          color: "var(--subtext)",
-          marginBottom: 12,
-          marginTop: -4,
-          lineHeight: 1.5,
-        }}>
-          The more you explore, the more we can tailor what you see.
-        </p>
-      )}
-
-      {!collapsed && (
         <>
+          <p
+            style={{
+              fontSize: "0.78rem",
+              color: "var(--subtext)",
+              marginBottom: 12,
+              marginTop: -4,
+              lineHeight: 1.5,
+            }}
+          >
+            The more you explore, the more we can tailor what you see.
+          </p>
+
+          {!isComplete && (
+            <p
+              style={{
+                fontSize: "0.72rem",
+                color: "var(--subtext)",
+                marginTop: "2px",
+                marginBottom: "8px",
+              }}
+            >
+              or{" "}
+              <button
+                type="button"
+                onClick={() => onHide?.()}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--subtext)",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  fontSize: "0.72rem",
+                  padding: 0,
+                }}
+              >
+                jump straight to content
+              </button>
+            </p>
+          )}
+
           <div className="checklist-grid">
             {CHECKLIST_ITEMS.map((item, index) => {
               const itemProgress = progress.find((p) => p.itemId === item.id);
               const isItemComplete = itemProgress?.completed ?? false;
               const slug = item.goalSlugMap?.[userGoal ?? ""] ?? item.slug;
+              const isLast = index === CHECKLIST_ITEMS.length - 1;
               return (
-                <Link
-                  key={item.id}
-                  href={`/post/${slug}`}
-                  style={{
+                <Fragment key={item.id}>
+                  <Link
+                    href={`/post/${slug}`}
+                    style={{
                     display: "flex",
                     flexDirection: "column",
                     padding: "14px 12px",
@@ -227,7 +256,7 @@ export function ChecklistCard({
 
                   <span
                     style={{
-                      fontSize: "2rem",
+                      fontSize: "2.8rem",
                       fontWeight: 700,
                       color: isItemComplete ? "var(--rule)" : "var(--accent-light)",
                       opacity: isItemComplete ? 0.4 : 0.35,
@@ -277,39 +306,29 @@ export function ChecklistCard({
                       {item.readTime} read →
                     </span>
                   )}
-                </Link>
+                  </Link>
+
+                  {!isLast && (
+                    <div
+                      className="checklist-connector"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "var(--rule)",
+                        fontSize: "0.75rem",
+                        opacity: 0.5,
+                        pointerEvents: "none",
+                        userSelect: "none",
+                      }}
+                    >
+                      →
+                    </div>
+                  )}
+                </Fragment>
               );
             })}
           </div>
-
-          {!isComplete && (
-            <p
-              style={{
-                fontSize: "0.72rem",
-                color: "var(--subtext)",
-                textAlign: "center",
-                marginTop: "10px",
-                marginBottom: "0",
-              }}
-            >
-              or{" "}
-              <button
-                type="button"
-                onClick={() => onHide?.()}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--subtext)",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  fontSize: "0.72rem",
-                  padding: 0,
-                }}
-              >
-                jump straight to content
-              </button>
-            </p>
-          )}
         </>
       )}
 
