@@ -88,6 +88,19 @@
   --rule: rgba(107,147,140,0.18);
 }
 
+.checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  .checklist-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Dark mode disabled - application will always use light mode colors
 @media (prefers-color-scheme: dark) {
   :root {

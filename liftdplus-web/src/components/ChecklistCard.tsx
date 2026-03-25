@@ -121,20 +121,34 @@ export function ChecklistCard({
           >
             A few things worth knowing first
           </span>
-          <span
-            style={{
-              fontSize: "0.7rem",
-              fontWeight: 600,
-              color: "var(--foreground)",
-              background: "var(--accent)",
-              padding: "2px 8px",
-              borderRadius: 999,
-            }}
-          >
-            {completedCount === 0
-              ? "Start here — takes ~15 min"
-              : `${completedCount} of ${totalCount} done — keep going`}
-          </span>
+          {completedCount === 0 ? (
+            <span
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                color: "var(--accent-light)",
+                border: "1px solid var(--accent-light)",
+                borderRadius: "999px",
+                padding: "2px 10px",
+                marginLeft: "8px",
+              }}
+            >
+              4 short reads · ~15 min
+            </span>
+          ) : (
+            <span
+              style={{
+                fontSize: "0.7rem",
+                fontWeight: 600,
+                color: "var(--foreground)",
+                background: "var(--accent)",
+                padding: "2px 8px",
+                borderRadius: 999,
+              }}
+            >
+              {`${completedCount} of ${totalCount} done — keep going`}
+            </span>
+          )}
         </div>
         <button
           type="button"
@@ -166,81 +180,136 @@ export function ChecklistCard({
 
       {!collapsed && (
         <>
-          {/* Horizontal scrolling checklist cards */}
-          <div className="overflow-x-auto touch-scroll -mx-2 px-2">
-            <div className="flex space-x-3 pb-3" style={{ width: "max-content", paddingRight: "24px" }}>
-              {CHECKLIST_ITEMS.map((item) => {
-                const itemProgress = progress.find((p) => p.itemId === item.id);
-                const isItemComplete = itemProgress?.completed ?? false;
-                const slug = item.goalSlugMap?.[userGoal ?? ""] ?? item.slug;
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/post/${slug}`}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      width: 160,
-                      minHeight: 160,
-                      padding: "16px",
-                      borderRadius: 12,
-                      background: isItemComplete ? "#f0f2ee" : "#ffffff",
-                      boxShadow: isItemComplete
-                        ? "none"
-                        : "0 4px 12px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)",
-                      borderTop: `3px solid ${isItemComplete ? "var(--accent)" : "var(--accent-light)"}`,
-                      border: `1px solid ${isItemComplete ? "var(--rule)" : "rgba(107,147,140,0.15)"}`,
-                      borderTop: `3px solid ${isItemComplete ? "var(--accent)" : "var(--accent-light)"}`,
-                      textDecoration: "none",
-                      opacity: isItemComplete ? 0.65 : 1,
-                      flexShrink: 0,
-                      transition: "box-shadow 0.2s ease, transform 0.2s ease",
-                    }}
-                  >
-                    {/* Middle — title */}
+          <div className="checklist-grid">
+            {CHECKLIST_ITEMS.map((item, index) => {
+              const itemProgress = progress.find((p) => p.itemId === item.id);
+              const isItemComplete = itemProgress?.completed ?? false;
+              const slug = item.goalSlugMap?.[userGoal ?? ""] ?? item.slug;
+              return (
+                <Link
+                  key={item.id}
+                  href={`/post/${slug}`}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    padding: "14px 12px",
+                    borderRadius: "10px",
+                    background: isItemComplete ? "#f0f2ee" : "#ffffff",
+                    boxShadow:
+                      index === 0 && !isItemComplete
+                        ? "0 4px 14px rgba(31,78,90,0.14), 0 1px 3px rgba(0,0,0,0.06)"
+                        : isItemComplete
+                          ? "none"
+                          : "0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)",
+                    border: `1px solid ${isItemComplete ? "var(--rule)" : "rgba(107,147,140,0.12)"}`,
+                    borderTop: `3px solid ${isItemComplete ? "var(--rule)" : "var(--accent)"}`,
+                    textDecoration: "none",
+                    opacity: isItemComplete ? 0.6 : 1,
+                    transition: "box-shadow 0.2s ease, transform 0.15s ease",
+                    minHeight: "130px",
+                  }}
+                >
+                  {index === 0 && !isItemComplete && (
                     <span
                       style={{
-                        fontSize: "0.9rem",
-                        color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
-                        fontWeight: isItemComplete ? 400 : 600,
-                        lineHeight: 1.4,
-                        flex: 1,
+                        fontSize: "0.6rem",
+                        fontWeight: 700,
+                        color: "var(--accent)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        marginBottom: "4px",
                         display: "block",
                       }}
                     >
-                      {item.title}
+                      Start here
                     </span>
-                  {/* Bottom */}
-                  <div style={{ marginTop: 8 }}>
-                    {isItemComplete ? (
-                      <span style={{
-                        fontSize: "0.7rem",
-                        color: "var(--foreground)",
-                        background: "var(--accent)",
-                        padding: "2px 8px",
-                        borderRadius: 999,
-                        fontWeight: 600,
-                      }}>
-                        ✓ Done
-                      </span>
-                    ) : (
-                      <span style={{
+                  )}
+
+                  <span
+                    style={{
+                      fontSize: "2rem",
+                      fontWeight: 700,
+                      color: isItemComplete ? "var(--rule)" : "var(--accent-light)",
+                      opacity: isItemComplete ? 0.4 : 0.35,
+                      lineHeight: 1,
+                      display: "block",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {index + 1}
+                  </span>
+
+                  <span
+                    style={{
+                      fontSize: "0.85rem",
+                      fontWeight: isItemComplete ? 400 : 600,
+                      color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
+                      lineHeight: 1.35,
+                      flex: 1,
+                      display: "block",
+                    }}
+                  >
+                    {item.title}
+                  </span>
+
+                  {isItemComplete ? (
+                    <span
+                      style={{
+                        fontSize: "0.68rem",
+                        color: "var(--accent)",
+                        fontWeight: 700,
+                        marginTop: "10px",
+                        display: "block",
+                      }}
+                    >
+                      ✓ Done
+                    </span>
+                  ) : (
+                    <span
+                      style={{
                         fontSize: "0.68rem",
                         color: "var(--accent-light)",
                         fontWeight: 600,
+                        marginTop: "10px",
                         display: "block",
-                        marginTop: 8,
-                      }}>
-                        {item.readTime} read →
-                      </span>
-                    )}
-                  </div>
-                  </Link>
-                );
-              })}
-            </div>
+                      }}
+                    >
+                      {item.readTime} read →
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
+
+          {!isComplete && (
+            <p
+              style={{
+                fontSize: "0.72rem",
+                color: "var(--subtext)",
+                textAlign: "center",
+                marginTop: "10px",
+                marginBottom: "0",
+              }}
+            >
+              or{" "}
+              <button
+                type="button"
+                onClick={() => onHide?.()}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--subtext)",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  fontSize: "0.72rem",
+                  padding: 0,
+                }}
+              >
+                jump straight to content
+              </button>
+            </p>
+          )}
         </>
       )}
 
