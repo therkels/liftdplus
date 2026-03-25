@@ -442,7 +442,7 @@ export async function POST(req: NextRequest) {
           milestone_key: currentMilestone.milestone_key,
           unlocked_features: unlockedFeatures,
           recommendation_id: impressionId,
-          last_generated_at: new Date().toISOString(),
+          last_computed_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }
       );
