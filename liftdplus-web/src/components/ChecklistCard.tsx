@@ -284,7 +284,7 @@ export function ChecklistCard({
                           ? "none"
                           : "0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)",
                     border: `1px solid ${isItemComplete ? "var(--rule)" : "rgba(107,147,140,0.12)"}`,
-                    borderTop: `3px solid ${isItemComplete ? "var(--rule)" : "var(--accent)"}`,
+                    borderTop: `3px solid ${isItemComplete ? "#6B7A1F" : "var(--accent)"}`,
                     textDecoration: "none",
                     opacity: isItemComplete ? 0.85 : 1,
                     transition: "box-shadow 0.2s ease, transform 0.15s ease",
@@ -343,7 +343,7 @@ export function ChecklistCard({
                         className="checklist-meta"
                         style={{
                           fontSize: "0.72rem",
-                          color: "var(--accent)",
+                          color: "#6B7A1F",
                           fontWeight: 700,
                           marginTop: "10px",
                           display: "block",
