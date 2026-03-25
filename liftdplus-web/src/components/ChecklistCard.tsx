@@ -95,12 +95,22 @@ export function ChecklistCard({
   // In-progress state
   return (
     <div
-      style={{
-        background: "var(--cream)",
-        borderRadius: 16,
-        padding: "20px 24px 16px 24px",
-        marginBottom: 24,
-      }}
+      style={
+        collapsed
+          ? {
+              background: "var(--cream)",
+              borderRadius: "12px",
+              padding: "12px 16px",
+              marginBottom: "16px",
+              border: "1px solid var(--rule)",
+            }
+          : {
+              background: "var(--cream)",
+              borderRadius: 16,
+              padding: "20px 24px 16px 24px",
+              marginBottom: 24,
+            }
+      }
     >
       {/* Header row */}
       <div
@@ -150,20 +160,62 @@ export function ChecklistCard({
             </span>
           )}
         </div>
-        <button
-          type="button"
-          onClick={() => setCollapsed(!collapsed)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#9ca3af",
-            fontSize: "0.75rem",
-            cursor: "pointer",
-            padding: 0,
-          }}
-        >
-          {collapsed ? "Show" : "Hide"}
-        </button>
+        {collapsed ? (
+          <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <button
+              type="button"
+              onClick={() => setCollapsed(false)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#9ca3af",
+                fontSize: "0.75rem",
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              Show
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  localStorage.setItem(CHECKLIST_HIDDEN_KEY, "true");
+                } catch {
+                  // Ignore; parent state can still hide via onHide.
+                }
+                onHide?.();
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--subtext)",
+                fontSize: "0.7rem",
+                cursor: "pointer",
+                padding: 0,
+                textDecoration: "underline",
+                marginLeft: "8px",
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setCollapsed(true)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#9ca3af",
+              fontSize: "0.75rem",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            Hide
+          </button>
+        )}
       </div>
 
       {!collapsed && (
@@ -332,29 +384,31 @@ export function ChecklistCard({
         </>
       )}
 
-      {/* Hide the entire checklist card (toggle, persisted in localStorage) */}
-      <div style={{ marginTop: collapsed ? 12 : 16, paddingTop: 12 }}>
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            try {
-              localStorage.setItem(CHECKLIST_HIDDEN_KEY, "true");
-            } catch {
-              // Ignore; parent state can still hide via onHide.
-            }
-            onHide?.();
-          }}
-          style={{
-            fontSize: "0.75rem",
-            color: "#9ca3af",
-            cursor: "pointer",
-            textDecoration: "none",
-          }}
-        >
-          Hide
-        </a>
-      </div>
+      {/* Hide the entire checklist card (expanded only; collapsed uses header Dismiss) */}
+      {!collapsed && (
+        <div style={{ marginTop: 16, paddingTop: 12 }}>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              try {
+                localStorage.setItem(CHECKLIST_HIDDEN_KEY, "true");
+              } catch {
+                // Ignore; parent state can still hide via onHide.
+              }
+              onHide?.();
+            }}
+            style={{
+              fontSize: "0.75rem",
+              color: "#9ca3af",
+              cursor: "pointer",
+              textDecoration: "none",
+            }}
+          >
+            Hide
+          </a>
+        </div>
+      )}
     </div>
   );
 }

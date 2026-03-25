@@ -423,24 +423,21 @@ export default function ExplorePage() {
         {mounted && checklistHidden && (
           <div
             style={{
-              background: "#ffffff",
-              border: "1px solid #e8e8e8",
-              borderRadius: 16,
-              padding: "20px 24px",
-              marginBottom: 24,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
+              marginBottom: "8px",
+              padding: "0",
             }}
           >
-            <span style={{ fontWeight: 650, color: "#1e3530", fontSize: "0.95rem", whiteSpace: "nowrap" }}>
-              A few things worth knowing first
+            <span
+              style={{
+                fontSize: "0.78rem",
+                color: "var(--subtext)",
+              }}
+            >
+              A few things worth knowing first —{" "}
             </span>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
+            <button
+              type="button"
+              onClick={() => {
                 const CHECKLIST_HIDDEN_KEY = "checklist_hidden";
                 try {
                   localStorage.setItem(CHECKLIST_HIDDEN_KEY, "false");
@@ -450,15 +447,17 @@ export default function ExplorePage() {
                 setChecklistHidden(false);
               }}
               style={{
-                fontSize: "0.75rem",
-                color: "#9ca3af",
-                textDecoration: "none",
+                background: "none",
+                border: "none",
+                color: "var(--accent-light)",
+                fontSize: "0.78rem",
                 cursor: "pointer",
-                whiteSpace: "nowrap",
+                padding: 0,
+                textDecoration: "underline",
               }}
             >
               Show
-            </a>
+            </button>
           </div>
         )}
 
