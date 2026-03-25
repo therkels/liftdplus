@@ -286,7 +286,7 @@ export function ChecklistCard({
                     border: `1px solid ${isItemComplete ? "var(--rule)" : "rgba(107,147,140,0.12)"}`,
                     borderTop: `3px solid ${isItemComplete ? "var(--rule)" : "var(--accent)"}`,
                     textDecoration: "none",
-                    opacity: isItemComplete ? 0.6 : 1,
+                    opacity: isItemComplete ? 0.85 : 1,
                     transition: "box-shadow 0.2s ease, transform 0.15s ease",
                     minHeight: "130px",
                   }}
@@ -342,7 +342,7 @@ export function ChecklistCard({
                       <span
                         className="checklist-meta"
                         style={{
-                          fontSize: "0.68rem",
+                          fontSize: "0.72rem",
                           color: "var(--accent)",
                           fontWeight: 700,
                           marginTop: "10px",
