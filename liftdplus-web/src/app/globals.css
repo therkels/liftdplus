@@ -99,9 +99,46 @@
 @media (max-width: 640px) {
   .checklist-grid {
     grid-template-columns: 1fr;
+    gap: 6px;
   }
 
   .checklist-connector {
+    display: none;
+  }
+
+  .checklist-grid a {
+    flex-direction: row !important;
+    align-items: center !important;
+    min-height: unset !important;
+    padding: 10px 12px !important;
+    gap: 10px;
+    border-top-width: 2px !important;
+  }
+
+  .checklist-grid a .checklist-number {
+    font-size: 1.6rem !important;
+    margin-bottom: 0 !important;
+    min-width: 32px;
+    flex-shrink: 0;
+  }
+
+  .checklist-grid a .checklist-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .checklist-grid a .checklist-title {
+    font-size: 0.82rem !important;
+  }
+
+  .checklist-grid a .checklist-meta {
+    font-size: 0.65rem !important;
+    margin-top: 2px !important;
+  }
+
+  .checklist-start-label {
     display: none;
   }
 }

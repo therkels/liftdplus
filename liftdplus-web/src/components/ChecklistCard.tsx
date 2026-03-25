@@ -148,12 +148,13 @@ export function ChecklistCard({
           ) : (
             <span
               style={{
-                fontSize: "0.7rem",
+                fontSize: "0.65rem",
                 fontWeight: 600,
                 color: "var(--foreground)",
                 background: "var(--accent)",
                 padding: "2px 8px",
                 borderRadius: 999,
+                whiteSpace: "nowrap",
               }}
             >
               {`${completedCount} of ${totalCount} done — keep going`}
@@ -292,6 +293,7 @@ export function ChecklistCard({
                 >
                   {index === 0 && !isItemComplete && (
                     <span
+                      className="checklist-start-label"
                       style={{
                         fontSize: "0.6rem",
                         fontWeight: 700,
@@ -307,6 +309,7 @@ export function ChecklistCard({
                   )}
 
                   <span
+                    className="checklist-number"
                     style={{
                       fontSize: "2.8rem",
                       fontWeight: 700,
@@ -320,44 +323,49 @@ export function ChecklistCard({
                     {index + 1}
                   </span>
 
-                  <span
-                    style={{
-                      fontSize: "0.85rem",
-                      fontWeight: isItemComplete ? 400 : 600,
-                      color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
-                      lineHeight: 1.35,
-                      flex: 1,
-                      display: "block",
-                    }}
-                  >
-                    {item.title}
-                  </span>
+                  <div className="checklist-body">
+                    <span
+                      className="checklist-title"
+                      style={{
+                        fontSize: "0.85rem",
+                        fontWeight: isItemComplete ? 400 : 600,
+                        color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
+                        lineHeight: 1.35,
+                        flex: 1,
+                        display: "block",
+                      }}
+                    >
+                      {item.title}
+                    </span>
 
-                  {isItemComplete ? (
-                    <span
-                      style={{
-                        fontSize: "0.68rem",
-                        color: "var(--accent)",
-                        fontWeight: 700,
-                        marginTop: "10px",
-                        display: "block",
-                      }}
-                    >
-                      ✓ Done
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: "0.68rem",
-                        color: "var(--accent-light)",
-                        fontWeight: 600,
-                        marginTop: "10px",
-                        display: "block",
-                      }}
-                    >
-                      {item.readTime} read →
-                    </span>
-                  )}
+                    {isItemComplete ? (
+                      <span
+                        className="checklist-meta"
+                        style={{
+                          fontSize: "0.68rem",
+                          color: "var(--accent)",
+                          fontWeight: 700,
+                          marginTop: "10px",
+                          display: "block",
+                        }}
+                      >
+                        ✓ Done
+                      </span>
+                    ) : (
+                      <span
+                        className="checklist-meta"
+                        style={{
+                          fontSize: "0.68rem",
+                          color: "var(--accent-light)",
+                          fontWeight: 600,
+                          marginTop: "10px",
+                          display: "block",
+                        }}
+                      >
+                        {item.readTime} read →
+                      </span>
+                    )}
+                  </div>
                   </Link>
 
                   {!isLast && (
