@@ -564,7 +564,7 @@ export default function ExplorePage() {
             </p>
           </div>
           <a
-            href="/profile/dispensary"
+            href="/profile/guide"
             style={{
               fontSize: "0.78rem",
               fontWeight: 600,

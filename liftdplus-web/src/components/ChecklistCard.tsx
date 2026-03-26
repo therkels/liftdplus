@@ -276,7 +276,7 @@ export function ChecklistCard({
                     flexDirection: "column",
                     padding: "14px 12px",
                     borderRadius: "10px",
-                    background: isItemComplete ? "#f0f2ee" : "#ffffff",
+                    background: isItemComplete ? "var(--cream)" : "#ffffff",
                     boxShadow:
                       index === 0 && !isItemComplete
                         ? "0 4px 14px rgba(31,78,90,0.14), 0 1px 3px rgba(0,0,0,0.06)"
@@ -284,9 +284,9 @@ export function ChecklistCard({
                           ? "none"
                           : "0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)",
                     border: `1px solid ${isItemComplete ? "var(--rule)" : "rgba(107,147,140,0.12)"}`,
-                    borderTop: `3px solid ${isItemComplete ? "#6B7A1F" : "var(--accent)"}`,
+                    borderTop: "3px solid var(--accent-light)",
                     textDecoration: "none",
-                    opacity: isItemComplete ? 0.85 : 1,
+                    opacity: isItemComplete ? 0.7 : 1,
                     transition: "box-shadow 0.2s ease, transform 0.15s ease",
                     minHeight: "130px",
                   }}
@@ -313,8 +313,8 @@ export function ChecklistCard({
                     style={{
                       fontSize: "2.8rem",
                       fontWeight: 700,
-                      color: isItemComplete ? "var(--rule)" : "var(--accent-light)",
-                      opacity: isItemComplete ? 0.4 : 0.35,
+                      color: "var(--accent-light)",
+                      opacity: isItemComplete ? 0.3 : 0.35,
                       lineHeight: 1,
                       display: "block",
                       marginBottom: "8px",
@@ -328,8 +328,8 @@ export function ChecklistCard({
                       className="checklist-title"
                       style={{
                         fontSize: "0.85rem",
-                        fontWeight: isItemComplete ? 400 : 600,
-                        color: isItemComplete ? "var(--subtext)" : "var(--foreground)",
+                        fontWeight: isItemComplete ? 500 : 600,
+                        color: isItemComplete ? "#666666" : "var(--foreground)",
                         lineHeight: 1.35,
                         flex: 1,
                         display: "block",
@@ -343,8 +343,8 @@ export function ChecklistCard({
                         className="checklist-meta"
                         style={{
                           fontSize: "0.72rem",
-                          color: "#6B7A1F",
-                          fontWeight: 700,
+                          color: "var(--accent-light)",
+                          fontWeight: 600,
                           marginTop: "10px",
                           display: "block",
                         }}

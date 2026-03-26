@@ -181,7 +181,7 @@ function ProductCard({
         background: isPrimary ? "#ffffff" : "var(--cream)",
         borderRadius: 12,
         border: `1px solid ${isPrimary ? "rgba(107,147,140,0.2)" : "var(--rule)"}`,
-        borderTop: `3px solid ${isPrimary ? "var(--accent)" : "var(--rule)"}`,
+        borderTop: `3px solid ${isPrimary ? "var(--accent-light)" : "var(--rule)"}`,
         padding: "16px 18px",
         boxShadow: isPrimary
           ? "0 4px 14px rgba(31,78,90,0.10), 0 1px 3px rgba(0,0,0,0.05)"
@@ -193,7 +193,7 @@ function ProductCard({
           style={{
             fontSize: "0.6rem",
             fontWeight: 700,
-            color: "var(--accent)",
+            color: "var(--accent-light)",
             textTransform: "uppercase",
             letterSpacing: "0.08em",
             display: "block",
@@ -375,7 +375,24 @@ export default function DispensaryProfilePage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [screenshotPrompt, setScreenshotPrompt] = useState(false);
+  const [displayName, setDisplayName] = useState<string>("");
+
+  useEffect(() => {
+    const fetchDisplayName = async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: userData } = await supabase.rpc("get_user", { user_id: user.id });
+      const username = userData?.[0]?.username;
+      const firstName =
+        user.user_metadata?.full_name?.split(" ")[0] ||
+        user.user_metadata?.name?.split(" ")[0];
+      setDisplayName(username || firstName || "");
+    };
+    fetchDisplayName();
+  }, []);
 
   // Auth check
   useEffect(() => {
@@ -549,18 +566,6 @@ export default function DispensaryProfilePage() {
 
         {/* ── Page header ── */}
         <div style={{ marginBottom: 24 }}>
-          <p
-            style={{
-              fontSize: "0.68rem",
-              fontWeight: 700,
-              color: "var(--accent)",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              marginBottom: 4,
-            }}
-          >
-            Your dispensary profile
-          </p>
           <h1
             style={{
               fontSize: "1.5rem",
@@ -570,32 +575,29 @@ export default function DispensaryProfilePage() {
               marginBottom: 6,
             }}
           >
-            Here's what I'd do if I were you.
+            {displayName
+              ? `Here's your guide, ${displayName}.`
+              : "Here's your guide."}
           </h1>
-          <p style={{ fontSize: "0.82rem", color: "var(--subtext)" }}>
+          <p style={{ fontSize: "0.82rem", color: "#666666" }}>
             {goalLabel} · {experienceLabel}
           </p>
         </div>
 
         {/* ── 1. Claude summary ── */}
         {profile.generated_summary && (
-          <SectionCard
+          <p
             style={{
-              borderLeft: "4px solid var(--accent-light)",
+              fontSize: "1rem",
+              color: "var(--foreground)",
+              lineHeight: 1.7,
+              fontWeight: 400,
               marginBottom: 24,
+              paddingLeft: 4,
             }}
           >
-            <p
-              style={{
-                fontSize: "1rem",
-                color: "var(--foreground)",
-                lineHeight: 1.7,
-                fontWeight: 400,
-              }}
-            >
-              {profile.generated_summary}
-            </p>
-          </SectionCard>
+            {profile.generated_summary}
+          </p>
         )}
 
         {/* ── 2. Start here — primary + backup product ── */}
@@ -772,7 +774,7 @@ export default function DispensaryProfilePage() {
           </SectionCard>
         )}
 
-        {/* ── 5. Screenshot CTA ── */}
+        {/* ── 5. Save this ── */}
         <div
           style={{
             background: "var(--cream)",
@@ -780,48 +782,22 @@ export default function DispensaryProfilePage() {
             border: "1px solid var(--rule)",
             padding: "16px 24px",
             marginBottom: 16,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
           }}
         >
-          <div>
-            <p
-              style={{
-                fontSize: "0.88rem",
-                fontWeight: 600,
-                color: "var(--foreground)",
-                marginBottom: 2,
-              }}
-            >
-              Save this for your visit
-            </p>
-            <p style={{ fontSize: "0.78rem", color: "#666666" }}>
-              Screenshot this page to take it with you.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setScreenshotPrompt(true);
-              setTimeout(() => setScreenshotPrompt(false), 3000);
-            }}
+          <p
             style={{
-              background: "var(--accent)",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: 8,
-              padding: "8px 16px",
-              fontSize: "0.8rem",
+              fontSize: "0.88rem",
               fontWeight: 600,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
+              color: "var(--foreground)",
+              marginBottom: 4,
             }}
           >
-            {screenshotPrompt ? "✓ Got it" : "Screenshot"}
-          </button>
+            Save this for your visit
+          </p>
+          <p style={{ fontSize: "0.78rem", color: "#666666", lineHeight: 1.5 }}>
+            Bookmark this page or screenshot it to take it with you — your guide
+            will be here whenever you need it.
+          </p>
         </div>
 
         {/* ── 6. Other good options ── */}

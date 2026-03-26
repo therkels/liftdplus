@@ -207,7 +207,7 @@ export default function Profile() {
 
       {/* ── Guide card ── */}
       <a
-        href="/profile/dispensary"
+        href="/profile/guide"
         style={{ textDecoration: "none" }}
       >
         <div

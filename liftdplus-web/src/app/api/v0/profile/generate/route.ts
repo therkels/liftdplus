@@ -1,6 +1,6 @@
 // src/app/api/v0/profile/generate/route.ts
 // Generates or refreshes a user's dispensary recommendation profile.
-// Called when user visits /profile/dispensary or hits a milestone.
+// Called when user visits /profile/guide or hits a milestone.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
