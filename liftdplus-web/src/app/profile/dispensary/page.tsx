@@ -157,7 +157,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       style={{
         fontSize: "0.68rem",
         fontWeight: 700,
-        color: "var(--accent)",
+        color: "var(--accent-light)",
         textTransform: "uppercase",
         letterSpacing: "0.1em",
         marginBottom: 12,
@@ -208,7 +208,7 @@ function ProductCard({
         style={{
           fontSize: "0.6rem",
           fontWeight: 600,
-          color: "var(--subtext)",
+          color: "#666666",
           textTransform: "uppercase",
           letterSpacing: "0.06em",
           marginBottom: 2,
@@ -232,7 +232,7 @@ function ProductCard({
       <p
         style={{
           fontSize: "0.82rem",
-          color: "var(--subtext)",
+          color: "#666666",
           lineHeight: 1.5,
           marginBottom: 12,
         }}
@@ -276,7 +276,7 @@ function ProductCard({
           <span
             style={{
               fontSize: "0.65rem",
-              color: "var(--subtext)",
+              color: "#666666",
               background: "var(--rule)",
               borderRadius: 999,
               padding: "2px 8px",
@@ -302,7 +302,7 @@ function ProductCard({
           <span
             style={{
               fontSize: "0.65rem",
-              color: "var(--subtext)",
+              color: "#666666",
               background: "var(--rule)",
               borderRadius: 999,
               padding: "2px 8px",
@@ -356,7 +356,7 @@ function LockedSection({
       <p
         style={{
           fontSize: "0.78rem",
-          color: "var(--subtext)",
+          color: "#666666",
           lineHeight: 1.5,
         }}
       >
@@ -501,7 +501,7 @@ export default function DispensaryProfilePage() {
           <p
             style={{
               fontSize: "0.85rem",
-              color: "var(--subtext)",
+              color: "#666666",
               lineHeight: 1.6,
             }}
           >
@@ -623,7 +623,7 @@ export default function DispensaryProfilePage() {
                   style={{
                     fontSize: "0.72rem",
                     fontWeight: 600,
-                    color: "var(--subtext)",
+                    color: "#666666",
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
                     marginBottom: 2,
@@ -641,7 +641,7 @@ export default function DispensaryProfilePage() {
                 >
                   {profile.formats[0].display_name}
                 </p>
-                <p style={{ fontSize: "0.8rem", color: "var(--subtext)", lineHeight: 1.5 }}>
+                <p style={{ fontSize: "0.8rem", color: "#666666", lineHeight: 1.5 }}>
                   {profile.formats[0].rationale}
                 </p>
               </div>
@@ -659,7 +659,7 @@ export default function DispensaryProfilePage() {
                   style={{
                     fontSize: "0.72rem",
                     fontWeight: 600,
-                    color: "var(--subtext)",
+                    color: "#666666",
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
                     marginBottom: 2,
@@ -677,7 +677,7 @@ export default function DispensaryProfilePage() {
                 >
                   {profile.cannabinoid_ratio.display_name}
                 </p>
-                <p style={{ fontSize: "0.8rem", color: "var(--subtext)", lineHeight: 1.5 }}>
+                <p style={{ fontSize: "0.8rem", color: "#666666", lineHeight: 1.5 }}>
                   {profile.cannabinoid_ratio.rationale}
                 </p>
               </div>
@@ -695,7 +695,7 @@ export default function DispensaryProfilePage() {
                   style={{
                     fontSize: "0.72rem",
                     fontWeight: 600,
-                    color: "var(--subtext)",
+                    color: "#666666",
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
                     marginBottom: 2,
@@ -713,7 +713,7 @@ export default function DispensaryProfilePage() {
                 >
                   {profile.dose_range.starting_dose_mg}mg {profile.dose_range.cannabinoid}
                 </p>
-                <p style={{ fontSize: "0.8rem", color: "var(--subtext)", lineHeight: 1.5 }}>
+                <p style={{ fontSize: "0.8rem", color: "#666666", lineHeight: 1.5 }}>
                   {profile.dose_range.notes}
                 </p>
               </div>
@@ -729,7 +729,7 @@ export default function DispensaryProfilePage() {
             <p
               style={{
                 fontSize: "0.8rem",
-                color: "var(--subtext)",
+                color: "#666666",
                 lineHeight: 1.5,
                 marginBottom: 16,
               }}
@@ -760,7 +760,7 @@ export default function DispensaryProfilePage() {
                   <p
                     style={{
                       fontSize: "0.75rem",
-                      color: "var(--subtext)",
+                      color: "#666666",
                       lineHeight: 1.4,
                     }}
                   >
@@ -797,7 +797,7 @@ export default function DispensaryProfilePage() {
             >
               Save this for your visit
             </p>
-            <p style={{ fontSize: "0.78rem", color: "var(--subtext)" }}>
+            <p style={{ fontSize: "0.78rem", color: "#666666" }}>
               Screenshot this page to take it with you.
             </p>
           </div>
@@ -848,7 +848,7 @@ export default function DispensaryProfilePage() {
                   <span
                     style={{
                       fontSize: "0.75rem",
-                      color: "#9ca3af",
+                      color: "#767676",
                       flexShrink: 0,
                       marginTop: 2,
                     }}
@@ -866,7 +866,7 @@ export default function DispensaryProfilePage() {
                     >
                       {a.avoid_what}
                     </p>
-                    <p style={{ fontSize: "0.78rem", color: "var(--subtext)", lineHeight: 1.4 }}>
+                    <p style={{ fontSize: "0.78rem", color: "#666666", lineHeight: 1.4 }}>
                       {a.reason}
                     </p>
                   </div>
@@ -883,7 +883,7 @@ export default function DispensaryProfilePage() {
             <p
               style={{
                 fontSize: "0.8rem",
-                color: "var(--subtext)",
+                color: "#666666",
                 lineHeight: 1.5,
                 marginBottom: 16,
               }}
@@ -913,7 +913,7 @@ export default function DispensaryProfilePage() {
                   <p
                     style={{
                       fontSize: "0.75rem",
-                      color: "var(--subtext)",
+                      color: "#666666",
                       lineHeight: 1.4,
                       marginBottom: 3,
                     }}
@@ -921,7 +921,7 @@ export default function DispensaryProfilePage() {
                     {t.rationale}
                   </p>
                   {t.found_in && (
-                    <p style={{ fontSize: "0.7rem", color: "#9ca3af" }}>
+                    <p style={{ fontSize: "0.7rem", color: "#767676" }}>
                       Found in: {t.found_in}
                     </p>
                   )}

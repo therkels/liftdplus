@@ -169,7 +169,7 @@ export function ChecklistCard({
               style={{
                 background: "none",
                 border: "none",
-                color: "#9ca3af",
+                color: "#767676",
                 fontSize: "0.75rem",
                 cursor: "pointer",
                 padding: 0,
@@ -208,7 +208,7 @@ export function ChecklistCard({
             style={{
               background: "none",
               border: "none",
-              color: "#9ca3af",
+              color: "#767676",
               fontSize: "0.75rem",
               cursor: "pointer",
               padding: 0,
@@ -224,7 +224,7 @@ export function ChecklistCard({
           <p
             style={{
               fontSize: "0.78rem",
-              color: "var(--subtext)",
+              color: "#666666",
               marginBottom: 12,
               marginTop: -4,
               lineHeight: 1.5,
@@ -237,7 +237,7 @@ export function ChecklistCard({
             <p
               style={{
                 fontSize: "0.72rem",
-                color: "var(--subtext)",
+                color: "#666666",
                 marginTop: "2px",
                 marginBottom: "8px",
               }}
@@ -249,7 +249,7 @@ export function ChecklistCard({
                 style={{
                   background: "none",
                   border: "none",
-                  color: "var(--subtext)",
+                  color: "#666666",
                   textDecoration: "underline",
                   cursor: "pointer",
                   fontSize: "0.72rem",
@@ -408,7 +408,7 @@ export function ChecklistCard({
             }}
             style={{
               fontSize: "0.75rem",
-              color: "#9ca3af",
+              color: "#767676",
               cursor: "pointer",
               textDecoration: "none",
             }}

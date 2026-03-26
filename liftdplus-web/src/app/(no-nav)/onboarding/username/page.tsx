@@ -262,8 +262,11 @@ export default function OnboardingUsernamePage() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-sm text-white/40 text-center leading-relaxed mb-8">
+          <p className="text-sm text-white/40 text-center leading-relaxed mb-2">
             This is how you&apos;ll appear on LIFTD+. You can change it later.
+          </p>
+          <p className="text-sm text-center leading-relaxed mb-8" style={{ color: "rgba(255,255,255,0.55)" }}>
+            We&apos;ll use your answers to build your guide — a personalized starting point for your first dispensary visit.
           </p>
 
           {/* Input */}

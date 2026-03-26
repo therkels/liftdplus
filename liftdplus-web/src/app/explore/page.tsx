@@ -488,12 +488,12 @@ export default function ExplorePage() {
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold" style={{ color: "var(--foreground)" }}>
               Your Interests
             </h2>
             <button
               onClick={() => router.push("/profile")}
-              className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center space-x-1 text-sm text-gray-700 hover:text-gray-900 transition-colors"
             >
               <HiOutlineCog className="w-4 h-4" />
               <span>Edit</span>
@@ -511,14 +511,14 @@ export default function ExplorePage() {
           <div style={{ marginBottom: 8 }}>
             <p style={{
               fontSize: "0.85rem",
-              color: "var(--subtext)",
+              color: "#666666",
               marginBottom: 4,
             }}>
               Not sure where to start?
             </p>
             <p style={{
               fontSize: "0.78rem",
-              color: "var(--subtext)",
+              color: "#666666",
               opacity: 0.8,
             }}>
               Work through these five reads first — or explore by topic below.
@@ -532,6 +532,51 @@ export default function ExplorePage() {
           onHide={() => setChecklistHidden(true)}
           onCompletionChange={setChecklistComplete}
         />
+
+        {/* Guide module */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 16px",
+            borderRadius: "10px",
+            background: "var(--cream)",
+            border: "1px solid var(--rule)",
+            marginBottom: 24,
+            marginTop: 8,
+          }}
+        >
+          <div>
+            <p style={{
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              color: "var(--foreground)",
+              marginBottom: 2,
+            }}>
+              Your guide is building
+            </p>
+            <p style={{
+              fontSize: "0.75rem",
+              color: "#666666",
+            }}>
+              Gets more specific as you explore.
+            </p>
+          </div>
+          <a
+            href="/profile/dispensary"
+            style={{
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              color: "var(--accent-light)",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+              marginLeft: 16,
+            }}
+          >
+            See what&apos;s ready →
+          </a>
+        </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">

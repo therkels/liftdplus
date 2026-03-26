@@ -192,8 +192,8 @@ export default function Profile() {
             ) : (
               <p className="text-[12px]" style={{ color: "var(--subtext)" }}>Add a username in settings</p>
             )}
-            <p className="text-[12px] text-gray-600">{user.email}</p>
-            <p className="text-[12px] text-gray-600">
+            <p className="text-[12px]" style={{ color: "#666666" }}>{user.email}</p>
+            <p className="text-[12px]" style={{ color: "#666666" }}>
               Member since{" "}
               {user.created_at
                 ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
@@ -205,9 +205,54 @@ export default function Profile() {
 
       <hr className="mb-6" style={{ borderColor: "var(--rule)" }} />
 
+      {/* ── Guide card ── */}
+      <a
+        href="/profile/dispensary"
+        style={{ textDecoration: "none" }}
+      >
+        <div
+          className="mb-6 rounded-xl p-5 border"
+          style={{
+            backgroundColor: "var(--foreground)",
+            borderColor: "var(--accent-light)",
+            cursor: "pointer",
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p style={{
+                fontSize: "0.68rem",
+                fontWeight: 700,
+                color: "var(--accent)",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                marginBottom: 4,
+              }}>
+                Your guide
+              </p>
+              <h3 className="text-base font-semibold text-white mb-1">
+                You&apos;re ready to start
+              </h3>
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                Everything you need for your next dispensary visit, in one place.
+              </p>
+            </div>
+            <span style={{
+              fontSize: "1.2rem",
+              color: "var(--accent)",
+              marginLeft: 16,
+              flexShrink: 0,
+            }}>
+              →
+            </span>
+          </div>
+        </div>
+      </a>
+      {/* ── End guide card ── */}
+
       {selectedInterests.length > 0 ? (
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your Interests</h3>
+          <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Your Interests</h3>
           <div className="flex flex-wrap gap-2">
             {selectedInterests.map((interest) => (
               <span
@@ -224,30 +269,6 @@ export default function Profile() {
           <p className="text-sm text-gray-500">No interests selected yet.</p>
         </div>
       )}
-
-      {/* ── Initiative 5: Dispensary Profile teaser card ── */}
-      <div
-        className="mb-6 rounded-xl p-5 border"
-        style={{
-          backgroundColor: "var(--foreground)",
-          borderColor: "var(--accent-light)",
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-semibold text-white mb-1">
-              Your Dispensary Profile
-            </h3>
-            <p className="text-sm" style={{ color: "var(--onboarding-header)" }}>
-              Coming soon — personalized recommendations for your next dispensary visit.
-            </p>
-          </div>
-          <span className="text-xs font-medium px-2 py-1 rounded-full bg-accent text-foreground ml-4 whitespace-nowrap">
-            Coming soon
-          </span>
-        </div>
-      </div>
-      {/* ── End Initiative 5 placeholder ── */}
 
       <div className="space-y-4 mb-6">
         {primaryMenuItems.map((item) => (
