@@ -185,10 +185,12 @@ export default function Profile() {
               className="text-2xl font-bold text-gray-800"
               style={{ color: "var(--accent-light)" }}
             >
-              {userProfile?.username || user.user_metadata?.name || user.email || "User"}
+              {userProfile?.username || user.user_metadata?.full_name?.split(" ")[0] || user.user_metadata?.name?.split(" ")[0] || "Friend"}
             </h2>
-            {userProfile?.username && (
-              <p className="text-[12px] text-gray-600">@{userProfile.username}</p>
+            {userProfile?.username ? (
+              <p className="text-[12px]" style={{ color: "var(--accent-light)" }}>@{userProfile.username}</p>
+            ) : (
+              <p className="text-[12px]" style={{ color: "var(--subtext)" }}>Add a username in settings</p>
             )}
             <p className="text-[12px] text-gray-600">{user.email}</p>
             <p className="text-[12px] text-gray-600">
