@@ -203,8 +203,11 @@ export default function ExplorePage() {
   const [user, setUser] = useState<{
     id: string;
     email?: string;
-    user_metadata?: { name?: string; avatar_url?: string };
+    user_metadata?: { full_name?: string; name?: string; avatar_url?: string };
   } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ username?: string } | null>(
+    null
+  );
   const [authReady, setAuthReady] = useState(false);
   const [userGoal, setUserGoal] = useState<string>("sleep");
 
@@ -252,6 +255,25 @@ export default function ExplorePage() {
     if (!authReady || user !== null) return;
     router.replace("/");
   }, [authReady, user, router]);
+
+  useEffect(() => {
+    if (!user) {
+      setUserProfile(null);
+      return;
+    }
+
+    const loadProfile = async () => {
+      const supabase = await createClient();
+      const { data: userData, error } = await supabase.rpc("get_user", {
+        user_id: user.id,
+      });
+      if (!error && userData?.length) {
+        setUserProfile({ username: userData[0].username });
+      }
+    };
+
+    loadProfile();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -355,7 +377,10 @@ export default function ExplorePage() {
   }
 
   const displayName =
-    user.user_metadata?.name || user.email?.split("@")[0] || "there";
+    userProfile?.username ||
+    user.user_metadata?.full_name?.split(" ")[0] ||
+    user.user_metadata?.name?.split(" ")[0] ||
+    "Friend";
 
   return (
     <div className="min-h-screen bg-[#f5f6f2]">
