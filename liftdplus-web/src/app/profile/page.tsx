@@ -299,6 +299,7 @@ export default function Profile() {
               throw new Error(err.error || "Failed to update username");
             }
             setUserProfile((prev) => (prev ? { ...prev, username: newUsername } : { username: newUsername }));
+            pageCache.invalidate("profile:");
           } catch (error) {
             console.error("Error updating username:", error);
             throw error;
