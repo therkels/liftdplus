@@ -125,7 +125,8 @@ function buildPrompt(
   profile: UserProfile,
   signals: SignalCounts,
   milestone: MilestoneRow,
-  data: RecommendationData
+  data: RecommendationData,
+  articleTitles: string
 ): string {
   const goalLabel = profile.primary_goal_id.replace(/_/g, ' ');
   const experienceLabel = profile.experience_level_id.replace(/_/g, ' ');
@@ -155,6 +156,10 @@ function buildPrompt(
     .map((p) => `${p.brand_name} ${p.name}`)
     .join(', ');
 
+  const recentReading = articleTitles
+    ? `Recent articles they've read: ${articleTitles}`
+    : 'No articles read yet.';
+
   return `You are writing a friendly, personalized dispensary profile summary for a cannabis beginner using the LIFTD+ app.
 
 User profile:
@@ -174,10 +179,14 @@ Recommendations pulled from database:
 - Avoid: ${avoidList}
 - Example products to look for: ${topProducts}
 
-Write 2–3 sentences that feel like advice from a knowledgeable, calm friend — not a doctor, not a brochure, not a cannabis enthusiast. 
+${recentReading}
+
+Write 2–3 sentences that feel like advice from a knowledgeable, calm friend — not a doctor, not a brochure, not a cannabis enthusiast.
+If their recent reading is relevant to their goal, briefly acknowledge what they already know before telling them what to do next.
 Speak directly to this person's goal (${goalLabel}) and experience level (${experienceLabel}).
 Be specific and actionable. Reference what to look for at a dispensary.
-Plain English only. Warm but not flowery. Never say "cannabis journey."`;
+Plain English only. Warm but not flowery. Never say "cannabis journey."
+Do not use markdown, headers, bullet points, or emoji. Plain sentences only.`;
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
@@ -254,8 +263,8 @@ export async function POST(req: NextRequest) {
     const currentMilestone = determineMilestone(milestoneData, signals);
     const unlockedFeatures = currentMilestone.unlocks ?? [];
 
-    // 5. Query all five recommendation tables in parallel
-    const [terpenes, ratios, formats, doseRanges, questions, avoidances, products] =
+    // 5. Query recommendation tables and recent reads in parallel
+    const [terpenes, ratios, formats, doseRanges, questions, avoidances, products, recentSignals] =
       await Promise.all([
         // Terpenes for goal
         supabaseAdmin
@@ -336,7 +345,26 @@ export async function POST(req: NextRequest) {
           .eq('beginner_friendly', true)
           .order('ships_nationally', { ascending: true }) // dispensary products first
           .limit(6),
+
+        // Recently read articles
+        supabaseAdmin
+          .from('user_content_signals')
+          .select('post_id, signal_type')
+          .eq('user_id', userId)
+          .in('signal_type', ['article_viewed', 'qualified_read'])
+          .order('created_at', { ascending: false })
+          .limit(5),
       ]);
+
+    const recentPostIds =
+      recentSignals.data?.map((s: { post_id?: string | null }) => s.post_id).filter(Boolean) ?? [];
+
+    const { data: recentArticles } =
+      recentPostIds.length > 0
+        ? await supabaseAdmin.from('post').select('id, title').in('id', recentPostIds)
+        : { data: [] as { id: string; title: string }[] | null };
+
+    const articleTitles = (recentArticles ?? []).map((a) => a.title).join(', ');
 
     // 6. Shape the recommendation data
     const recData: RecommendationData = {
@@ -376,7 +404,13 @@ export async function POST(req: NextRequest) {
           messages: [
             {
               role: 'user',
-              content: buildPrompt(userProfile, signals, currentMilestone, recData),
+              content: buildPrompt(
+                userProfile,
+                signals,
+                currentMilestone,
+                recData,
+                articleTitles
+              ),
             },
           ],
         }),
