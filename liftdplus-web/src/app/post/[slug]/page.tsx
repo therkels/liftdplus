@@ -19,7 +19,7 @@ async function getPost(slug: string) {
     .select(`
       id, title, secondary_title, cover_image_url, author,
       contributor_name, post_template_id, markdown, config,
-      created_at, published_at, display_id, slug
+      created_at, published_at, display_id, slug, seo_title, meta_description
     `)
     .eq("slug", slug)
     .maybeSingle();
@@ -66,7 +66,55 @@ async function getPost(slug: string) {
     published_at: row.published_at,
     display_id: row.display_id ?? null,
     slug: row.slug ?? null,
+    seo_title: row.seo_title ?? null,
+    meta_description: row.meta_description ?? null,
     config: cfg ?? null,
+  };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const post = await getPost(params.slug);
+
+  if (!post) {
+    return {
+      title: "Article Not Found | LIFTD+",
+    };
+  }
+
+  const title = post.seo_title || post.title;
+  const description = post.meta_description || post.secondary_title || undefined;
+  const url = `https://liftdplus.com/post/${post.slug}`;
+  const image = post.cover_image_url || "https://liftdplus.com/images/og-hero-updated.jpg";
+
+  return {
+    title: `${title} | LIFTD+`,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "LIFTD+",
+      type: "article",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
