@@ -25,9 +25,17 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
   {
     id: "know_your_formats",
     title: "Explore your options",
-    description: "Edibles, tinctures, flower. Each feels different. See what might fit you.",
+    description: "See which format might work best for you — edibles, tinctures, and more.",
     slug: "edibles-demystified",
     readTime: "4 min",
+    goalSlugMap: {
+      sleep: "how-to-time-your-cannabis-for-better-sleep",
+      stress: "demystifying-microdosing-thc-for-calm-and-stress-relief",
+      pain: "cannabis-for-pain-relief-a-beginners-guide-to-aches-inflammation--everyday-discomfort",
+      focus: "microdosing-for-focus-creativity-and-flow-a-beginner-playbook",
+      intimacy: "low-dose-thc-might-be-the-key-to-better-sex",
+      hormonal: "cannabis-and-your-cycle-products-that-support-hormonal-balance",
+    },
   },
   {
     id: "understand_dosing",
@@ -45,9 +53,9 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
     goalSlugMap: {
       sleep: "thc-vs-cbd-for-sleep-whats-the-difference",
       stress: "thc-vs-cbd-for-stress-which-one-helps-you-chill-without-the-fog",
-      pain: "cannabis-for-pain-relief-a-beginners-guide-to-aches-inflammation--ev",
+      pain: "cannabis-for-pain-relief-a-beginners-guide-to-aches-inflammation--everyday-discomfort",
       focus: "microdosing-for-focus-creativity-and-flow-a-beginner-playbook",
-      intimacy: "cannabis-sex-what-the-research-actually-says",
+      intimacy: "cannabis--sex-what-the-research-actually-says",
       hormonal: "cannabis-and-your-cycle-products-that-support-hormonal-balance",
     },
   },
