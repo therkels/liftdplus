@@ -67,6 +67,21 @@ const PostContentBase: React.FC<PostContentBaseProps> = ({ post, onShare }) => {
                     {children}
                   </p>
                 ),
+                a: ({ href, children }) => (
+                  <a
+                    href={href}
+                    style={{
+                      color: "var(--accent-light)",
+                      textDecoration: "underline",
+                      textUnderlineOffset: "2px",
+                    }}
+                    {...(href?.startsWith("http")
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                  >
+                    {children}
+                  </a>
+                ),
                 img: ({ src, alt, ...props }: any) => (
                   <div className="my-6">
                     <Image
