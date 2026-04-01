@@ -6,16 +6,16 @@ import LandingPage from "./LandingPage";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Understand Cannabis Before You Decide | LIFTD+",
+  title: "Finally Feel Informed About Cannabis | LIFTD+",
   description:
-    "Curious about cannabis for sleep, stress, or pain? LIFTD+ helps you understand what cannabis does and whether it might work for you before you walk into a dispensary. Free to join, nothing to buy.",
+    "Not sure where to start with cannabis for sleep, stress, or winding down? LIFTD+ gives adults a personalized starting point — no dispensary pressure, no jargon. Free to join.",
   keywords:
-    "cannabis education, CBD for sleep, THC for pain, cannabis for stress, beginner cannabis guide, cannabis for adults, microdosing, cannabis anxiety",
+    "cannabis for sleep, cannabis for stress, beginner cannabis guide, cannabis education adults, CBD for sleep, THC for beginners, microdosing, cannabis anxiety, cannabis for women",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Understand Cannabis Before You Decide | LIFTD+",
+    title: "Finally Feel Informed About Cannabis | LIFTD+",
     description:
-      "Learn what cannabis really does for sleep, stress, and pain — in plain English. Written for beginners. No pressure. Free to start.",
+      "Answer 4 questions. Get a personalized cannabis starting point built around your goals — sleep, stress, or winding down. Written for beginners. Free.",
     url: "https://liftdplus.com",
     siteName: "LIFTD+",
     type: "website",
@@ -30,9 +30,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Understand Cannabis Before You Decide | LIFTD+",
+    title: "Finally Feel Informed About Cannabis | LIFTD+",
     description:
-      "Learn what cannabis really does for sleep, stress, and pain — in plain English. Written for beginners. No pressure. Free to start.",
+      "Answer 4 questions. Get a personalized cannabis starting point built around your goals. Free, no dispensary required.",
     images: ["https://liftdplus.com/images/og-hero-updated.jpg"],
   },
   robots: { index: true, follow: true },

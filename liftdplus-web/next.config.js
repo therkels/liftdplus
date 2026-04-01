@@ -9,6 +9,12 @@ const nextConfig = {
       "lh5.googleusercontent.com",
       "lh6.googleusercontent.com",
     ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "mcusercontent.com",
+      },
+    ],
   },
   // ✅ Allow builds to succeed even if TS/ESLint complain (we’ll tighten later)
   typescript: {

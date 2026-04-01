@@ -121,23 +121,20 @@ export default function LandingPage() {
         <div className={styles.heroLeft}>
           <div className={styles.heroEyebrow}>
             <span className={styles.heroDot} />
-            Cannabis education for adults
+            For adults exploring cannabis for the first time — or the first time in years
           </div>
           <h1 className={styles.heroTitle}>
-            Curious about cannabis for sleep, stress, or pain?
+            You've heard it might help with sleep or stress. Let's find out if it's right for you.
           </h1>
           <p className={styles.heroIntro}>
-            LIFTD+ is a beginner-friendly learning platform that explains cannabis in plain language.
-          </p>
-          <p className={styles.heroIntro}>
-            Understand effects, dosage, and product types — before you walk into a dispensary.
+            LIFTD+ is a free learning platform for cautious beginners. Tell us what you're dealing with and we'll build you a personalized starting point.
           </p>
           <Link
             href="/welcome"
             className={styles.btnPrimary}
             onClick={() => trackEvent("cta_click", { label: "hero_start_learning" })}
           >
-            Start Learning — It&apos;s Free
+            Find Out Where to Start — It&apos;s Free
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path
                 d="M2 7h10M8 3l4 4-4 4"
@@ -148,7 +145,7 @@ export default function LandingPage() {
               />
             </svg>
           </Link>
-          <p className={styles.heroCtaSubtext}>Start with 4 quick questions.</p>
+          <p className={styles.heroCtaSubtext}>Start with 4 questions. We'll build your personalized guide from there.</p>
           <div className={styles.heroBelowCta}>
             <Link
               href="/login?ref=returning"
@@ -236,38 +233,37 @@ export default function LandingPage() {
       </section>
 
       <div className={styles.trustStrip}>
-        <p className={styles.trustTagline}>Education-first cannabis guidance — without the dispensary pressure.</p>
-        <p className={styles.trustQuote}>&quot;Finally a cannabis guide that actually made sense to me.&quot; — Early LIFTD+ reader</p>
+        <p className={styles.trustTagline}>Cannabis education built around your goals, not around what&apos;s on a shelf.</p>
+        <p className={styles.trustQuote}>&quot;I&apos;ve been putting this off for two years. I finally feel like I know enough to actually try it.&quot; — Lisa, 42, mom of three</p>
       </div>
 
-      {/* Learn before you buy */}
+      {/* This is for you if */}
       <section className={`${styles.section} ${styles.trustSection}`}>
         <div className={styles.sectionInner}>
           <div className={styles.trustGrid}>
             <div className={styles.reveal}>
               <div className={styles.eyebrow}>
                 <span className={styles.eyebrowLine} />
-                Learn before you buy
+                This is for you if
               </div>
               <h2 className={styles.sectionTitle}>
-                Dispensaries help you choose. We help you understand.
+                You&apos;re not against trying it. You&apos;re against feeling clueless when you do.
               </h2>
               <p className={styles.trustBody}>
-                Dispensaries are designed to help you pick a product. LIFTD+
-                helps you understand what you&apos;re choosing — and why.
+                The information online is either too basic or overwhelming. LIFTD+ is built for the middle — adults who want to understand what they&apos;re getting into, at their own pace, without anyone trying to sell them something.
               </p>
               <div className={styles.dontList}>
                 <div className={styles.dontItem}>
                   <div className={styles.xIcon}>—</div>
-                  Expect you to decide quickly in-store
+                  You&apos;ve been thinking about trying it for months (or years)
                 </div>
                 <div className={styles.dontItem}>
                   <div className={styles.xIcon}>—</div>
-                  Focus on products more than education
+                  You want real answers, not a sales pitch
                 </div>
                 <div className={styles.dontItem}>
                   <div className={styles.xIcon}>—</div>
-                  Leave the deeper questions unanswered
+                  You&apos;d rather learn first and decide later
                 </div>
               </div>
             </div>
@@ -281,33 +277,28 @@ export default function LandingPage() {
                 Real answers.
               </h3>
               <p>
-                Cannabis education can feel intimidating. We explain things the
-                way a friend would — if they&apos;d done the research and
-                genuinely wanted to help.
+                We explain things the way a knowledgeable friend would. Someone who did the research and genuinely wants to help, not sell you something.
               </p>
               <ul className={styles.plainList}>
                 <li>
                   <span className={styles.plainArr}>→</span>
-                  What cannabis effects actually feel like, and what&apos;s
-                  normal
+                  What cannabis effects actually feel like, and what&apos;s normal for beginners
                 </li>
                 <li>
                   <span className={styles.plainArr}>→</span>
-                  How to dose gently if you&apos;re starting, or restarting
-                  after years
+                  How to start gently, or restart after a long time away
                 </li>
                 <li>
                   <span className={styles.plainArr}>→</span>
-                  How cannabis affects sleep differently than stress or pain
+                  What works differently for sleep, stress, and that 10pm mental unwind
                 </li>
                 <li>
                   <span className={styles.plainArr}>→</span>
-                  Common mistakes beginners make — and how to avoid them
+                  A personalized dispensary guide, built for you once you&apos;re ready
                 </li>
               </ul>
               <p className={styles.plainCloser}>
-                &quot;We don&apos;t assume you already know this stuff.
-                That&apos;s the whole point.&quot;
+                &quot;We don&apos;t assume you already know this stuff. That&apos;s the whole point.&quot;
               </p>
             </div>
           </div>
@@ -339,10 +330,9 @@ export default function LandingPage() {
           <div className={styles.howGrid}>
             <div className={`${styles.howStep} ${styles.reveal}`}>
               <div className={styles.stepNum}>1</div>
-              <h3>Choose what you want to learn about</h3>
+              <h3>Tell us what you&apos;re dealing with</h3>
               <p>
-                Start with up to three topics like sleep, stress, or pain.
-                We&apos;ll guide you from there.
+                Sleep? Stress? That feeling of never fully switching off? Pick up to three topics and we&apos;ll build your path around what matters most.
               </p>
             </div>
             <div
@@ -350,10 +340,9 @@ export default function LandingPage() {
               style={{ transitionDelay: "0.07s" }}
             >
               <div className={styles.stepNum}>2</div>
-              <h3>Learn at your own pace</h3>
+              <h3>Learn at your own pace, no pressure</h3>
               <p>
-                Explore formats, effects, dosing, and safety — written
-                specifically for beginners.
+                Read guides on effects, dosing, and product types written specifically for beginners. No account required to start.
               </p>
             </div>
             <div
@@ -361,11 +350,9 @@ export default function LandingPage() {
               style={{ transitionDelay: "0.14s" }}
             >
               <div className={styles.stepNum}>3</div>
-              <h3>Get answers to your real questions</h3>
+              <h3>Get answers to the questions you were afraid to ask</h3>
               <p>
-                &quot;Will I feel groggy?&quot; &quot;How much should I
-                take?&quot; &quot;What if I haven&apos;t done this in 20
-                years?&quot;
+                &quot;Will I feel groggy?&quot; &quot;How much should I take?&quot; &quot;What if I haven&apos;t done this in 20 years?&quot;
               </p>
             </div>
             <div
@@ -373,17 +360,16 @@ export default function LandingPage() {
               style={{ transitionDelay: "0.21s" }}
             >
               <div className={styles.stepNum}>4</div>
-              <h3>Feel prepared when you walk in</h3>
+              <h3>Get your personalized dispensary guide</h3>
               <p>
-                You&apos;ll know what you&apos;re looking for — and what
-                questions to ask.
+                After you&apos;ve learned enough, we build you a custom guide for your first visit. What to ask for, what to avoid, and what to expect. Only when you&apos;re ready.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Merged: What to expect + Start with your goal */}
+      {/* What to expect + goals */}
       <section className={`${styles.section} ${styles.expectGoalSection}`}>
         <div className={styles.sectionInner}>
           <div className={styles.expectGoalLayout}>
@@ -398,21 +384,23 @@ export default function LandingPage() {
               <ul className={styles.expectBullets}>
                 <li className={styles.expectBullet}>
                   <span className={styles.expectCheck} aria-hidden>✓</span>
-                  Written for people who&apos;ve never tried cannabis — or
-                  haven&apos;t in years.
+                  Written for people who&apos;ve never tried cannabis, or haven&apos;t in years
                 </li>
                 <li className={styles.expectBullet}>
                   <span className={styles.expectCheck} aria-hidden>✓</span>
-                  You&apos;ll learn before anyone tries to sell you anything.
+                  You&apos;ll learn before anyone tries to sell you anything
                 </li>
                 <li className={styles.expectBullet}>
                   <span className={styles.expectCheck} aria-hidden>✓</span>
-                  Organized around your goals — not around what&apos;s on a
-                  shelf.
+                  Organized around your goals, not around what&apos;s on a shelf
+                </li>
+                <li className={styles.expectBullet}>
+                  <span className={styles.expectCheck} aria-hidden>✓</span>
+                  Ends with a personalized guide, built for your first dispensary visit
                 </li>
               </ul>
               <p className={styles.expectCloser}>
-                We organize around your goals, not around products.
+                Your starting point. Your pace. Your goals.
               </p>
             </div>
             <div>
@@ -425,8 +413,7 @@ export default function LandingPage() {
                   <div className={styles.goalText}>
                     <h3>Better Sleep</h3>
                     <p>
-                      You want better rest, but worry about feeling off the next
-                      day.
+                      You want to actually rest, not lie there thinking about everything.
                     </p>
                   </div>
                 </div>
@@ -436,9 +423,9 @@ export default function LandingPage() {
                 >
                   <div className={styles.goalNum}>02</div>
                   <div className={styles.goalText}>
-                    <h3>Stress Relief</h3>
+                    <h3>Winding Down</h3>
                     <p>
-                      Manage stress and find calm — without losing your edge.
+                      The mental noise doesn&apos;t stop when the day does. You want something that actually helps you decompress.
                     </p>
                   </div>
                 </div>
@@ -448,10 +435,9 @@ export default function LandingPage() {
                 >
                   <div className={styles.goalNum}>03</div>
                   <div className={styles.goalText}>
-                    <h3>Pain Relief</h3>
+                    <h3>Pain &amp; Recovery</h3>
                     <p>
-                      Curious about pain management but hesitant about side
-                      effects.
+                      Curious about what might actually help, but cautious about how it&apos;ll feel.
                     </p>
                   </div>
                 </div>
@@ -474,9 +460,7 @@ export default function LandingPage() {
                 See what you&apos;ll learn
               </div>
               <h2 className={styles.sectionTitle}>
-                Beginner-friendly guides,
-                <br />
-                written like a knowledgeable friend
+                The guide your knowledgeable friend would send you.
               </h2>
             </div>
             <p className={styles.articlesNote}>
@@ -501,10 +485,7 @@ export default function LandingPage() {
               <div className={styles.articleCardBody}>
                 <div className={styles.articleTag}>Sleep</div>
                 <h3>THC vs. CBD for Sleep: What&apos;s the Difference?</h3>
-                <p>
-                  A clear breakdown of how THC and CBD affect sleep differently —
-                  when each might help, and how to choose what fits your needs.
-                </p>
+                <p>Not all cannabis helps you sleep the same way. Here&apos;s the actual difference between THC and CBD, and how to figure out which one fits you.</p>
                 <span className={styles.articleCta}>Read this guide free →</span>
               </div>
             </Link>
@@ -526,11 +507,7 @@ export default function LandingPage() {
               <div className={styles.articleCardBody}>
                 <div className={styles.articleTag}>Stress</div>
                 <h3>Demystifying Microdosing THC for Calm and Stress Relief</h3>
-                <p>
-                  An approachable intro to microdosing — what it is, why people
-                  use it, and how it may support calm without feeling out of
-                  control.
-                </p>
+                <p>What microdosing actually means, why people do it, and how to tell if it might be your gentlest starting point.</p>
                 <span className={styles.articleCta}>Read this guide free →</span>
               </div>
             </Link>
@@ -554,10 +531,7 @@ export default function LandingPage() {
                 <h3>
                   Why Cannabis Can Sometimes Feel Anxious — and How to Handle It
                 </h3>
-                <p>
-                  An honest look at why anxiety can happen, common beginner
-                  missteps, and practical ways to reduce discomfort.
-                </p>
+                <p>It happens to beginners more than you&apos;d think. Here&apos;s why, and the simple adjustments that prevent it.</p>
                 <span className={styles.articleCta}>Read this guide free →</span>
               </div>
             </Link>
@@ -566,41 +540,6 @@ export default function LandingPage() {
             <Link href="/welcome" className={styles.btnPrimary}>
               See more beginner guides →
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Video */}
-      <section className={styles.videoSection}>
-        <div className={styles.videoInner}>
-          <div
-            className={`${styles.videoEyebrow} ${styles.reveal}`}
-          >
-            <span className={styles.eyebrowLine} />
-            See how it works
-          </div>
-          <h2 className={`${styles.sectionTitle} ${styles.reveal}`}>
-            A short walkthrough of LIFTD+ in action
-          </h2>
-          <div className={`${styles.videoFrame} ${styles.reveal}`}>
-            <div className={styles.playWrap}>
-              <div className={styles.playBtn}>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                >
-                  <path
-                    d="M4 2.5l8 4.5-8 4.5V2.5z"
-                    fill="#2e3a45"
-                  />
-                </svg>
-              </div>
-            </div>
-            <span className={styles.videoLbl}>
-              Platform walkthrough — 60–90 seconds
-            </span>
           </div>
         </div>
       </section>
@@ -614,15 +553,13 @@ export default function LandingPage() {
             style={{ justifyContent: "center" }}
           >
             <span className={styles.eyebrowLine} />
-            Ready when you are
+            Still not sure?
           </div>
           <h2 className={styles.sectionTitle}>
-            Start Learning — It&apos;s Free
+            That&apos;s exactly why we built this.
           </h2>
           <p>
-            Start with 4 quick questions.
-            <br />
-            We&apos;ll guide you from there.
+            Most people who find LIFTD+ have been thinking about trying it for months. Four questions won&apos;t commit you to anything. They&apos;ll just show you where to start.
           </p>
           <Link
             href="/welcome"
@@ -630,8 +567,11 @@ export default function LandingPage() {
             style={{ margin: "0 auto" }}
             onClick={() => trackEvent("cta_click", { label: "mid_page_cta" })}
           >
-            Start Learning — It&apos;s Free →
+            Show Me Where to Start →
           </Link>
+          <p style={{ fontSize: "0.8rem", opacity: 0.6, marginTop: "0.75rem" }}>
+            Free to start. Nothing to buy. You don&apos;t need to visit a dispensary to get value from this.
+          </p>
         </div>
       </section>
 
@@ -646,11 +586,10 @@ export default function LandingPage() {
             Stay in the loop
           </div>
           <h2 className={styles.sectionTitle}>
-            Get clear guidance in your inbox
+            One email a month. The kind you actually save.
           </h2>
           <p className={styles.nlBody}>
-            Monthly beginner-friendly guides on cannabis for sleep, stress, and
-            pain — written by people who take the time to understand it.
+            Beginner-friendly guides on sleep, stress, and winding down, sent to adults exploring cannabis for the first time. Or the first time in a long time.
           </p>
           <form
             className={styles.emailRow}
@@ -705,7 +644,7 @@ export default function LandingPage() {
               {newsletterError}
             </p>
           )}
-          <p className={styles.fine}>No spam. Unsubscribe anytime. Built for adults exploring cannabis for the first time.</p>
+          <p className={styles.fine}>No spam. Unsubscribe anytime. Built for adults who prefer to decide for themselves.</p>
         </div>
       </section>
 
