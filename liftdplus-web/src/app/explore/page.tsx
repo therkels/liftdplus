@@ -19,6 +19,8 @@ import PostContent from "@/components/site_core/PostContent";
 import { Post } from "@/utils/postTransformers";
 import { usePostModal } from "@/utils/postHelpers";
 import { pageCache } from "@/utils/cache/PageCache";
+import { useReadArticles } from "@/hooks/useReadArticles";
+import { ArticleReadBadge } from "@/components/ArticleReadBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -217,6 +219,7 @@ export default function ExplorePage() {
 
   const { selectedPost, isModalOpen, openPostModal, closePostModal } =
     usePostModal();
+  const { readSlugs } = useReadArticles();
 
   useEffect(() => {
     let sub: { unsubscribe: () => void } | null = null;
@@ -631,13 +634,22 @@ export default function ExplorePage() {
                   enrichedPost.id?.toString?.() ||
                   key;
 
+                const showRead =
+                  typeof slug === "string" && readSlugs.has(slug);
+
                 return (
-                  <Card
-                    key={postKey}
-                    post={enrichedPost}
-                    compact
-                    onClick={() => openPostModal(enrichedPost)}
-                  />
+                  <div key={postKey} className="relative shrink-0">
+                    {showRead && (
+                      <div className="pointer-events-none absolute right-3 top-3 z-10 md:right-4 md:top-4">
+                        <ArticleReadBadge />
+                      </div>
+                    )}
+                    <Card
+                      post={enrichedPost}
+                      compact
+                      onClick={() => openPostModal(enrichedPost)}
+                    />
+                  </div>
                 );
               })}
             </CardScroller>

@@ -4,6 +4,8 @@ import React from "react";
 import Image from "next/image";
 import { PostData } from "./PostContent";
 import { usePostInteractions } from "@/hooks/usePostInteractions";
+import { useReadArticles } from "@/hooks/useReadArticles";
+import { ArticleReadBadge } from "@/components/ArticleReadBadge";
 
 interface PostMetadataProps {
   post: PostData;
@@ -19,6 +21,13 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post, onShare }) => {
     handleLike,
     handleArchive,
   } = usePostInteractions(post);
+  const { readSlugs } = useReadArticles();
+
+  const slug =
+    typeof post.slug === "string" && post.slug.length > 0
+      ? post.slug
+      : null;
+  const showReadBadge = slug !== null && readSlugs.has(slug);
 
   if (!post) {
     return (
@@ -53,9 +62,16 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post, onShare }) => {
       <div className="p-6 md:p-8 border-b border-gray-200">
         {/* Post Title */}
         <div className="mb-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-            {post.title}
-          </h1>
+          <div className="mb-2 flex flex-wrap items-start gap-2">
+            <h1 className="min-w-0 flex-1 text-2xl md:text-3xl font-bold text-gray-800">
+              {post.title}
+            </h1>
+            {showReadBadge && (
+              <div className="shrink-0 pt-0.5">
+                <ArticleReadBadge />
+              </div>
+            )}
+          </div>
           <p className="text-gray-600">{post.secondary_title}</p>
         </div>
 
