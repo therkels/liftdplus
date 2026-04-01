@@ -15,24 +15,6 @@ import type { Post } from "@/utils/postTransformers";
 import { pageCache } from "@/utils/cache/PageCache";
 import { usePostModal } from "@/utils/postHelpers";
 
-/* ------------------------ prod-first fetch helper ------------------------ */
-async function fetchJSONFromProdFirst(url: string) {
-  const urls = [
-    `https://app.liftdplus.com${url}`, // prod
-    url, // same-origin (works on preview or prod too)
-  ];
-  for (const u of urls) {
-    try {
-      const res = await fetch(u, { cache: "no-store" });
-      if (!res.ok) continue;
-      return await res.json();
-    } catch {
-      // try the next one
-    }
-  }
-  return null;
-}
-
 /* ---------------------------------- Types ---------------------------------- */
 type CurrentFilters = {
   sortBy: string;
@@ -116,8 +98,9 @@ export default function Search() {
         setError(null);
 
         const queryParams = buildPostsQueryParams(currentFilters);
-        const data = await fetchJSONFromProdFirst(`/api/v0/posts?${queryParams}`);
-        if (!data) throw new Error("Failed to fetch posts");
+        const res = await fetch(`/api/v0/posts?${queryParams}`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch posts");
+        const data = await res.json();
 
         // ---- SMART NORMALIZATION ----
         // Accept any of these shapes:
