@@ -222,6 +222,24 @@ export default function ExplorePage() {
   const { readSlugs } = useReadArticles();
 
   useEffect(() => {
+    if (!isModalOpen || !selectedPost?.slug) return;
+
+    fetch("/api/v0/events/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        eventName: "article_viewed",
+        properties: {
+          slug: selectedPost.slug,
+          post_id: selectedPost.post_id,
+          source: "explore_modal",
+        },
+      }),
+    }).catch(() => {});
+  }, [selectedPost?.slug, isModalOpen]);
+
+  useEffect(() => {
     let sub: { unsubscribe: () => void } | null = null;
 
     const initAuth = async () => {
