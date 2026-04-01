@@ -638,17 +638,21 @@ export default function ExplorePage() {
                   typeof slug === "string" && readSlugs.has(slug);
 
                 return (
-                  <div key={postKey} className="relative shrink-0">
-                    {showRead && (
-                      <div className="pointer-events-none absolute right-3 top-3 z-10 md:right-4 md:top-4">
-                        <ArticleReadBadge />
-                      </div>
-                    )}
+                  <div
+                    key={postKey}
+                    className="relative shrink-0"
+                    style={{ isolation: "isolate" }}
+                  >
                     <Card
                       post={enrichedPost}
                       compact
                       onClick={() => openPostModal(enrichedPost)}
                     />
+                    {showRead && (
+                      <div className="pointer-events-none absolute right-2 top-2 z-50">
+                        <ArticleReadBadge />
+                      </div>
+                    )}
                   </div>
                 );
               })}
