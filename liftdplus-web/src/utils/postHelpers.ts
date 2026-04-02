@@ -82,9 +82,15 @@ export function usePostModal() {
       // 2) Fetch full data and merge it into the SAME object
       const full = await fetchFullPost(cardPost);
 
-      const merged = Object.assign(cardPost, full) as FullPost;
+      const merged = {
+        ...cardPost,
+        ...full,
+        // preserve live interaction state from the card object
+        user_liked: (cardPost as any).user_liked,
+        user_archived: (cardPost as any).user_archived,
+        like_count: (cardPost as any).like_count,
+      } as FullPost;
 
-      // Trigger a re-render with the enriched data
       setSelectedPost({ ...merged });
     } catch (err) {
       console.error("[usePostModal] failed to load full post", err);
