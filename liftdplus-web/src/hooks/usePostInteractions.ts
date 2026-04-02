@@ -1,7 +1,7 @@
 // src/hooks/usePostInteractions.ts
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { PostData } from "@/components/site_core/PostContent";
 import { Post } from "@/utils/postTransformers";
 import {
@@ -41,6 +41,13 @@ export function usePostInteractions(post: PostLike) {
   const [isArchived, setIsArchived] = useState(post?.user_archived || false);
   const [likeCount, setLikeCount] = useState(post?.like_count || 0);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLiked(post?.user_liked || false);
+    setIsArchived(post?.user_archived || false);
+    setLikeCount(post?.like_count || 0);
+  }, [post?.user_liked, post?.user_archived, post?.like_count]);
+
   const { showSuccess, showError } = useToast();
 
   /* --------------------------- LIKE / UNLIKE --------------------------- */
