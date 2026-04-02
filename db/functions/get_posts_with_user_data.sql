@@ -28,6 +28,7 @@ AS $$
       post.cover_image_url,
       post.title,
       post.secondary_title,
+      post.slug,
       post.published_at,
       users.username as author_name,
       users.profile_icon_url as author_photo,
@@ -48,7 +49,7 @@ AS $$
       LEFT JOIN private.archives as archives on archives.post_id = post.id
     WHERE post.post_status = 'published'
     GROUP BY
-      post.id, post.cover_image_url, post.title, post.secondary_title, users.username, users.profile_icon_url
+      post.id, post.cover_image_url, post.title, post.secondary_title, post.slug, users.username, users.profile_icon_url
   ), filtered_posts AS (
     SELECT *
     FROM post_info pi

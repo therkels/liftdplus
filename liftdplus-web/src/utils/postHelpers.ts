@@ -47,8 +47,7 @@ export async function fetchFullPost(input: MinimalPost): Promise<FullPost> {
   }
 
   const urls = [
-    `/api/v0/post/${encodeURIComponent(String(key))}`, // same env
-    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(String(key))}`, // hard fallback to prod
+    `/api/v0/post/${encodeURIComponent(String(key))}`,
   ];
 
   for (const url of urls) {
