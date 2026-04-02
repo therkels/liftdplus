@@ -46,7 +46,7 @@ export function usePostInteractions(post: PostLike) {
     setIsLiked(post?.user_liked || false);
     setIsArchived(post?.user_archived || false);
     setLikeCount(post?.like_count || 0);
-  }, [post?.user_liked, post?.user_archived, post?.like_count]);
+  });
 
   const { showSuccess, showError } = useToast();
 
