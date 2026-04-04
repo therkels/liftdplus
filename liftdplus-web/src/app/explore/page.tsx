@@ -164,10 +164,7 @@ function InstallPrompt() {
 
 /* ------------------ PROD-first fetch helper ------------------ */
 async function fetchJSONFromProdFirst(paths: string[]) {
-  const urls = [
-    `https://app.liftdplus.com${paths[0]}`,
-    paths[0],
-  ];
+  const urls = [paths[0]];
   for (const url of urls) {
     try {
       const res = await fetch(url, { cache: "no-store" });
@@ -178,10 +175,7 @@ async function fetchJSONFromProdFirst(paths: string[]) {
     }
   }
   if (paths[1]) {
-    const fallbacks = [
-      `https://app.liftdplus.com${paths[1]}`,
-      paths[1],
-    ];
+    const fallbacks = [paths[1]];
     for (const url of fallbacks) {
       try {
         const res = await fetch(url, { cache: "no-store" });

@@ -65,11 +65,7 @@ async function fetchFullPost(keys: {
 
   if (!key) return null;
 
-  const urls = [
-    // PROD first (has complete data), then Preview as a fallback
-    `https://app.liftdplus.com/api/v0/post/${encodeURIComponent(key)}`,
-    `/api/v0/post/${encodeURIComponent(key)}`,
-  ];
+  const urls = [`/api/v0/post/${encodeURIComponent(key)}`];
 
   for (const url of urls) {
     try {
@@ -195,9 +191,7 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
     if (!fullPost) return;
 
     const baseUrl =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "https://app.liftdplus.com";
+      typeof window !== "undefined" ? window.location.origin : "";
 
     const postKey =
       fullPost.slug ??

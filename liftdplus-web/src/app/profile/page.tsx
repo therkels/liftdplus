@@ -22,10 +22,7 @@ export const dynamic = "force-dynamic";
 
 /* ---------- small helper so preview builds can read prod APIs ---------- */
 async function fetchJSONFromProdFirst(path: string) {
-  const urls = [
-    `https://app.liftdplus.com${path}`, // PROD first to bypass preview domain cookies
-    path,                               // then same-origin
-  ];
+  const urls = [path];
   for (const url of urls) {
     try {
       const res = await fetch(url, { cache: "no-store" });
