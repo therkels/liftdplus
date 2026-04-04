@@ -324,14 +324,27 @@ export default function ExplorePage() {
     if (!user) return;
 
     const loadPreferencesAndGoal = async () => {
-      const supabase = await createClient();
-      const { data: prefs } = await supabase
-        .from("private.preferences")
-        .select("topics")
-        .eq("user_id", user.id)
-        .single();
-      const goal = prefs?.topics?.[0]?.toLowerCase() ?? "sleep";
-      setUserGoal(goal);
+      try {
+        const res = await fetch("/api/v0/preferences", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const prefs = data?.preferences ?? [];
+        const tagId: string = prefs[0]?.tag_id ?? "";
+        // Map tag_id prefixes to ChecklistCard goal keys
+        const goalMap: Record<string, string> = {
+          sleep: "sleep",
+          stress: "stress",
+          pain: "pain",
+          focus: "focus",
+          intimacy: "intimacy",
+          hormonal: "hormonal",
+        };
+        const prefix = tagId.split("_")[0].toLowerCase();
+        const goal = goalMap[prefix] ?? "sleep";
+        setUserGoal(goal);
+      } catch {
+        // fail silently
+      }
     };
     loadPreferencesAndGoal();
   }, [user]);
