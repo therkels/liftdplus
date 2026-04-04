@@ -245,12 +245,24 @@ export default function ExplorePage() {
 
   useEffect(() => {
     const handleModalClosed = () => {
-      setFeedData((prev) =>
-        prev.map((topic) => ({
-          ...topic,
-          posts: topic.posts.map((post: any) => ({ ...post })),
-        }))
-      );
+      // Invalidate cache so next load gets fresh data
+      pageCache.invalidate("feed:");
+      // Re-fetch feed fresh from API to get updated like/save state
+      if (user) {
+        fetch("/api/v0/feed", { cache: "no-store" })
+          .then((r) => r.json())
+          .then((data) => {
+            const topics: Topic[] = data.topics || data || [];
+            pageCache.set(`feed:${user.id}`, topics);
+            setFeedData(
+              topics.map((topic) => ({
+                ...topic,
+                posts: topic.posts.map((post: any) => ({ ...post })),
+              }))
+            );
+          })
+          .catch(() => {});
+      }
     };
     window.addEventListener("post-modal-closed", handleModalClosed);
     return () =>
