@@ -100,6 +100,7 @@ export function usePostModal() {
   const closePostModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedPost(null);
+    window.dispatchEvent(new CustomEvent("post-modal-closed"));
   }, []);
 
   return { selectedPost, isModalOpen, openPostModal, closePostModal };

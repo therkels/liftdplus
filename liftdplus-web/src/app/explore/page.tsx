@@ -224,20 +224,33 @@ export default function ExplorePage() {
   useEffect(() => {
     if (!isModalOpen || !selectedPost?.slug) return;
 
-    fetch("/api/v0/events/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({
-        eventName: "article_viewed",
-        properties: {
-          slug: selectedPost.slug,
-          post_id: selectedPost.post_id,
-          source: "explore_modal",
-        },
-      }),
-    }).catch(() => {});
+    const timer = setTimeout(() => {
+      fetch("/api/v0/events/track", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventName: "article_viewed",
+          properties: {
+            slug: selectedPost.slug,
+            post_id: selectedPost.post_id,
+            source: "explore_modal",
+          },
+        }),
+      }).catch(() => {});
+    }, 30000);
+
+    return () => clearTimeout(timer);
   }, [selectedPost?.slug, isModalOpen]);
+
+  useEffect(() => {
+    const handleModalClosed = () => {
+      setFeedData((prev) => [...prev]);
+    };
+    window.addEventListener("post-modal-closed", handleModalClosed);
+    return () =>
+      window.removeEventListener("post-modal-closed", handleModalClosed);
+  }, []);
 
   useEffect(() => {
     let sub: { unsubscribe: () => void } | null = null;
