@@ -245,7 +245,12 @@ export default function ExplorePage() {
 
   useEffect(() => {
     const handleModalClosed = () => {
-      setFeedData((prev) => [...prev]);
+      setFeedData((prev) =>
+        prev.map((topic) => ({
+          ...topic,
+          posts: topic.posts.map((post: any) => ({ ...post })),
+        }))
+      );
     };
     window.addEventListener("post-modal-closed", handleModalClosed);
     return () =>
