@@ -570,7 +570,7 @@ export default function DispensaryProfilePage() {
             marginLeft: -20,
             marginRight: -20,
             marginTop: -28,
-            padding: "24px 20px 20px",
+            padding: "32px 24px 28px",
             marginBottom: 24,
             background: "#1a3a3a",
             borderBottom: "3px solid #4a8b8c",
@@ -583,43 +583,71 @@ export default function DispensaryProfilePage() {
               color: "#c8f135",
               textTransform: "uppercase",
               letterSpacing: "0.1em",
-              marginBottom: 10,
+              marginBottom: 8,
             }}
           >
             Your dispensary guide
           </p>
           <h1
             style={{
-              fontSize: "1.5rem",
-              fontWeight: 700,
+              fontSize: 24,
+              fontWeight: 500,
               color: "#ffffff",
               lineHeight: 1.2,
-              marginBottom: 6,
+              marginBottom: 0,
             }}
           >
             {displayName
               ? `Here's your guide, ${displayName}.`
               : "Here's your guide."}
           </h1>
-          <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.65)" }}>
+          <p
+            style={{
+              fontSize: "0.82rem",
+              marginTop: 6,
+              color: "rgba(255,255,255,0.6)",
+            }}
+          >
             {goalLabel} · {experienceLabel}
           </p>
         </div>
 
         {/* ── 1. Claude summary ── */}
         {profile.generated_summary && (
-          <p
+          <div
             style={{
-              fontSize: "1rem",
-              color: "var(--foreground)",
-              lineHeight: 1.7,
-              fontWeight: 400,
+              background: "#ffffff",
+              borderRadius: 12,
+              padding: "16px 20px",
+              borderLeft: "4px solid #4a8b8c",
               marginBottom: 24,
-              paddingLeft: 4,
             }}
           >
-            {profile.generated_summary}
-          </p>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#4a8b8c",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                marginBottom: 8,
+              }}
+            >
+              Your personalized summary
+            </div>
+            <p
+              style={{
+                fontSize: "1rem",
+                color: "var(--foreground)",
+                lineHeight: 1.7,
+                fontWeight: 400,
+                margin: 0,
+                paddingLeft: 0,
+              }}
+            >
+              {profile.generated_summary}
+            </p>
+          </div>
         )}
 
         {/* ── 2. Start here — primary + backup product ── */}
@@ -627,12 +655,13 @@ export default function DispensaryProfilePage() {
           <div style={{ marginBottom: 24 }}>
             <p
               style={{
-                fontSize: "0.68rem",
-                fontWeight: 700,
+                fontSize: 13,
+                fontWeight: 500,
                 color: "#c8f135",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
                 marginBottom: 12,
+                marginTop: 8,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
               }}
             >
               Start here

@@ -597,39 +597,62 @@ export default function ExplorePage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "12px 16px",
-            borderRadius: "10px",
-            background: "var(--cream)",
-            border: "1px solid var(--rule)",
+            gap: 16,
+            padding: "16px 18px 18px",
+            background: "#1a3a3a",
+            borderBottom: "3px solid #4a8b8c",
             marginBottom: 24,
             marginTop: 8,
           }}
         >
-          <div>
-            <p style={{
-              fontSize: "0.82rem",
-              fontWeight: 600,
-              color: "var(--foreground)",
-              marginBottom: 2,
-            }}>
+          <div style={{ minWidth: 0 }}>
+            <p
+              style={{
+                fontSize: 10,
+                color: "#c8f135",
+                fontWeight: 500,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginBottom: 8,
+              }}
+            >
+              Your dispensary guide
+            </p>
+            <p
+              style={{
+                fontSize: "1rem",
+                fontWeight: 500,
+                color: "#ffffff",
+                marginBottom: 4,
+                lineHeight: 1.3,
+              }}
+            >
               Your guide is building
             </p>
-            <p style={{
-              fontSize: "0.75rem",
-              color: "#666666",
-            }}>
+            <p
+              style={{
+                fontSize: "0.8125rem",
+                color: "rgba(255,255,255,0.6)",
+                lineHeight: 1.45,
+                margin: 0,
+              }}
+            >
               Gets more specific as you explore.
             </p>
           </div>
           <a
             href="/profile/guide"
             style={{
-              fontSize: "0.78rem",
-              fontWeight: 600,
-              color: "var(--accent-light)",
+              display: "inline-block",
+              background: "#c8f135",
+              color: "#1a3a3a",
+              borderRadius: 8,
+              padding: "4px 12px",
+              fontSize: 12,
+              fontWeight: 500,
               textDecoration: "none",
               whiteSpace: "nowrap",
-              marginLeft: 16,
+              flexShrink: 0,
             }}
           >
             See what&apos;s ready →
