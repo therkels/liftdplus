@@ -150,6 +150,10 @@ export default function OnboardingUsernamePage() {
         const firstTopic = onboardingData.topics?.[0] ?? '';
         const experienceLevel = onboardingData.experienceLevel ?? '';
 
+        console.log('PROFILE CREATION: onboardingData =', onboardingData);
+        console.log('PROFILE CREATION: firstTopic =', firstTopic);
+        console.log('PROFILE CREATION: experienceLevel =', experienceLevel);
+
         const topicToGoal: Record<string, string> = {
           'Sleep': 'sleep',
           'Stress and anxiety': 'stress',
@@ -170,16 +174,21 @@ export default function OnboardingUsernamePage() {
         const primary_goal_id = topicToGoal[firstTopic] ?? 'stress';
         const experience_level_id = experienceToId[experienceLevel] ?? 'never';
 
+        console.log('PROFILE CREATION: primary_goal_id =', primary_goal_id);
+        console.log('PROFILE CREATION: experience_level_id =', experience_level_id);
+
         if (primary_goal_id && experience_level_id) {
-          await fetch('/api/v0/user/onboarding-profile', {
+          const profileRes = await fetch('/api/v0/user/onboarding-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ primary_goal_id, experience_level_id }),
           });
+          console.log('PROFILE CREATION: API response status =', profileRes.status);
+          const profileData = await profileRes.json();
+          console.log('PROFILE CREATION: API response body =', profileData);
         }
       } catch (e) {
-        console.error('Failed to create recommendation profile:', e);
-        // Non-fatal — continue with routing
+        console.error('PROFILE CREATION FAILED:', e);
       }
 
       pageCache.invalidate("feed:");
