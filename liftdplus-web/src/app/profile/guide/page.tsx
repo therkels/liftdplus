@@ -494,38 +494,64 @@ export default function DispensaryProfilePage() {
 
   // ── Error state
   if (error || !profile) {
+    const isNewUser = !error;
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "var(--background)",
-          maxWidth: "48rem",
-          margin: "0 auto",
-          padding: "40px 20px",
-        }}
-      >
-        <SectionCard>
-          <p
-            style={{
-              fontSize: "0.95rem",
-              fontWeight: 600,
-              color: "var(--foreground)",
-              marginBottom: 8,
-            }}
-          >
-            Your profile isn't ready yet
-          </p>
-          <p
-            style={{
-              fontSize: "0.85rem",
-              color: "#666666",
-              lineHeight: 1.6,
-            }}
-          >
-            {error ??
-              "Read a few articles and come back — the more we know about what you're curious about, the better we can guide you."}
-          </p>
-        </SectionCard>
+      <div style={{ minHeight: "100vh", background: "var(--background)", maxWidth: "48rem", margin: "0 auto", padding: "40px 20px" }}>
+        {isNewUser ? (
+          <div style={{ background: '#1a3a3a', borderRadius: 16, padding: '32px 24px', borderBottom: '3px solid #4a8b8c', marginBottom: 24 }}>
+            <div style={{ fontSize: 10, fontWeight: 500, color: '#c8f135', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
+              YOUR DISPENSARY GUIDE
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 500, color: '#ffffff', marginBottom: 8 }}>
+              Your guide is almost ready.
+            </div>
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, marginBottom: 24 }}>
+              Read 2 articles to unlock your first recommendations — your cannabinoid ratio, best formats, and starting dose.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { label: 'Basic Recommendations', detail: 'Unlocked — available now', unlocked: true },
+                { label: 'Format Guidance', detail: 'Read 2 articles to unlock', unlocked: false },
+                { label: 'Dose Guidance', detail: 'Read 3 articles to unlock', unlocked: false },
+                { label: 'Budtender Questions', detail: 'Read 4 articles + save 1 to unlock', unlocked: false },
+                { label: 'Terpene Profile', detail: 'Read 5 articles + save 1 + complete checklist', unlocked: false },
+              ].map((item) => (
+                <div key={item.label} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: item.unlocked ? 'rgba(74,139,140,0.25)' : 'rgba(255,255,255,0.06)',
+                  borderRadius: 10,
+                  padding: '10px 14px',
+                }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: item.unlocked ? '#4a8b8c' : '#ffffff' }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontSize: 11, color: item.unlocked ? '#4a8b8c' : 'rgba(255,255,255,0.45)', marginTop: 2 }}>
+                      {item.detail}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 14, color: item.unlocked ? '#4a8b8c' : 'rgba(255,255,255,0.2)' }}>
+                    {item.unlocked ? '✓' : '🔒'}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+              Head to Explore to start reading →
+            </div>
+          </div>
+        ) : (
+          <SectionCard>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>
+              Something went wrong
+            </p>
+            <p style={{ fontSize: '0.85rem', color: '#666666', lineHeight: 1.6 }}>
+              {error}
+            </p>
+          </SectionCard>
+        )}
       </div>
     );
   }
