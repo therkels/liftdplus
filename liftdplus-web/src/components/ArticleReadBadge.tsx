@@ -12,9 +12,9 @@ export function ArticleReadBadge({
     <span
       className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-xs font-medium ${className}`}
       style={{
-        color: "#3d6e6c",
-        borderColor: "rgba(91, 143, 141, 0.7)",
-        backgroundColor: "rgba(91, 143, 141, 0.25)",
+        color: "#ffffff",
+        borderColor: "rgba(91, 143, 141, 0.9)",
+        backgroundColor: "rgba(74, 139, 140, 0.85)",
       }}
       aria-label="Read"
     >
