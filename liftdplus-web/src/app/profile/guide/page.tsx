@@ -503,44 +503,74 @@ export default function DispensaryProfilePage() {
               YOUR DISPENSARY GUIDE
             </div>
             <div style={{ fontSize: 22, fontWeight: 500, color: '#ffffff', marginBottom: 8 }}>
-              Your guide is almost ready.
+              Start here to unlock your guide.
             </div>
             <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, marginBottom: 24 }}>
-              Read 2 articles to unlock your first recommendations — your cannabinoid ratio, best formats, and starting dose.
+              Read 2 articles and we&apos;ll generate your personalized cannabinoid ratio, formats, and starting dose.
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+              {/* Unlocked — Basic Recommendations */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'rgba(74,139,140,0.2)', borderRadius: 10, padding: '10px 14px',
+                border: '1px solid rgba(74,139,140,0.3)',
+              }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: '#4a8b8c' }}>Basic Recommendations</div>
+                  <div style={{ fontSize: 11, color: '#4a8b8c', marginTop: 2 }}>Ready — unlocked now</div>
+                </div>
+                <div style={{ background: '#4a8b8c', borderRadius: 20, padding: '2px 8px' }}>
+                  <span style={{ fontSize: 10, fontWeight: 500, color: '#fff' }}>Ready</span>
+                </div>
+              </div>
+
+              {/* Next up — Format Guidance */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px',
+                border: '1px solid rgba(255,255,255,0.2)',
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: '#ffffff' }}>Format Guidance</div>
+                    <div style={{ background: '#c8f135', borderRadius: 20, padding: '1px 7px' }}>
+                      <span style={{ fontSize: 9, fontWeight: 500, color: '#1a3a3a' }}>Next up</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>0 of 2 articles read</div>
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>2 away</div>
+              </div>
+
+              {/* Locked items */}
               {[
-                { label: 'Basic Recommendations', detail: 'Unlocked — available now', unlocked: true },
-                { label: 'Format Guidance', detail: 'Read 2 articles to unlock', unlocked: false },
-                { label: 'Dose Guidance', detail: 'Read 3 articles to unlock', unlocked: false },
-                { label: 'Budtender Questions', detail: 'Read 4 articles + save 1 to unlock', unlocked: false },
-                { label: 'Terpene Profile', detail: 'Read 5 articles + save 1 + complete checklist', unlocked: false },
+                { label: 'Dose Guidance', detail: '3 articles away' },
+                { label: 'Budtender Questions', detail: '4 articles + 1 save away' },
+                { label: 'Terpene Profile', detail: '5 articles + checklist away' },
               ].map((item) => (
                 <div key={item.label} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: item.unlocked ? 'rgba(74,139,140,0.25)' : 'rgba(255,255,255,0.06)',
-                  borderRadius: 10,
-                  padding: '10px 14px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 14px',
                 }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: item.unlocked ? '#4a8b8c' : '#ffffff' }}>
-                      {item.label}
-                    </div>
-                    <div style={{ fontSize: 11, color: item.unlocked ? '#4a8b8c' : 'rgba(255,255,255,0.45)', marginTop: 2 }}>
-                      {item.detail}
-                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>{item.label}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{item.detail}</div>
                   </div>
-                  <div style={{ fontSize: 14, color: item.unlocked ? '#4a8b8c' : 'rgba(255,255,255,0.2)' }}>
-                    {item.unlocked ? '✓' : '🔒'}
-                  </div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>🔒</div>
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
-              Head to Explore to start reading →
-            </div>
+
+            {/* CTA Button */}
+            <a href="/explore" style={{
+              display: 'block', marginTop: 24, background: '#c8f135', borderRadius: 10,
+              padding: '14px 20px', textDecoration: 'none', textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: '#1a3a3a' }}>Start reading</div>
+              <div style={{ fontSize: 11, color: 'rgba(26,58,58,0.7)', marginTop: 2 }}>2 articles to unlock your recommendations</div>
+            </a>
           </div>
         ) : (
           <SectionCard>
