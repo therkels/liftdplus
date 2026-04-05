@@ -146,39 +146,31 @@ export default function OnboardingUsernamePage() {
         return;
       }
 
-      // Map Q1 topic to goal ID
-      const topicToGoal: Record<string, string> = {
-        'Sleep': 'sleep',
-        'Stress and anxiety': 'stress',
-        'Focus and productivity': 'focus',
-        'Pain and recovery': 'pain',
-        'Intimacy & Libido': 'intimacy',
-        'Hormonal Changes': 'hormonal',
-        "I'm not sure yet": 'stress',
-      };
-
-      // Map Q2 experience to experience level ID
-      const experienceToId: Record<string, string> = {
-        'Never tried cannabis': 'never',
-        'Tried it once or twice': 'beginner',
-        'I use it occasionally': 'occasional',
-        'I use it regularly': 'regular',
-      };
-
       try {
-        const q1Raw = localStorage.getItem('liftd_onboarding_q1');
-        const q2Raw = localStorage.getItem('liftd_onboarding_q2');
+        const firstTopic = onboardingData.topics?.[0] ?? '';
+        const experienceLevel = onboardingData.experienceLevel ?? '';
 
-        if (q1Raw && q2Raw) {
-          const q1Data = JSON.parse(q1Raw);
-          const q2Data = JSON.parse(q2Raw);
+        const topicToGoal: Record<string, string> = {
+          'Sleep': 'sleep',
+          'Stress and anxiety': 'stress',
+          'Focus and productivity': 'focus',
+          'Pain and recovery': 'pain',
+          'Intimacy & Libido': 'intimacy',
+          'Hormonal Changes': 'hormonal',
+          "I'm not sure yet": 'stress',
+        };
 
-          const firstTopic = q1Data?.topics?.[0] ?? '';
-          const experienceLevel = q2Data?.experienceLevel ?? '';
+        const experienceToId: Record<string, string> = {
+          'Never tried cannabis': 'never',
+          'Tried it once or twice': 'beginner',
+          'I use it occasionally': 'occasional',
+          'I use it regularly': 'regular',
+        };
 
-          const primary_goal_id = topicToGoal[firstTopic] ?? 'sleep';
-          const experience_level_id = experienceToId[experienceLevel] ?? 'never';
+        const primary_goal_id = topicToGoal[firstTopic] ?? 'stress';
+        const experience_level_id = experienceToId[experienceLevel] ?? 'never';
 
+        if (primary_goal_id && experience_level_id) {
           await fetch('/api/v0/user/onboarding-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
