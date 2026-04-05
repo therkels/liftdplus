@@ -677,7 +677,18 @@ export default function DispensaryProfilePage() {
 
         {/* ── 3. Your plan ── */}
         <SectionCard>
-          <SectionLabel>Your plan</SectionLabel>
+          <p
+            style={{
+              fontWeight: 500,
+              fontSize: 11,
+              color: "#1a3a3a",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              marginBottom: 12,
+            }}
+          >
+            Your plan
+          </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
             {/* Format */}
@@ -789,7 +800,18 @@ export default function DispensaryProfilePage() {
         {/* ── 4. What to say at the dispensary ── */}
         {profile.budtender_questions.length > 0 && (
           <SectionCard>
-            <SectionLabel>What to say at the dispensary</SectionLabel>
+            <p
+              style={{
+                fontWeight: 500,
+                fontSize: 11,
+                color: "#1a3a3a",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginBottom: 12,
+              }}
+            >
+              What to say at the dispensary
+            </p>
             <p
               style={{
                 fontSize: "0.8rem",
@@ -866,7 +888,18 @@ export default function DispensaryProfilePage() {
         {otherProducts.length > 0 && (
           <div style={{ marginBottom: 16 }}>
             <SectionCard>
-              <SectionLabel>Other good options</SectionLabel>
+              <p
+                style={{
+                  fontWeight: 500,
+                  fontSize: 11,
+                  color: "#1a3a3a",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  marginBottom: 12,
+                }}
+              >
+                Other good options
+              </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {otherProducts.map((p) => (
                   <ProductCard key={p.id} product={p} isPrimary={false} />
