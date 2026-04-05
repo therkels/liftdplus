@@ -433,9 +433,9 @@ export default function DispensaryProfilePage() {
 
         if (postData.profile) {
           setProfile(postData.profile);
-        } else {
-          setError("We couldn't generate your profile yet. Try reading a few more articles first.");
         }
+        // If no profile returned, leave profile as null and error as null
+        // The empty state handler will show the new user roadmap
       } catch {
         setError("Something went wrong loading your profile. Please try again.");
       } finally {
