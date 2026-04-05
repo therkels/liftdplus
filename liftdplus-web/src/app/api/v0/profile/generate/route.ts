@@ -211,10 +211,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (profileError || !profileData) {
-      return NextResponse.json(
-        { error: 'No recommendation profile found. Complete onboarding first.' },
-        { status: 404 }
-      );
+      return NextResponse.json({ profile: null }, { status: 200 });
     }
 
     const userProfile: UserProfile = {
