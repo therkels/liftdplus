@@ -208,10 +208,10 @@ export default function Profile() {
         style={{ textDecoration: "none" }}
       >
         <div
-          className="mb-6 rounded-xl p-5 border"
+          className="mb-6 rounded-xl p-5"
           style={{
-            backgroundColor: "var(--foreground)",
-            borderColor: "var(--accent-light)",
+            backgroundColor: "#1a3a3a",
+            borderBottom: "3px solid #4a8b8c",
             cursor: "pointer",
           }}
         >

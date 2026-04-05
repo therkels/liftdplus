@@ -59,41 +59,75 @@ export default function GettingStartedPage() {
       }}
     >
       <div style={{ maxWidth: 520, width: "100%" }}>
-        {/* Header */}
-        <p
+        {/* Header / banner */}
+        <div
           style={{
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#4a7a74",
-            marginBottom: 12,
+            background: "#1a3a3a",
+            borderBottom: "3px solid #4a8b8c",
+            borderRadius: "12px 12px 0 0",
+            padding: "20px 20px 18px",
+            marginBottom: 32,
           }}
         >
-          Your starting point
-        </p>
-        <h1
-          style={{
-            fontSize: "1.75rem",
-            fontWeight: 700,
-            color: "#313a43",
-            marginBottom: 8,
-            lineHeight: 1.2,
-          }}
-        >
-          Here's how to get ready.
-        </h1>
-        <p
-          style={{
-            fontSize: "1rem",
-            color: "#555",
-            marginBottom: 40,
-            lineHeight: 1.6,
-          }}
-        >
-          Five things to understand before your first dispensary visit. Read
-          each one and you'll know exactly what you're looking for.
-        </p>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 16,
+              marginBottom: 12,
+            }}
+          >
+            <p
+              style={{
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#c8f135",
+                margin: 0,
+              }}
+            >
+              Your starting point
+            </p>
+            <span
+              style={{
+                fontSize: "0.65rem",
+                fontWeight: 600,
+                color: "#1a3a3a",
+                background: "#c8f135",
+                padding: "4px 10px",
+                borderRadius: 999,
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              5 steps
+            </span>
+          </div>
+          <h1
+            style={{
+              fontSize: "1.75rem",
+              fontWeight: 700,
+              color: "#ffffff",
+              marginBottom: 8,
+              lineHeight: 1.2,
+            }}
+          >
+            Here's how to get ready.
+          </h1>
+          <p
+            style={{
+              fontSize: "1rem",
+              color: "rgba(255,255,255,0.75)",
+              marginBottom: 0,
+              lineHeight: 1.6,
+            }}
+          >
+            Five things to understand before your first dispensary visit. Read
+            each one and you'll know exactly what you're looking for.
+          </p>
+        </div>
 
         {/* Checklist items */}
         <div
@@ -127,8 +161,8 @@ export default function GettingStartedPage() {
                     minWidth: 28,
                     height: 28,
                     borderRadius: "50%",
-                    background: "#1e3530",
-                    color: "#b8f000",
+                    background: "#4a8b8c",
+                    color: "#ffffff",
                     fontSize: "0.75rem",
                     fontWeight: 700,
                     display: "flex",
@@ -144,7 +178,7 @@ export default function GettingStartedPage() {
                     style={{
                       fontSize: "0.95rem",
                       fontWeight: 600,
-                      color: "#313a43",
+                      color: "#1a3a3a",
                       marginBottom: 4,
                     }}
                   >

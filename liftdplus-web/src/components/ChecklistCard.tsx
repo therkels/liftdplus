@@ -112,111 +112,133 @@ export function ChecklistCard({
             }
       }
     >
-      {/* Header row */}
+      {/* Header / banner */}
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          marginTop: collapsed ? -12 : -20,
+          marginLeft: collapsed ? -16 : -24,
+          marginRight: collapsed ? -16 : -24,
           marginBottom: collapsed ? 0 : 12,
+          padding: collapsed ? "12px 16px 10px" : "16px 24px 14px",
+          background: "#1a3a3a",
+          borderBottom: "3px solid #4a8b8c",
+          borderTopLeftRadius: collapsed ? 12 : 16,
+          borderTopRightRadius: collapsed ? 12 : 16,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
+          <div
             style={{
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              color: "var(--accent-light)",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap",
+              minWidth: 0,
             }}
           >
-            A few things worth knowing first
-          </span>
-          {completedCount === 0 ? (
             <span
               style={{
-                fontSize: "0.68rem",
+                fontSize: "0.85rem",
                 fontWeight: 600,
-                color: "var(--accent-light)",
-                border: "1px solid var(--accent-light)",
-                borderRadius: "999px",
-                padding: "2px 10px",
-                marginLeft: "8px",
+                color: "#ffffff",
               }}
             >
-              4 short reads · ~15 min
+              A few things worth knowing first
             </span>
+            {completedCount === 0 ? (
+              <span
+                style={{
+                  fontSize: "0.68rem",
+                  fontWeight: 600,
+                  color: "#1a3a3a",
+                  background: "#c8f135",
+                  borderRadius: "999px",
+                  padding: "2px 10px",
+                  marginLeft: "8px",
+                }}
+              >
+                4 short reads · ~15 min
+              </span>
+            ) : (
+              <span
+                style={{
+                  fontSize: "0.65rem",
+                  fontWeight: 600,
+                  color: "#1a3a3a",
+                  background: "#c8f135",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {`${completedCount} of ${totalCount} done — keep going`}
+              </span>
+            )}
+          </div>
+          {collapsed ? (
+            <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={() => setCollapsed(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "rgba(255,255,255,0.7)",
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                Show
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    localStorage.setItem(CHECKLIST_HIDDEN_KEY, "true");
+                  } catch {
+                    // Ignore; parent state can still hide via onHide.
+                  }
+                  onHide?.();
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "rgba(255,255,255,0.55)",
+                  fontSize: "0.7rem",
+                  cursor: "pointer",
+                  padding: 0,
+                  textDecoration: "underline",
+                  marginLeft: "8px",
+                }}
+              >
+                Dismiss
+              </button>
+            </div>
           ) : (
-            <span
-              style={{
-                fontSize: "0.65rem",
-                fontWeight: 600,
-                color: "var(--foreground)",
-                background: "var(--accent)",
-                padding: "2px 8px",
-                borderRadius: 999,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {`${completedCount} of ${totalCount} done — keep going`}
-            </span>
-          )}
-        </div>
-        {collapsed ? (
-          <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <button
               type="button"
-              onClick={() => setCollapsed(false)}
+              onClick={() => setCollapsed(true)}
               style={{
                 background: "none",
                 border: "none",
-                color: "#767676",
+                color: "rgba(255,255,255,0.7)",
                 fontSize: "0.75rem",
                 cursor: "pointer",
                 padding: 0,
               }}
             >
-              Show
+              Hide
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                try {
-                  localStorage.setItem(CHECKLIST_HIDDEN_KEY, "true");
-                } catch {
-                  // Ignore; parent state can still hide via onHide.
-                }
-                onHide?.();
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--subtext)",
-                fontSize: "0.7rem",
-                cursor: "pointer",
-                padding: 0,
-                textDecoration: "underline",
-                marginLeft: "8px",
-              }}
-            >
-              Dismiss
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setCollapsed(true)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#767676",
-              fontSize: "0.75rem",
-              cursor: "pointer",
-              padding: 0,
-            }}
-          >
-            Hide
-          </button>
-        )}
+          )}
+        </div>
       </div>
 
       {!collapsed && (
@@ -313,7 +335,7 @@ export function ChecklistCard({
                     style={{
                       fontSize: "2.8rem",
                       fontWeight: 700,
-                      color: "var(--accent-light)",
+                      color: "#4a8b8c",
                       opacity: isItemComplete ? 0.3 : 0.35,
                       lineHeight: 1,
                       display: "block",

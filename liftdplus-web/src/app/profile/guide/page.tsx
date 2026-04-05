@@ -565,12 +565,34 @@ export default function DispensaryProfilePage() {
       >
 
         {/* ── Page header ── */}
-        <div style={{ marginBottom: 24 }}>
+        <div
+          style={{
+            marginLeft: -20,
+            marginRight: -20,
+            marginTop: -28,
+            padding: "24px 20px 20px",
+            marginBottom: 24,
+            background: "#1a3a3a",
+            borderBottom: "3px solid #4a8b8c",
+          }}
+        >
+          <p
+            style={{
+              fontSize: "0.68rem",
+              fontWeight: 700,
+              color: "#c8f135",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: 10,
+            }}
+          >
+            Your dispensary guide
+          </p>
           <h1
             style={{
               fontSize: "1.5rem",
               fontWeight: 700,
-              color: "var(--foreground)",
+              color: "#ffffff",
               lineHeight: 1.2,
               marginBottom: 6,
             }}
@@ -579,7 +601,7 @@ export default function DispensaryProfilePage() {
               ? `Here's your guide, ${displayName}.`
               : "Here's your guide."}
           </h1>
-          <p style={{ fontSize: "0.82rem", color: "#666666" }}>
+          <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.65)" }}>
             {goalLabel} · {experienceLabel}
           </p>
         </div>
@@ -603,7 +625,18 @@ export default function DispensaryProfilePage() {
         {/* ── 2. Start here — primary + backup product ── */}
         {primaryProduct && (
           <div style={{ marginBottom: 24 }}>
-            <SectionLabel>Start here</SectionLabel>
+            <p
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 700,
+                color: "#c8f135",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                marginBottom: 12,
+              }}
+            >
+              Start here
+            </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <ProductCard product={primaryProduct} isPrimary={true} />
               {backupProduct && backupProduct.id !== primaryProduct.id && (
