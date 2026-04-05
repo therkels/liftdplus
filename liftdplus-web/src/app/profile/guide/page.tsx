@@ -502,12 +502,21 @@ export default function DispensaryProfilePage() {
             <div style={{ fontSize: 10, fontWeight: 500, color: '#c8f135', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
               YOUR DISPENSARY GUIDE
             </div>
-            <div style={{ fontSize: 22, fontWeight: 500, color: '#ffffff', marginBottom: 8 }}>
+            <div style={{ fontSize: 24, fontWeight: 600, color: '#ffffff', marginBottom: 8 }}>
               Start here to unlock your guide.
             </div>
             <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, marginBottom: 24 }}>
               Read 2 articles and we&apos;ll generate your personalized cannabinoid ratio, formats, and starting dose.
             </div>
+
+            {/* CTA comes right after the subtitle, before the milestone rows */}
+            <a href="/explore" style={{
+              display: 'block', marginBottom: 20, background: '#c8f135', borderRadius: 10,
+              padding: '14px 20px', textDecoration: 'none', textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1a3a3a' }}>Start reading</div>
+              <div style={{ fontSize: 11, color: 'rgba(26,58,58,0.7)', marginTop: 2 }}>2 articles to unlock your recommendations</div>
+            </a>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
@@ -539,7 +548,7 @@ export default function DispensaryProfilePage() {
                       <span style={{ fontSize: 9, fontWeight: 500, color: '#1a3a3a' }}>Next up</span>
                     </div>
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>0 of 2 articles read</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2, fontWeight: 500 }}>0 of 2 articles read</div>
                 </div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>2 away</div>
               </div>
@@ -562,15 +571,6 @@ export default function DispensaryProfilePage() {
                 </div>
               ))}
             </div>
-
-            {/* CTA Button */}
-            <a href="/explore" style={{
-              display: 'block', marginTop: 24, background: '#c8f135', borderRadius: 10,
-              padding: '14px 20px', textDecoration: 'none', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#1a3a3a' }}>Start reading</div>
-              <div style={{ fontSize: 11, color: 'rgba(26,58,58,0.7)', marginTop: 2 }}>2 articles to unlock your recommendations</div>
-            </a>
           </div>
         ) : (
           <SectionCard>
