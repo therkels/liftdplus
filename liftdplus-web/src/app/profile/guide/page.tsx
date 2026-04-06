@@ -559,7 +559,7 @@ export default function DispensaryProfilePage() {
               Start here to unlock your guide.
             </div>
             <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, marginBottom: 24 }}>
-              Read 2 articles and we&apos;ll generate your personalized cannabinoid ratio, formats, and starting dose.
+              Start reading and your guide generates automatically — the more you explore, the smarter it gets.
             </div>
 
             {/* CTA comes right after the subtitle, before the milestone rows */}
@@ -568,27 +568,27 @@ export default function DispensaryProfilePage() {
               padding: '14px 20px', textDecoration: 'none', textAlign: 'center',
             }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: '#1a3a3a' }}>Start reading</div>
-              <div style={{ fontSize: 11, color: 'rgba(26,58,58,0.7)', marginTop: 2 }}>2 articles to unlock your recommendations</div>
+              <div style={{ fontSize: 11, color: 'rgba(26,58,58,0.7)', marginTop: 2 }}>Your guide builds as you read</div>
             </a>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
-              {/* Unlocked — Basic Recommendations */}
+              {/* Always unlocked */}
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 background: 'rgba(74,139,140,0.2)', borderRadius: 10, padding: '10px 14px',
                 border: '1px solid rgba(74,139,140,0.3)',
               }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: '#4a8b8c' }}>Basic Recommendations</div>
-                  <div style={{ fontSize: 11, color: '#4a8b8c', marginTop: 2 }}>Ready — unlocked now</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: '#4a8b8c' }}>Your personalized guide</div>
+                  <div style={{ fontSize: 11, color: '#4a8b8c', marginTop: 2 }}>Products, formats, and dosing — ready now</div>
                 </div>
                 <div style={{ background: '#4a8b8c', borderRadius: 20, padding: '2px 8px' }}>
                   <span style={{ fontSize: 10, fontWeight: 500, color: '#fff' }}>Ready</span>
                 </div>
               </div>
 
-              {/* Next up — Format Guidance */}
+              {/* Next up — Budtender Questions */}
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px',
@@ -596,33 +596,35 @@ export default function DispensaryProfilePage() {
               }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: '#ffffff' }}>Format Guidance</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: '#ffffff' }}>Budtender Questions</div>
                     <div style={{ background: '#c8f135', borderRadius: 20, padding: '1px 7px' }}>
                       <span style={{ fontSize: 9, fontWeight: 500, color: '#1a3a3a' }}>Next up</span>
                     </div>
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2, fontWeight: 500 }}>0 of 2 articles read</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>
+                    5 specific questions to ask your budtender
+                  </div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
+                    0 of 4 articles read · 0 saved
+                  </div>
                 </div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>2 away</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>4 away</div>
               </div>
 
-              {/* Locked items */}
-              {[
-                { label: 'Dose Guidance', detail: '3 articles away' },
-                { label: 'Budtender Questions', detail: '4 articles + 1 save away' },
-                { label: 'Terpene Profile', detail: '5 articles + checklist away' },
-              ].map((item) => (
-                <div key={item.label} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 14px',
-                }}>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>{item.label}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{item.detail}</div>
+              {/* Locked — Terpene Profile */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 14px',
+              }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>Terpene Profile</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>
+                    5 articles or complete the checklist
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>🔒</div>
                 </div>
-              ))}
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>🔒</div>
+              </div>
+
             </div>
           </div>
         ) : (
