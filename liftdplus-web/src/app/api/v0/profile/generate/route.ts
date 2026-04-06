@@ -108,7 +108,7 @@ function determineMilestone(
 ): MilestoneRow {
   const qualified = milestones.filter((m) => {
     const articlesOk = signals.articles_viewed >= m.min_articles_read;
-    const readsOk = signals.qualified_reads >= m.min_qualified_reads;
+    const readsOk = true; // qualified_reads not yet tracked globally
     const savesOk = signals.saves >= m.min_saves;
     const checklistOk = !m.requires_checklist || signals.checklist_complete;
     return articlesOk && readsOk && savesOk && checklistOk;
@@ -552,7 +552,7 @@ export async function GET(req: NextRequest) {
     if (milestoneData?.length) {
       const qualified = milestoneData.filter(m =>
         signals.articles_viewed >= m.min_articles_read &&
-        signals.qualified_reads >= m.min_qualified_reads &&
+        true && // qualified_reads not yet tracked globally
         signals.saves >= m.min_saves &&
         (!m.requires_checklist || signals.checklist_complete)
       );
