@@ -376,6 +376,24 @@ export default function DispensaryProfilePage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
+  const [articleCount, setArticleCount] = useState(0);
+  const [saveCount, setSaveCount] = useState(0);
+  const [checklistComplete, setChecklistComplete] = useState(false);
+  const [isRegenerated, setIsRegenerated] = useState(false);
+
+  useEffect(() => {
+    const loadSignals = async () => {
+      try {
+        const res = await fetch("/api/v0/user/signals");
+        if (!res.ok) return;
+        const data = await res.json();
+        setArticleCount(data.articles_viewed ?? 0);
+        setSaveCount(data.saves ?? 0);
+        setChecklistComplete(data.checklist_complete ?? false);
+      } catch {}
+    };
+    loadSignals();
+  }, []);
 
   useEffect(() => {
     const fetchDisplayName = async () => {
@@ -426,6 +444,7 @@ export default function DispensaryProfilePage() {
               .then((postData) => {
                 if (postData.profile) {
                   setProfile(postData.profile);
+                  setIsRegenerated(true);
                 }
               })
               .catch(() => {});
@@ -599,8 +618,6 @@ export default function DispensaryProfilePage() {
   const goalLabel = GOAL_LABELS[profile.goal_id] ?? profile.goal_id;
   const experienceLabel =
     EXPERIENCE_LABELS[profile.experience_level_id] ?? profile.experience_level_id;
-  const currentMilestone = profile.milestone_key;
-
   const dispensaryProducts = profile.products.filter((p) => p.available_at_dispensaries);
   const shippableProducts = profile.products.filter((p) => p.ships_nationally);
   const primaryProduct = dispensaryProducts[0] ?? shippableProducts[0] ?? null;
@@ -610,7 +627,7 @@ export default function DispensaryProfilePage() {
     (p) => p.id !== primaryProduct?.id && p.id !== backupProduct?.id
   );
 
-  const terpenesUnlocked = isMilestoneUnlocked(currentMilestone, TERPENES_UNLOCK_MILESTONE);
+  const terpenesUnlocked = articleCount >= 5 || checklistComplete;
 
   // ── Render
   return (
@@ -713,6 +730,18 @@ export default function DispensaryProfilePage() {
               {profile.generated_summary}
             </p>
           </div>
+        )}
+        {isRegenerated && (
+          <p
+            style={{
+              fontSize: "0.75rem",
+              color: "#888888",
+              marginTop: 8,
+              fontStyle: "italic",
+            }}
+          >
+            Updated based on your recent reading.
+          </p>
         )}
 
         {/* ── 2. Start here — primary + backup product ── */}
@@ -863,65 +892,115 @@ export default function DispensaryProfilePage() {
         </SectionCard>
 
         {/* ── 4. What to say at the dispensary ── */}
-        {profile.budtender_questions.length > 0 && (
-          <SectionCard>
-            <p
-              style={{
-                fontWeight: 500,
-                fontSize: 11,
-                color: "#1a3a3a",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                marginBottom: 12,
-              }}
-            >
-              What to say at the dispensary
-            </p>
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "#666666",
-                lineHeight: 1.5,
-                marginBottom: 16,
-              }}
-            >
-              Tell your budtender these things. You don't need to know the answers —
-              just asking shows you know what you're looking for.
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {profile.budtender_questions.map((q, i) => (
-                <div
-                  key={i}
+        {(() => {
+          const budtenderUnlocked = articleCount >= 4 && saveCount >= 1;
+          if (budtenderUnlocked && profile.budtender_questions.length > 0) {
+            return (
+              <SectionCard>
+                <p
                   style={{
-                    borderLeft: "3px solid var(--accent-light)",
-                    paddingLeft: 12,
+                    fontWeight: 500,
+                    fontSize: 11,
+                    color: "#1a3a3a",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    marginBottom: 12,
                   }}
                 >
-                  <p
-                    style={{
-                      fontSize: "0.88rem",
-                      fontWeight: 600,
-                      color: "var(--foreground)",
-                      lineHeight: 1.4,
-                      marginBottom: 3,
-                    }}
-                  >
-                    "{q.question}"
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "#666666",
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {q.why_it_matters}
-                  </p>
+                  What to say at the dispensary
+                </p>
+                <p
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "#666666",
+                    lineHeight: 1.5,
+                    marginBottom: 16,
+                  }}
+                >
+                  Tell your budtender these things. You don't need to know the answers —
+                  just asking shows you know what you're looking for.
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {profile.budtender_questions.map((q, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        borderLeft: "3px solid var(--accent-light)",
+                        paddingLeft: 12,
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: "0.88rem",
+                          fontWeight: 600,
+                          color: "var(--foreground)",
+                          lineHeight: 1.4,
+                          marginBottom: 3,
+                        }}
+                      >
+                        "{q.question}"
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "#666666",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {q.why_it_matters}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </SectionCard>
-        )}
+              </SectionCard>
+            );
+          }
+          if (!budtenderUnlocked) {
+            return (
+              <div
+                style={{
+                  background: "rgba(74,139,140,0.08)",
+                  borderRadius: 12,
+                  padding: "16px 20px",
+                  border: "1px solid rgba(74,139,140,0.25)",
+                  marginBottom: 16,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 500,
+                    color: "#4a8b8c",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    marginBottom: 8,
+                  }}
+                >
+                  What to say at the dispensary
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "#4a8b8c",
+                    lineHeight: 1.5,
+                    marginBottom: 8,
+                  }}
+                >
+                  Keep exploring — your personalized questions are almost ready.
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "rgba(74,139,140,0.7)",
+                  }}
+                >
+                  {articleCount} of 4 articles read · {saveCount >= 1 ? "1 saved" : "0 saved"}
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* ── 5. Save this ── */}
         <div
