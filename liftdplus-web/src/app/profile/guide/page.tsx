@@ -412,13 +412,25 @@ export default function DispensaryProfilePage() {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        // Try to load cached profile first
-        const getRes = await fetch("/api/v0/profile/generate", {
-          method: "GET",
-        });
+        const getRes = await fetch("/api/v0/profile/generate", { method: "GET" });
         const getData = await getRes.json();
 
         if (getData.profile) {
+          if (getData.should_regenerate) {
+            // User has hit a new milestone — regenerate silently
+            setProfile(getData.profile); // show cached immediately
+            setLoading(false);
+            // Regenerate in background
+            fetch("/api/v0/profile/generate", { method: "POST" })
+              .then((r) => r.json())
+              .then((postData) => {
+                if (postData.profile) {
+                  setProfile(postData.profile);
+                }
+              })
+              .catch(() => {});
+            return;
+          }
           setProfile(getData.profile);
           setLoading(false);
           return;
@@ -426,11 +438,8 @@ export default function DispensaryProfilePage() {
 
         // No cached profile — generate one
         setGenerating(true);
-        const postRes = await fetch("/api/v0/profile/generate", {
-          method: "POST",
-        });
+        const postRes = await fetch("/api/v0/profile/generate", { method: "POST" });
         const postData = await postRes.json();
-
         if (postData.profile) {
           setProfile(postData.profile);
         }
