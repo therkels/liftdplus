@@ -220,12 +220,19 @@ export default function CheatSheetPage() {
             <span className="footer-bridge">Take what you just filled out and turn it into a personalized guide.</span>
             LIFTD+ builds your recommendations based on what matters to you — so you walk in knowing exactly what to ask for.
           </div>
-          <div>
-            <div style={{border:'none',padding:0}}>
-              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOgAAADoCAIAAABqyz8vAAAEMklEQVR4nO3dwW0cRxBAUVFwNE7JKTgcp6CUHAYvBO9OgGOghWp0f+57R0HijrgffSg0at4+P95/QM3P0w8Av0O4JAmXJOGSJFyShEuScEkSLknCJUm4JAmXJOGSJFyShEuScEn6Y/Uf/PnX3zueY9y/v/758s+fnn/1669+7pOp55l6/lNWf29OXJKES5JwSRIuScIlSbgkCZek5TnueiXnOLVmvOrxfmJhy4JAmXJOGSJFyShEuScEkSLkljc9wnU3O73fPUqXu0dbfNW6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6feN6nO3XxQAAAABJRU5ErkJggg==" alt="QR code" style={{width:68,height:68,borderRadius:6}} />
-            </div>
-            <div className="footer-url">liftdplus.com</div>
-          </div>
+          <a href="https://liftdplus.com" style={{
+            display: 'inline-block',
+            background: '#1F4E5A',
+            color: 'white',
+            borderRadius: 8,
+            padding: '10px 16px',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+          }}>
+            Get started free →
+          </a>
         </div>
       </div>
     </>
