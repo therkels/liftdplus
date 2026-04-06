@@ -318,52 +318,77 @@ function ProductCard({
 
 function LockedSection({
   label,
-  articlesNeeded,
+  articleCount,
+  checklistComplete,
 }: {
   label: string;
-  articlesNeeded: number;
+  articleCount: number;
+  checklistComplete: boolean;
 }) {
+  const articlesNeeded = Math.max(0, 5 - articleCount);
   return (
-    <SectionCard>
-      <SectionLabel>{label}</SectionLabel>
+    <div
+      style={{
+        background: "#1a3a3a",
+        borderRadius: 12,
+        padding: "16px 20px",
+        borderBottom: "3px solid #4a8b8c",
+        marginBottom: 16,
+      }}
+    >
       <div
         style={{
-          filter: "blur(3px)",
-          opacity: 0.4,
-          pointerEvents: "none",
-          userSelect: "none",
-          marginBottom: 12,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 8,
         }}
       >
         <div
           style={{
-            height: 12,
-            background: "var(--rule)",
-            borderRadius: 6,
-            marginBottom: 8,
-            width: "80%",
+            fontSize: 10,
+            fontWeight: 500,
+            color: "#4a8b8c",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
           }}
-        />
+        >
+          {label}
+        </div>
         <div
           style={{
-            height: 12,
-            background: "var(--rule)",
-            borderRadius: 6,
-            width: "60%",
+            background: "rgba(255,255,255,0.08)",
+            borderRadius: 20,
+            padding: "2px 10px",
           }}
-        />
+        >
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 500,
+              color: "rgba(255,255,255,0.5)",
+            }}
+          >
+            {checklistComplete
+              ? "1 article away"
+              : articlesNeeded === 0
+                ? "Complete checklist to unlock"
+                : `${articlesNeeded} ${articlesNeeded === 1 ? "article" : "articles"} away`}
+          </span>
+        </div>
       </div>
-      <p
+      <div
         style={{
-          fontSize: "0.78rem",
-          color: "#666666",
+          fontSize: 13,
+          color: "rgba(255,255,255,0.6)",
           lineHeight: 1.5,
         }}
       >
-        Your {label.toLowerCase()} unlocks after {articlesNeeded} more{" "}
-        {articlesNeeded === 1 ? "article" : "articles"}. Keep exploring.
-      </p>
-    </SectionCard>
+        {checklistComplete
+          ? "Read 1 more article to earn your terpene profile."
+          : "Finish your starter reads or complete the checklist to earn your terpene profile."}
+      </div>
+    </div>
   );
 }
 
@@ -1145,7 +1170,11 @@ export default function DispensaryProfilePage() {
             </div>
           </SectionCard>
         ) : (
-          <LockedSection label="Terpene profile" articlesNeeded={2} />
+          <LockedSection
+            label="Terpene profile"
+            articleCount={articleCount}
+            checklistComplete={checklistComplete}
+          />
         )}
 
         {/* ── Refresh button ── */}
