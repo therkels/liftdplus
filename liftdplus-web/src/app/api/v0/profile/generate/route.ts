@@ -454,6 +454,14 @@ export async function POST(req: NextRequest) {
 
     if (impressionError) {
       console.error('Failed to log impression:', impressionError);
+      return NextResponse.json(
+        {
+          error: 'impression_failed',
+          detail: impressionError.message,
+          code: impressionError.code,
+        },
+        { status: 500 }
+      );
     }
 
     const impressionId = impression?.id ?? null;
