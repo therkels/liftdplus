@@ -210,10 +210,23 @@ export default function ExplorePage() {
   const [checklistHidden, setChecklistHidden] = useState(false);
   const [checklistComplete, setChecklistComplete] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [guideUpdated, setGuideUpdated] = useState(false);
 
   const { selectedPost, isModalOpen, openPostModal, closePostModal } =
     usePostModal();
   const { readSlugs } = useReadArticles();
+
+  useEffect(() => {
+    const checkGuide = async () => {
+      try {
+        const res = await fetch("/api/v0/profile/generate", { method: "GET" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.should_regenerate) setGuideUpdated(true);
+      } catch {}
+    };
+    checkGuide();
+  }, []);
 
   useEffect(() => {
     if (!isModalOpen || !selectedPost?.slug) return;
@@ -606,6 +619,37 @@ export default function ExplorePage() {
           }}
         >
           <div style={{ minWidth: 0 }}>
+            {guideUpdated && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginBottom: 6,
+                }}
+              >
+                <div
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#c8f135",
+                    flexShrink: 0,
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: "0.65rem",
+                    fontWeight: 500,
+                    color: "#c8f135",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Your guide has been updated
+                </span>
+              </div>
+            )}
             <p
               style={{
                 fontSize: 10,
