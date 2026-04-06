@@ -29,9 +29,49 @@ export async function POST(request: Request) {
   const data = await response.json();
 
   if (response.ok) {
+    const crypto = await import("crypto");
+    const emailHash = crypto
+      .createHash("md5")
+      .update(email.toLowerCase())
+      .digest("hex");
+
+    await fetch(
+      `https://${SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${AUDIENCE_ID}/members/${emailHash}/tags`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `apikey ${API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tags: [{ name: "mamas-cheat-sheet", status: "active" }],
+        }),
+      }
+    );
+
     return NextResponse.json({ success: true });
   } else if (data.title === "Member Exists") {
-    return NextResponse.json({ error: "already_subscribed" }, { status: 400 });
+    // Still apply the tag even if already subscribed
+    const crypto = await import("crypto");
+    const emailHash = crypto
+      .createHash("md5")
+      .update(email.toLowerCase())
+      .digest("hex");
+
+    await fetch(
+      `https://${SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${AUDIENCE_ID}/members/${emailHash}/tags`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `apikey ${API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tags: [{ name: "mamas-cheat-sheet", status: "active" }],
+        }),
+      }
+    );
+    return NextResponse.json({ success: true });
   } else {
     return NextResponse.json({ error: data.detail || "Something went wrong" }, { status: 500 });
   }
