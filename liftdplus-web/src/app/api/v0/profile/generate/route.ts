@@ -22,8 +22,8 @@ interface SignalCounts {
 }
 
 interface MilestoneRow {
-  milestone_key: string;
-  min_articles_viewed: number;
+  feature_key: string;
+  min_articles_read: number;
   min_qualified_reads: number;
   min_saves: number;
   requires_checklist: boolean;
@@ -106,16 +106,13 @@ function determineMilestone(
   milestones: MilestoneRow[],
   signals: SignalCounts
 ): MilestoneRow {
-  // Milestones are ordered — find the highest one the user qualifies for.
-  // Fall back to the first milestone (basic_recommendations) if none match.
   const qualified = milestones.filter((m) => {
-    const articlesOk = signals.articles_viewed >= m.min_articles_viewed;
+    const articlesOk = signals.articles_viewed >= m.min_articles_read;
     const readsOk = signals.qualified_reads >= m.min_qualified_reads;
     const savesOk = signals.saves >= m.min_saves;
     const checklistOk = !m.requires_checklist || signals.checklist_complete;
     return articlesOk && readsOk && savesOk && checklistOk;
   });
-
   return qualified[qualified.length - 1] ?? milestones[0];
 }
 
@@ -169,7 +166,7 @@ User profile:
 - Deep reads (75%+ scroll): ${signals.qualified_reads}
 - Saved articles: ${signals.saves}
 - Checklist complete: ${signals.checklist_complete ? 'Yes' : 'Not yet'}
-- Profile milestone: ${milestone.milestone_key}
+- Profile milestone: ${milestone.feature_key}
 
 Recommendations pulled from database:
 - Cannabinoid ratio: ${ratioSummary}
@@ -223,27 +220,26 @@ export async function POST(req: NextRequest) {
     const { primary_goal_id: goalId, experience_level_id: experienceId } = userProfile;
 
     // 3. Count content signals
-    const { data: signalData, error: signalError } = await supabaseAdmin
-      .from('user_content_signals')
-      .select('signal_type')
+    const { data: eventData, error: signalError } = await supabaseAdmin
+      .from('user_events')
+      .select('event_name')
       .eq('user_id', userId);
 
     if (signalError) {
       return NextResponse.json({ error: 'Failed to load content signals' }, { status: 500 });
     }
 
-    // Get checklist status from user_events
     const { data: checklistData } = await supabaseAdmin
       .from('user_events')
       .select('id')
       .eq('user_id', userId)
-      .eq('event_type', 'checklist_completed')
+      .eq('event_name', 'checklist_completed')
       .limit(1);
 
     const signals: SignalCounts = {
-      articles_viewed: signalData?.filter((s) => s.signal_type === 'article_viewed').length ?? 0,
-      qualified_reads: signalData?.filter((s) => s.signal_type === 'qualified_read').length ?? 0,
-      saves: signalData?.filter((s) => s.signal_type === 'article_saved').length ?? 0,
+      articles_viewed: eventData?.filter((e) => e.event_name === 'article_viewed').length ?? 0,
+      qualified_reads: 0, // not yet tracked
+      saves: eventData?.filter((e) => e.event_name === 'post_archived').length ?? 0,
       checklist_complete: (checklistData?.length ?? 0) > 0,
     };
 
@@ -345,16 +341,16 @@ export async function POST(req: NextRequest) {
 
         // Recently read articles
         supabaseAdmin
-          .from('user_content_signals')
-          .select('post_id, signal_type')
+          .from('user_events')
+          .select('properties, event_name')
           .eq('user_id', userId)
-          .in('signal_type', ['article_viewed', 'qualified_read'])
+          .eq('event_name', 'article_viewed')
           .order('created_at', { ascending: false })
           .limit(5),
       ]);
 
     const recentPostIds =
-      recentSignals.data?.map((s: { post_id?: string | null }) => s.post_id).filter(Boolean) ?? [];
+      recentSignals.data?.map((s: any) => s.properties?.post_id).filter(Boolean) ?? [];
 
     const { data: recentArticles } =
       recentPostIds.length > 0
@@ -426,7 +422,7 @@ export async function POST(req: NextRequest) {
     const profileSnapshot = {
       goal_id: goalId,
       experience_level_id: experienceId,
-      milestone_key: currentMilestone.milestone_key,
+      milestone_key: currentMilestone.feature_key,
       unlocked_features: unlockedFeatures,
       terpenes: recData.terpenes,
       cannabinoid_ratio: recData.cannabinoidRatio,
@@ -443,7 +439,7 @@ export async function POST(req: NextRequest) {
       .from('user_recommendation_impressions')
       .insert({
         user_id: userId,
-        milestone_level: currentMilestone.milestone_key,
+        milestone_level: currentMilestone.feature_key,
         profile_snapshot: profileSnapshot,
         generated_summary: generatedSummary,
         goal_id: goalId,
@@ -470,7 +466,7 @@ export async function POST(req: NextRequest) {
           user_id: userId,
           primary_goal_id: goalId,
           experience_level_id: experienceId,
-          milestone_key: currentMilestone.milestone_key,
+          milestone_key: currentMilestone.feature_key,
           unlocked_features: unlockedFeatures,
           recommendation_id: impressionId,
           last_computed_at: new Date().toISOString(),
@@ -497,15 +493,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ─── GET — return cached profile without regenerating ─────────────────────────
-// Use this for page loads when you don't want to trigger a full regeneration.
-// POST regenerates; GET returns what's already stored.
-
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -522,10 +513,52 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ profile: null }, { status: 200 });
     }
 
+    // Check current signals to see if user has hit a new milestone
+    const { data: signalData } = await supabaseAdmin
+      .from('user_events')
+      .select('event_name')
+      .eq('user_id', user.id);
+
+    const { data: checklistData } = await supabaseAdmin
+      .from('user_events')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('event_name', 'checklist_completed')
+      .limit(1);
+
+    const signals = {
+      articles_viewed: signalData?.filter(s => s.event_name === 'article_viewed').length ?? 0,
+      qualified_reads: 0,
+      saves: signalData?.filter(s => s.event_name === 'post_archived').length ?? 0,
+      checklist_complete: (checklistData?.length ?? 0) > 0,
+    };
+
+    const { data: milestoneData } = await supabaseAdmin
+      .from('profile_unlock_milestones')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    const lastMilestoneKey = (profile.profile_snapshot as any)?.milestone_key ?? null;
+    let should_regenerate = false;
+
+    if (milestoneData?.length) {
+      const qualified = milestoneData.filter(m =>
+        signals.articles_viewed >= m.min_articles_read &&
+        signals.qualified_reads >= m.min_qualified_reads &&
+        signals.saves >= m.min_saves &&
+        (!m.requires_checklist || signals.checklist_complete)
+      );
+      const currentMilestone = qualified[qualified.length - 1] ?? milestoneData[0];
+      if (currentMilestone.feature_key !== lastMilestoneKey) {
+        should_regenerate = true;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       profile: profile.profile_snapshot,
       generated_at: profile.created_at,
+      should_regenerate,
     });
   } catch (error) {
     console.error('Profile fetch error:', error);
