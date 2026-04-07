@@ -677,14 +677,17 @@ export default function DispensaryProfilePage() {
   const goalLabel = GOAL_LABELS[profile.goal_id] ?? profile.goal_id;
   const experienceLabel =
     EXPERIENCE_LABELS[profile.experience_level_id] ?? profile.experience_level_id;
-  const dispensaryProducts = profile.products.filter((p) => p.available_at_dispensaries);
-  const shippableProducts = profile.products.filter((p) => p.ships_nationally);
-  const primaryProduct = dispensaryProducts[0] ?? shippableProducts[0] ?? null;
-  const backupProduct =
-    dispensaryProducts[1] ?? shippableProducts[0] ?? dispensaryProducts[0] ?? null;
-  const otherProducts = profile.products.filter(
-    (p) => p.id !== primaryProduct?.id && p.id !== backupProduct?.id
-  );
+  const getFilteredProducts = (filter: string) => {
+    if (filter === "ships") return profile.products.filter((p) => p.ships_nationally);
+    if (filter === "MI" || filter === "IL" || filter === "OH")
+      return profile.products.filter((p) => (p.available_in_states ?? []).includes(filter));
+    return profile.products;
+  };
+
+  const filteredProducts = getFilteredProducts(activeFilter);
+  const primaryProduct = filteredProducts[0] ?? null;
+  const backupProduct = filteredProducts[1] ?? null;
+  const otherProducts = filteredProducts.slice(2);
 
   const terpenesUnlocked = articleCount >= 5 || checklistComplete;
 
@@ -817,7 +820,15 @@ export default function DispensaryProfilePage() {
                 textTransform: "uppercase",
               }}
             >
-              Start here
+              {activeFilter === "ships"
+                ? "Ships to you"
+                : activeFilter === "MI"
+                ? "Available in Michigan"
+                : activeFilter === "IL"
+                ? "Available in Illinois"
+                : activeFilter === "OH"
+                ? "Available in Ohio"
+                : "Start here"}
             </p>
             {/* Filter row */}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
@@ -842,14 +853,12 @@ export default function DispensaryProfilePage() {
               ))}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {[primaryProduct, backupProduct].filter((p): p is Product => {
-                if (!p) return false;
-                if (activeFilter === "all") return true;
-                if (activeFilter === "ships") return p.ships_nationally;
-                return (p.available_in_states ?? []).includes(activeFilter);
-              }).filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i).map((p, i) => (
-                <ProductCard key={p.id} product={p} isPrimary={i === 0} />
-              ))}
+              {[primaryProduct, backupProduct]
+                .filter((p): p is Product => p !== null)
+                .filter((p, i, arr) => arr.findIndex((x) => x.id === p.id) === i)
+                .map((p, i) => (
+                  <ProductCard key={p.id} product={p} isPrimary={i === 0} />
+                ))}
             </div>
           </div>
         )}
@@ -1127,18 +1136,16 @@ export default function DispensaryProfilePage() {
                   marginBottom: 12,
                 }}
               >
-                Other good options
+                {activeFilter === "ships"
+                  ? "More options that ship"
+                  : activeFilter !== "all"
+                  ? "More options near you"
+                  : "Other good options"}
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {otherProducts
-                  .filter((p) => {
-                    if (activeFilter === "all") return true;
-                    if (activeFilter === "ships") return p.ships_nationally;
-                    return (p.available_in_states ?? []).includes(activeFilter);
-                  })
-                  .map((p) => (
-                    <ProductCard key={p.id} product={p} isPrimary={false} />
-                  ))}
+                {otherProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} isPrimary={false} />
+                ))}
               </div>
             </SectionCard>
           </div>
