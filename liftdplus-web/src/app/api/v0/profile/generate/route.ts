@@ -332,6 +332,7 @@ export async function POST(req: NextRequest) {
             starter_dose_note, experience_tags,
             onset_minutes_min, onset_minutes_max,
             ships_nationally, available_at_dispensaries, price_range,
+            hemp_derived, available_in_states,
             brands:brand_id ( name )
           `)
           .eq('primary_goal_id', goalId)

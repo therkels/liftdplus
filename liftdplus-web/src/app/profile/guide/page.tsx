@@ -62,6 +62,8 @@ interface Product {
   ships_nationally: boolean;
   available_at_dispensaries: boolean;
   price_range: string;
+  hemp_derived: boolean;
+  available_in_states: string[];
 }
 
 interface Profile {
@@ -295,9 +297,38 @@ function ProductCard({
               padding: "2px 8px",
             }}
           >
-            Ships to you
+            Ships nationally
           </span>
         )}
+        {product.hemp_derived && (
+          <span
+            style={{
+              fontSize: "0.65rem",
+              color: "#3b6d11",
+              border: "1px solid #97c459",
+              background: "#eaf3de",
+              borderRadius: 999,
+              padding: "2px 8px",
+            }}
+          >
+            Hemp · CBD only
+          </span>
+        )}
+        {(product.available_in_states ?? []).map((state) => (
+          <span
+            key={state}
+            style={{
+              fontSize: "0.65rem",
+              color: "#185fa5",
+              border: "1px solid #85b7eb",
+              background: "#e6f1fb",
+              borderRadius: 999,
+              padding: "2px 8px",
+            }}
+          >
+            {state === "MI" ? "Michigan" : state === "IL" ? "Illinois" : state === "OH" ? "Ohio" : state}
+          </span>
+        ))}
         {product.price_range && (
           <span
             style={{
@@ -405,6 +436,7 @@ export default function DispensaryProfilePage() {
   const [saveCount, setSaveCount] = useState(0);
   const [checklistComplete, setChecklistComplete] = useState(false);
   const [isRegenerated, setIsRegenerated] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string>("all");
 
   useEffect(() => {
     const loadSignals = async () => {
@@ -787,11 +819,37 @@ export default function DispensaryProfilePage() {
             >
               Start here
             </p>
+            {/* Filter row */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+              {["all", "ships", "MI", "IL", "OH"].map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setActiveFilter(f)}
+                  style={{
+                    fontSize: "0.7rem",
+                    fontWeight: 500,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: activeFilter === f ? "none" : "1px solid var(--rule)",
+                    background: activeFilter === f ? "#1a3a3a" : "transparent",
+                    color: activeFilter === f ? "#c8f135" : "#666666",
+                    cursor: "pointer",
+                  }}
+                >
+                  {f === "all" ? "All" : f === "ships" ? "Ships to me" : f === "MI" ? "Michigan" : f === "IL" ? "Illinois" : "Ohio"}
+                </button>
+              ))}
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <ProductCard product={primaryProduct} isPrimary={true} />
-              {backupProduct && backupProduct.id !== primaryProduct.id && (
-                <ProductCard product={backupProduct} isPrimary={false} />
-              )}
+              {[primaryProduct, backupProduct].filter((p): p is Product => {
+                if (!p) return false;
+                if (activeFilter === "all") return true;
+                if (activeFilter === "ships") return p.ships_nationally;
+                return (p.available_in_states ?? []).includes(activeFilter);
+              }).filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i).map((p, i) => (
+                <ProductCard key={p.id} product={p} isPrimary={i === 0} />
+              ))}
             </div>
           </div>
         )}
@@ -1072,9 +1130,15 @@ export default function DispensaryProfilePage() {
                 Other good options
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {otherProducts.map((p) => (
-                  <ProductCard key={p.id} product={p} isPrimary={false} />
-                ))}
+                {otherProducts
+                  .filter((p) => {
+                    if (activeFilter === "all") return true;
+                    if (activeFilter === "ships") return p.ships_nationally;
+                    return (p.available_in_states ?? []).includes(activeFilter);
+                  })
+                  .map((p) => (
+                    <ProductCard key={p.id} product={p} isPrimary={false} />
+                  ))}
               </div>
             </SectionCard>
           </div>
