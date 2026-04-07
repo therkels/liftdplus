@@ -868,6 +868,35 @@ export default function DispensaryProfilePage() {
           </div>
         )}
 
+        {/* ── 6. Other good options ── */}
+        {otherProducts.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <SectionCard>
+              <p
+                style={{
+                  fontWeight: 500,
+                  fontSize: 11,
+                  color: "#1a3a3a",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  marginBottom: 12,
+                }}
+              >
+                {activeFilter === "ships"
+                  ? "More options that ship"
+                  : activeFilter === "dispensary"
+                  ? "More dispensary options"
+                  : "Other good options"}
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {otherProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} isPrimary={false} />
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
         {/* ── 3. Your plan ── */}
         <SectionCard>
           <p
@@ -1126,35 +1155,6 @@ export default function DispensaryProfilePage() {
             will be here whenever you need it.
           </p>
         </div>
-
-        {/* ── 6. Other good options ── */}
-        {otherProducts.length > 0 && (
-          <div style={{ marginBottom: 16 }}>
-            <SectionCard>
-              <p
-                style={{
-                  fontWeight: 500,
-                  fontSize: 11,
-                  color: "#1a3a3a",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  marginBottom: 12,
-                }}
-              >
-                {activeFilter === "ships"
-                  ? "More options that ship"
-                  : activeFilter === "dispensary"
-                  ? "More dispensary options"
-                  : "Other good options"}
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {otherProducts.map((p) => (
-                  <ProductCard key={p.id} product={p} isPrimary={false} />
-                ))}
-              </div>
-            </SectionCard>
-          </div>
-        )}
 
         {/* ── 7. What to avoid ── */}
         {profile.avoidances.length > 0 && (
