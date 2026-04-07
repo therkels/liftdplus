@@ -337,7 +337,7 @@ export async function POST(req: NextRequest) {
           `)
           .eq('primary_goal_id', goalId)
           .eq('beginner_friendly', true)
-          .order('ships_nationally', { ascending: true }) // dispensary products first
+          .order('ships_nationally', { ascending: false }) // shipping products first, then dispensary
           .limit(6),
 
         // Recently read articles

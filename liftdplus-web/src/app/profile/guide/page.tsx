@@ -278,8 +278,8 @@ function ProductCard({
           <span
             style={{
               fontSize: "0.65rem",
-              color: "#666666",
-              background: "var(--rule)",
+              color: "#888888",
+              background: "#f0f0f0",
               borderRadius: 999,
               padding: "2px 8px",
             }}
@@ -333,8 +333,8 @@ function ProductCard({
           <span
             style={{
               fontSize: "0.65rem",
-              color: "#666666",
-              background: "var(--rule)",
+              color: "#888888",
+              background: "#f0f0f0",
               borderRadius: 999,
               padding: "2px 8px",
             }}
@@ -827,9 +827,9 @@ export default function DispensaryProfilePage() {
                   type="button"
                   onClick={() => setActiveFilter(f)}
                   style={{
-                    fontSize: "0.7rem",
+                    fontSize: "0.82rem",
                     fontWeight: 500,
-                    padding: "5px 12px",
+                    padding: "8px 18px",
                     borderRadius: 999,
                     border: activeFilter === f ? "none" : "1px solid var(--rule)",
                     background: activeFilter === f ? "#1a3a3a" : "transparent",
