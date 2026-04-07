@@ -314,21 +314,19 @@ function ProductCard({
             Hemp · CBD only
           </span>
         )}
-        {(product.available_in_states ?? []).map((state) => (
+        {!product.ships_nationally && (
           <span
-            key={state}
             style={{
               fontSize: "0.65rem",
-              color: "#185fa5",
-              border: "1px solid #85b7eb",
-              background: "#e6f1fb",
+              color: "#666666",
+              border: "1px solid #cccccc",
               borderRadius: 999,
               padding: "2px 8px",
             }}
           >
-            {state === "MI" ? "Michigan" : state === "IL" ? "Illinois" : state === "OH" ? "Ohio" : state}
+            Dispensary only
           </span>
-        ))}
+        )}
         {product.price_range && (
           <span
             style={{
@@ -343,6 +341,18 @@ function ProductCard({
           </span>
         )}
       </div>
+      <p
+        style={{
+          fontSize: "0.72rem",
+          color: "#888888",
+          lineHeight: 1.4,
+          marginTop: 8,
+        }}
+      >
+        {product.ships_nationally
+          ? "Order online — no dispensary visit needed."
+          : "Ask for this by name, or something similar. Your budtender can help you find the right fit."}
+      </p>
     </div>
   );
 }
@@ -679,8 +689,7 @@ export default function DispensaryProfilePage() {
     EXPERIENCE_LABELS[profile.experience_level_id] ?? profile.experience_level_id;
   const getFilteredProducts = (filter: string) => {
     if (filter === "ships") return profile.products.filter((p) => p.ships_nationally);
-    if (filter === "MI" || filter === "IL" || filter === "OH")
-      return profile.products.filter((p) => (p.available_in_states ?? []).includes(filter));
+    if (filter === "dispensary") return profile.products.filter((p) => !p.ships_nationally);
     return profile.products;
   };
 
@@ -822,17 +831,13 @@ export default function DispensaryProfilePage() {
             >
               {activeFilter === "ships"
                 ? "Ships to you"
-                : activeFilter === "MI"
-                ? "Available in Michigan"
-                : activeFilter === "IL"
-                ? "Available in Illinois"
-                : activeFilter === "OH"
-                ? "Available in Ohio"
+                : activeFilter === "dispensary"
+                ? "At a dispensary near you"
                 : "Start here"}
             </p>
             {/* Filter row */}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-              {["all", "ships", "MI", "IL", "OH"].map((f) => (
+              {["all", "ships", "dispensary"].map((f) => (
                 <button
                   key={f}
                   type="button"
@@ -848,7 +853,7 @@ export default function DispensaryProfilePage() {
                     cursor: "pointer",
                   }}
                 >
-                  {f === "all" ? "All" : f === "ships" ? "Ships to me" : f === "MI" ? "Michigan" : f === "IL" ? "Illinois" : "Ohio"}
+                  {f === "all" ? "All" : f === "ships" ? "Ships to me" : "At a dispensary"}
                 </button>
               ))}
             </div>
@@ -1138,8 +1143,8 @@ export default function DispensaryProfilePage() {
               >
                 {activeFilter === "ships"
                   ? "More options that ship"
-                  : activeFilter !== "all"
-                  ? "More options near you"
+                  : activeFilter === "dispensary"
+                  ? "More dispensary options"
                   : "Other good options"}
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
