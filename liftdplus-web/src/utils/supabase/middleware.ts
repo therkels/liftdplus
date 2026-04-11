@@ -38,11 +38,34 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  console.log(user);
-  if (user) {
-    console.log("here");
-    console.log(user);
+
+  const pathname = request.nextUrl.pathname;
+  if (
+    user &&
+    !pathname.startsWith("/onboarding/legacy") &&
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/auth") &&
+    !pathname.startsWith("/api")
+  ) {
+    try {
+      const { data: profileRow, error: profileError } = await supabase
+        .from("user_recommendation_profile")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!profileError && !profileRow) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding/legacy";
+        const redirectResponse = NextResponse.redirect(url);
+        redirectResponse.cookies.setAll(supabaseResponse.cookies.getAll());
+        return redirectResponse;
+      }
+    } catch {
+      // Fail open — avoid redirect loops if the query throws
+    }
   }
+
   if (
     !user &&
     request.nextUrl.pathname !== "/" &&

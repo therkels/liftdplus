@@ -5,6 +5,7 @@ type EventName =
   | "onboarding_step_viewed"
   | "onboarding_answer_selected"
   | "onboarding_completed"
+  | "legacy_onboarding_completed"
   | "signup_initiated"
   | "signup_completed"
   | "article_read";
