@@ -43,6 +43,7 @@ export async function updateSession(request: NextRequest) {
   if (
     user &&
     !pathname.startsWith("/onboarding/legacy") &&
+    !pathname.startsWith("/mamas-network") &&
     !pathname.startsWith("/login") &&
     !pathname.startsWith("/auth") &&
     !pathname.startsWith("/api")
@@ -70,7 +71,8 @@ export async function updateSession(request: NextRequest) {
     !user &&
     request.nextUrl.pathname !== "/" &&
     !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !request.nextUrl.pathname.startsWith("/auth") &&
+    !request.nextUrl.pathname.startsWith("/mamas-network")
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
