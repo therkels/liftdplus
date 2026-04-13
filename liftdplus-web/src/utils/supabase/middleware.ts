@@ -53,6 +53,7 @@ export async function updateSession(request: NextRequest) {
     ) {
       try {
         const { data: profileRow, error: profileError } = await supabase
+          .schema("private")
           .from("user_recommendation_profile")
           .select("user_id")
           .eq("user_id", user.id)
