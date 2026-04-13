@@ -8,7 +8,6 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const hasCode = request.nextUrl.searchParams.has("code");
-  if (hasCode) return supabaseResponse;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,45 +42,47 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (
-    user &&
-    !pathname.startsWith("/onboarding") &&
-    !pathname.startsWith("/mamas-network") &&
-    !pathname.startsWith("/login") &&
-    !pathname.startsWith("/auth") &&
-    !pathname.startsWith("/api")
-  ) {
-    try {
-      const { data: profileRow, error: profileError } = await supabase
-        .from("user_recommendation_profile")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+  if (!hasCode) {
+    if (
+      user &&
+      !pathname.startsWith("/onboarding") &&
+      !pathname.startsWith("/mamas-network") &&
+      !pathname.startsWith("/login") &&
+      !pathname.startsWith("/auth") &&
+      !pathname.startsWith("/api")
+    ) {
+      try {
+        const { data: profileRow, error: profileError } = await supabase
+          .from("user_recommendation_profile")
+          .select("user_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
 
-      if (!profileError && !profileRow) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/onboarding/legacy";
-        const redirectResponse = NextResponse.redirect(url);
-        redirectResponse.cookies.setAll(supabaseResponse.cookies.getAll());
-        return redirectResponse;
+        if (!profileError && !profileRow) {
+          const url = request.nextUrl.clone();
+          url.pathname = "/onboarding/legacy";
+          const redirectResponse = NextResponse.redirect(url);
+          redirectResponse.cookies.setAll(supabaseResponse.cookies.getAll());
+          return redirectResponse;
+        }
+      } catch {
+        // Fail open — avoid redirect loops if the query throws
       }
-    } catch {
-      // Fail open — avoid redirect loops if the query throws
     }
-  }
 
-  if (
-    !user &&
-    pathname !== "/" &&
-    !pathname.startsWith("/login") &&
-    !pathname.startsWith("/auth") &&
-    !pathname.startsWith("/mamas-network") &&
-    !pathname.startsWith("/onboarding")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+    if (
+      !user &&
+      pathname !== "/" &&
+      !pathname.startsWith("/login") &&
+      !pathname.startsWith("/auth") &&
+      !pathname.startsWith("/mamas-network") &&
+      !pathname.startsWith("/onboarding")
+    ) {
+      // no user, potentially respond by redirecting the user to the login page
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
