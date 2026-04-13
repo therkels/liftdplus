@@ -58,6 +58,13 @@ export async function updateSession(request: NextRequest) {
           .eq("user_id", user.id)
           .maybeSingle();
 
+        console.log("LEGACY CHECK:", {
+          userId: user?.id,
+          profileRow,
+          profileError: profileError?.message,
+          pathname,
+        });
+
         if (!profileError && !profileRow) {
           const url = request.nextUrl.clone();
           url.pathname = "/onboarding/legacy";
