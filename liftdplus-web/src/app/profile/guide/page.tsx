@@ -471,6 +471,7 @@ export default function DispensaryProfilePage() {
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [savedProducts, setSavedProducts] = useState<Product[]>([]);
   const [listOpen, setListOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     const loadSignals = async () => {
@@ -501,6 +502,16 @@ export default function DispensaryProfilePage() {
       setDisplayName(username || firstName || "");
     };
     fetchDisplayName();
+  }, []);
+
+  useEffect(() => {
+    const updateIsDesktop = () => {
+      setIsDesktop(window.innerWidth > 1024);
+    };
+
+    updateIsDesktop();
+    window.addEventListener("resize", updateIsDesktop);
+    return () => window.removeEventListener("resize", updateIsDesktop);
   }, []);
 
   // Auth check
@@ -584,16 +595,10 @@ export default function DispensaryProfilePage() {
 
     const loadSavedProducts = async () => {
       try {
-        const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data } = await supabase
-          .from("product_saves")
-          .select("product_id, product_name, brand_name, goal_id")
-          .eq("user_id", user.id);
+        const res = await fetch("/api/v0/user/product-saves", { cache: "no-store" });
+        if (!res.ok) return;
+        const payload = await res.json();
+        const data = payload?.saves;
 
         if (!data) return;
 
@@ -649,18 +654,22 @@ export default function DispensaryProfilePage() {
       if (!user) return;
 
       if (isAlreadySaved) {
-        await supabase
-          .from("product_saves")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("product_id", product.id);
+        await fetch(
+          `/api/v0/user/product-saves?product_id=${encodeURIComponent(product.id)}`,
+          {
+            method: "DELETE",
+          }
+        );
       } else {
-        await supabase.from("product_saves").insert({
-          user_id: user.id,
-          product_id: product.id,
-          product_name: product.name,
-          brand_name: product.brand_name,
-          goal_id: profile.goal_id,
+        await fetch("/api/v0/user/product-saves", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: product.id,
+            product_name: product.name,
+            brand_name: product.brand_name,
+            goal_id: profile.goal_id,
+          }),
         });
       }
 
@@ -1412,7 +1421,120 @@ export default function DispensaryProfilePage() {
         </div>
 
       </div>
-      {savedProducts.length > 0 && (
+      {savedProducts.length > 0 && isDesktop && (
+        <div
+          style={{
+            position: "fixed",
+            right: 24,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 280,
+            zIndex: 50,
+          }}
+        >
+          <div
+            style={{
+              borderRadius: 14,
+              overflow: "hidden",
+              boxShadow: "0 8px 18px rgba(0,0,0,0.18)",
+              background: "var(--cream)",
+            }}
+          >
+            <div
+              style={{
+                background: "#1a3a3a",
+                color: "#c8f135",
+                padding: "12px 14px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <p style={{ margin: 0, fontSize: "0.84rem", fontWeight: 600 }}>
+                My list · {savedProducts.length} saved
+              </p>
+            </div>
+            <div
+              style={{
+                background: "var(--cream)",
+                border: "1px solid var(--rule)",
+                borderTop: "none",
+                borderRadius: "0 0 14px 14px",
+              }}
+            >
+              <div style={{ padding: "14px 16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {savedProducts.map((saved) => (
+                    <div
+                      key={saved.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        paddingBottom: 8,
+                        borderBottom: "1px solid var(--rule)",
+                      }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <p
+                          style={{
+                            fontSize: "0.62rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.06em",
+                            color: "#666666",
+                            margin: 0,
+                          }}
+                        >
+                          {saved.brand_name}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.82rem",
+                            fontWeight: 600,
+                            color: "var(--foreground)",
+                            margin: 0,
+                          }}
+                        >
+                          {saved.name}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void handleSave(saved)}
+                        style={{
+                          border: "1px solid var(--rule)",
+                          background: "#ffffff",
+                          borderRadius: 999,
+                          fontSize: "0.7rem",
+                          color: "#666666",
+                          padding: "4px 10px",
+                          cursor: "pointer",
+                          flexShrink: 0,
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p
+                  style={{
+                    marginTop: 10,
+                    marginBottom: 0,
+                    fontSize: "0.72rem",
+                    color: "#666666",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Screenshot this or pull it up at the dispensary.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {savedProducts.length > 0 && !isDesktop && (
         <div
           style={{
             position: "fixed",
