@@ -76,13 +76,15 @@ export default function LegacyOnboardingQ4Page() {
     const experienceLabel = q2?.experienceLevel ?? "";
 
     const primary_goal_id = TOPIC_TO_GOAL[firstTopic] ?? "stress";
+    const secondary_goal_id = TOPIC_TO_GOAL[q1?.topics?.[1] ?? ""] ?? null;
+    const tertiary_goal_id = TOPIC_TO_GOAL[q1?.topics?.[2] ?? ""] ?? null;
     const experience_level_id = EXPERIENCE_TO_ID[experienceLabel] ?? "never";
 
     try {
       const res = await fetch("/api/v0/user/onboarding-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ primary_goal_id, experience_level_id }),
+        body: JSON.stringify({ primary_goal_id, experience_level_id, secondary_goal_id, tertiary_goal_id }),
       });
 
       if (!res.ok) {

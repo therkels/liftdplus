@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { primary_goal_id, experience_level_id } = await req.json();
+    const { primary_goal_id, experience_level_id, secondary_goal_id, tertiary_goal_id } = await req.json();
     if (!primary_goal_id || !experience_level_id) {
       return NextResponse.json({ error: 'Missing goal or experience level' }, { status: 400 });
     }
@@ -21,6 +21,8 @@ export async function POST(req: Request) {
         user_id: user.id,
         primary_goal_id,
         experience_level_id,
+        secondary_goal_id: secondary_goal_id ?? null,
+        goal_scores: tertiary_goal_id ? { tertiary_goal_id } : {},
         last_computed_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
 
