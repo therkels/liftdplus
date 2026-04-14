@@ -579,6 +579,53 @@ export default function DispensaryProfilePage() {
     }
   };
 
+  useEffect(() => {
+    if (!profile) return;
+
+    const loadSavedProducts = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+          .from("product_saves")
+          .select("product_id, product_name, brand_name, goal_id")
+          .eq("user_id", user.id);
+
+        if (!data) return;
+
+        setSavedProducts(
+          data.map((row) => ({
+            id: row.product_id,
+            name: row.product_name,
+            brand_name: row.brand_name,
+            goal_id: row.goal_id,
+            format_id: "",
+            thc_mg: null,
+            cbd_mg: null,
+            why_its_good: "",
+            starter_dose_note: "",
+            experience_tags: [],
+            onset_minutes_min: null,
+            onset_minutes_max: null,
+            ships_nationally: false,
+            available_at_dispensaries: false,
+            price_range: "",
+            hemp_derived: false,
+            available_in_states: [],
+          }))
+        );
+      } catch {
+        // no-op: saved products should remain usable even if fetch fails
+      }
+    };
+
+    loadSavedProducts();
+  }, [profile]);
+
   const handleSave = async (product: Product) => {
     const isAlreadySaved = savedProducts.some((saved) => saved.id === product.id);
 
@@ -600,6 +647,22 @@ export default function DispensaryProfilePage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+
+      if (isAlreadySaved) {
+        await supabase
+          .from("product_saves")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("product_id", product.id);
+      } else {
+        await supabase.from("product_saves").insert({
+          user_id: user.id,
+          product_id: product.id,
+          product_name: product.name,
+          brand_name: product.brand_name,
+          goal_id: profile.goal_id,
+        });
+      }
 
       await supabase.from("user_events").insert({
         event_name: "product_saved",
