@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -475,8 +475,15 @@ export default function DispensaryProfilePage() {
   const [isRegenerated, setIsRegenerated] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [savedProducts, setSavedProducts] = useState<Product[]>([]);
-  const [listOpen, setListOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [listOverlayOpen, setListOverlayOpen] = useState(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const loadSignals = async () => {
@@ -507,16 +514,6 @@ export default function DispensaryProfilePage() {
       setDisplayName(username || firstName || "");
     };
     fetchDisplayName();
-  }, []);
-
-  useEffect(() => {
-    const updateIsDesktop = () => {
-      setIsDesktop(window.innerWidth > 1024);
-    };
-
-    updateIsDesktop();
-    window.addEventListener("resize", updateIsDesktop);
-    return () => window.removeEventListener("resize", updateIsDesktop);
   }, []);
 
   // Auth check
@@ -648,7 +645,12 @@ export default function DispensaryProfilePage() {
     );
 
     if (!isAlreadySaved) {
-      setListOpen(true);
+      setShowToast(true);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => {
+        setShowToast(false);
+        toastTimerRef.current = null;
+      }, 2000);
     }
 
     if (!profile) return;
@@ -869,18 +871,46 @@ export default function DispensaryProfilePage() {
             borderBottom: "3px solid #4a8b8c",
           }}
         >
-          <p
+          <div
             style={{
-              fontSize: "0.68rem",
-              fontWeight: 700,
-              color: "#c8f135",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 12,
               marginBottom: 8,
             }}
           >
-            Your dispensary guide
-          </p>
+            <p
+              style={{
+                fontSize: "0.68rem",
+                fontWeight: 700,
+                color: "#c8f135",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                margin: 0,
+              }}
+            >
+              Your dispensary guide
+            </p>
+            {savedProducts.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setListOverlayOpen(true)}
+                style={{
+                  flexShrink: 0,
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  color: "#ffffff",
+                  background: "transparent",
+                  fontSize: 12,
+                  padding: "4px 12px",
+                  borderRadius: 20,
+                  cursor: "pointer",
+                }}
+              >
+                My list ({savedProducts.length})
+              </button>
+            ) : null}
+          </div>
           <h1
             style={{
               fontSize: 24,
@@ -1389,248 +1419,155 @@ export default function DispensaryProfilePage() {
         </div>
 
       </div>
-      {savedProducts.length > 0 && isDesktop && (
+
+      {showToast ? (
         <div
+          role="status"
           style={{
             position: "fixed",
-            right: 24,
-            top: "50%",
-            transform: "translateY(-50%)",
-            width: 280,
-            zIndex: 50,
+            top: 80,
+            right: 16,
+            zIndex: 200,
+            background: "#1a3a3a",
+            color: "#c8f135",
+            borderRadius: 8,
+            padding: "10px 16px",
+            fontSize: 13,
           }}
         >
-          <div
-            style={{
-              borderRadius: 14,
-              overflow: "hidden",
-              boxShadow: "0 8px 18px rgba(0,0,0,0.18)",
-              background: "var(--cream)",
-            }}
-          >
-            <div
-              style={{
-                background: "#1a3a3a",
-                color: "#c8f135",
-                padding: "12px 14px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <p style={{ margin: 0, fontSize: "0.84rem", fontWeight: 600 }}>
-                My list · {savedProducts.length} saved
-              </p>
-            </div>
-            <div
-              style={{
-                background: "var(--cream)",
-                border: "1px solid var(--rule)",
-                borderTop: "none",
-                borderRadius: "0 0 14px 14px",
-              }}
-            >
-              <div style={{ padding: "14px 16px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {savedProducts.map((saved) => (
-                    <div
-                      key={saved.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                        paddingBottom: 8,
-                        borderBottom: "1px solid var(--rule)",
-                      }}
-                    >
-                      <div style={{ minWidth: 0 }}>
-                        <p
-                          style={{
-                            fontSize: "0.62rem",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.06em",
-                            color: "#666666",
-                            margin: 0,
-                          }}
-                        >
-                          {saved.brand_name}
-                        </p>
-                        <p
-                          style={{
-                            fontSize: "0.82rem",
-                            fontWeight: 600,
-                            color: "var(--foreground)",
-                            margin: 0,
-                          }}
-                        >
-                          {saved.name}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => void handleSave(saved)}
-                        style={{
-                          border: "1px solid var(--rule)",
-                          background: "#ffffff",
-                          borderRadius: 999,
-                          fontSize: "0.7rem",
-                          color: "#666666",
-                          padding: "4px 10px",
-                          cursor: "pointer",
-                          flexShrink: 0,
-                        }}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <p
-                  style={{
-                    marginTop: 10,
-                    marginBottom: 0,
-                    fontSize: "0.72rem",
-                    color: "#666666",
-                    fontStyle: "italic",
-                  }}
-                >
-                  Screenshot this or pull it up at the dispensary.
-                </p>
-              </div>
-            </div>
-          </div>
+          Added to your dispensary list
         </div>
-      )}
-      {savedProducts.length > 0 && !isDesktop && (
+      ) : null}
+
+      {listOverlayOpen ? (
         <div
           style={{
             position: "fixed",
-            left: 0,
-            right: 0,
-            bottom: 64,
-            zIndex: 50,
-            padding: "0 12px 10px",
+            inset: 0,
+            zIndex: 100,
+            background: "#1a3a3a",
+            overflowY: "auto",
+            padding: "24px 20px 40px",
           }}
         >
           <div
             style={{
-              maxWidth: "48rem",
+              maxWidth: "36rem",
               margin: "0 auto",
-              borderRadius: 14,
-              overflow: "hidden",
-              boxShadow: "0 -6px 18px rgba(0,0,0,0.18)",
             }}
           >
             <div
               style={{
-                background: "#1a3a3a",
-                color: "#c8f135",
-                padding: "12px 14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                cursor: "pointer",
-                borderRadius: listOpen ? "14px 14px 0 0" : "999px",
-              }}
-              onClick={() => setListOpen((prev) => !prev)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setListOpen((prev) => !prev);
-                }
+                marginBottom: 12,
               }}
             >
-              <p style={{ margin: 0, fontSize: "0.84rem", fontWeight: 600 }}>
-                My list · {savedProducts.length} saved
-              </p>
-              <span style={{ fontSize: "0.95rem", lineHeight: 1 }}>^</span>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: 20,
+                  fontWeight: 600,
+                  color: "#ffffff",
+                }}
+              >
+                Your dispensary list
+              </h2>
+              <button
+                type="button"
+                onClick={() => setListOverlayOpen(false)}
+                aria-label="Close list"
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#ffffff",
+                  fontSize: 28,
+                  lineHeight: 1,
+                  cursor: "pointer",
+                  padding: 4,
+                }}
+              >
+                ×
+              </button>
             </div>
-            <div
+            <p
               style={{
-                maxHeight: listOpen ? 380 : 0,
-                overflow: "hidden",
-                transition: "max-height 0.25s ease",
-                background: "var(--cream)",
-                border: "1px solid var(--rule)",
-                borderTop: "none",
-                borderRadius: "0 0 14px 14px",
+                margin: "0 0 28px",
+                fontSize: 14,
+                color: "rgba(255,255,255,0.75)",
+                lineHeight: 1.5,
               }}
             >
-              <div style={{ padding: "14px 16px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {savedProducts.map((saved) => (
+              Show this to your budtender or screenshot it before you go.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {savedProducts.map((saved, idx) => (
+                <div key={saved.id}>
+                  {idx > 0 ? (
                     <div
-                      key={saved.id}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                        paddingBottom: 8,
-                        borderBottom: "1px solid var(--rule)",
+                        height: 1,
+                        background: "rgba(255,255,255,0.1)",
+                        margin: "0 0 20px",
+                      }}
+                    />
+                  ) : null}
+                  <div style={{ paddingBottom: 20 }}>
+                    <p
+                      style={{
+                        margin: "0 0 6px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: "#c8f135",
                       }}
                     >
-                      <div style={{ minWidth: 0 }}>
-                        <p
-                          style={{
-                            fontSize: "0.62rem",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.06em",
-                            color: "#666666",
-                            margin: 0,
-                          }}
-                        >
-                          {saved.brand_name}
-                        </p>
-                        <p
-                          style={{
-                            fontSize: "0.82rem",
-                            fontWeight: 600,
-                            color: "var(--foreground)",
-                            margin: 0,
-                          }}
-                        >
-                          {saved.name}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => void handleSave(saved)}
+                      {saved.brand_name}
+                    </p>
+                    <p
+                      style={{
+                        margin: "0 0 8px",
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#ffffff",
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {saved.name}
+                    </p>
+                    {saved.starter_dose_note ? (
+                      <p
                         style={{
-                          border: "1px solid var(--rule)",
-                          background: "#ffffff",
-                          borderRadius: 999,
-                          fontSize: "0.7rem",
-                          color: "#666666",
-                          padding: "4px 10px",
-                          cursor: "pointer",
-                          flexShrink: 0,
+                          margin: 0,
+                          fontSize: 13,
+                          color: "rgba(255,255,255,0.6)",
+                          lineHeight: 1.45,
                         }}
                       >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
+                        {saved.starter_dose_note}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
-                <p
-                  style={{
-                    marginTop: 10,
-                    marginBottom: 0,
-                    fontSize: "0.72rem",
-                    color: "#666666",
-                    fontStyle: "italic",
-                  }}
-                >
-                  Screenshot this or pull it up at the dispensary.
-                </p>
-              </div>
+              ))}
             </div>
+            <p
+              style={{
+                marginTop: 32,
+                marginBottom: 0,
+                fontSize: 13,
+                fontStyle: "italic",
+                color: "rgba(255,255,255,0.4)",
+                lineHeight: 1.5,
+              }}
+            >
+              Your guide is personalized to your goals and experience level.
+            </p>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
