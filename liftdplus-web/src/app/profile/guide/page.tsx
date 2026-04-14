@@ -898,9 +898,10 @@ export default function DispensaryProfilePage() {
                 onClick={() => setListOverlayOpen(true)}
                 style={{
                   flexShrink: 0,
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  color: "#ffffff",
-                  background: "transparent",
+                  border: "none",
+                  color: "#1a3a3a",
+                  background: "#c8f135",
+                  fontWeight: 600,
                   fontSize: 12,
                   padding: "4px 12px",
                   borderRadius: 20,
@@ -1445,23 +1446,23 @@ export default function DispensaryProfilePage() {
             position: "fixed",
             inset: 0,
             zIndex: 100,
-            background: "#1a3a3a",
+            background: "#f0ede6",
             overflowY: "auto",
-            padding: "24px 20px 40px",
           }}
         >
           <div
             style={{
-              maxWidth: "36rem",
-              margin: "0 auto",
+              background: "#1a3a3a",
+              padding: "16px 20px",
             }}
           >
             <div
               style={{
+                maxWidth: "36rem",
+                margin: "0 auto",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: 12,
               }}
             >
               <h2
@@ -1491,11 +1492,19 @@ export default function DispensaryProfilePage() {
                 ×
               </button>
             </div>
+          </div>
+          <div
+            style={{
+              maxWidth: "36rem",
+              margin: "0 auto",
+              padding: "24px 20px 40px",
+            }}
+          >
             <p
               style={{
                 margin: "0 0 28px",
                 fontSize: 14,
-                color: "rgba(255,255,255,0.75)",
+                color: "#6b7c74",
                 lineHeight: 1.5,
               }}
             >
@@ -1508,7 +1517,7 @@ export default function DispensaryProfilePage() {
                     <div
                       style={{
                         height: 1,
-                        background: "rgba(255,255,255,0.1)",
+                        background: "#bac8b2",
                         margin: "0 0 20px",
                       }}
                     />
@@ -1521,7 +1530,7 @@ export default function DispensaryProfilePage() {
                         fontWeight: 600,
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
-                        color: "#c8f135",
+                        color: "#6b938c",
                       }}
                     >
                       {saved.brand_name}
@@ -1531,7 +1540,7 @@ export default function DispensaryProfilePage() {
                         margin: "0 0 8px",
                         fontSize: 16,
                         fontWeight: 500,
-                        color: "#ffffff",
+                        color: "#313a43",
                         lineHeight: 1.3,
                       }}
                     >
@@ -1542,7 +1551,7 @@ export default function DispensaryProfilePage() {
                         style={{
                           margin: 0,
                           fontSize: 13,
-                          color: "rgba(255,255,255,0.6)",
+                          color: "#6b7c74",
                           lineHeight: 1.45,
                         }}
                       >
@@ -1559,7 +1568,7 @@ export default function DispensaryProfilePage() {
                 marginBottom: 0,
                 fontSize: 13,
                 fontStyle: "italic",
-                color: "rgba(255,255,255,0.4)",
+                color: "#6b7c74",
                 lineHeight: 1.5,
               }}
             >
