@@ -1473,7 +1473,7 @@ export default function DispensaryProfilePage() {
                   color: "#ffffff",
                 }}
               >
-                Your dispensary list
+                Your product list
               </h2>
               <button
                 type="button"
