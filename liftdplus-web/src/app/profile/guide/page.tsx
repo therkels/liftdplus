@@ -51,6 +51,8 @@ interface Product {
   id: string;
   name: string;
   brand_name: string;
+  primary_goal_id: string;
+  goal_ids: string[] | null;
   format_id: string;
   thc_mg: number | null;
   cbd_mg: number | null;
@@ -68,6 +70,9 @@ interface Product {
 
 interface Profile {
   goal_id: string;
+  secondary_goal_id: string | null;
+  tertiary_goal_id: string | null;
+  goal_scores: Record<string, unknown> | null;
   experience_level_id: string;
   milestone_key: string;
   unlocked_features: string[];
@@ -607,6 +612,8 @@ export default function DispensaryProfilePage() {
             id: row.product_id,
             name: row.product_name,
             brand_name: row.brand_name,
+            primary_goal_id: row.goal_id,
+            goal_ids: null,
             goal_id: row.goal_id,
             format_id: "",
             thc_mg: null,
@@ -820,16 +827,16 @@ export default function DispensaryProfilePage() {
   const goalLabel = GOAL_LABELS[profile.goal_id] ?? profile.goal_id;
   const experienceLabel =
     EXPERIENCE_LABELS[profile.experience_level_id] ?? profile.experience_level_id;
+  const allGoalIds = [
+    profile.goal_id,
+    profile.secondary_goal_id ?? null,
+    profile.tertiary_goal_id ?? (profile.goal_scores as any)?.tertiary_goal_id ?? null,
+  ].filter(Boolean) as string[];
   const getFilteredProducts = (filter: string) => {
     if (filter === "ships") return profile.products.filter((p) => p.ships_nationally);
     if (filter === "dispensary") return profile.products.filter((p) => !p.ships_nationally);
     return profile.products;
   };
-
-  const filteredProducts = getFilteredProducts(activeFilter);
-  const primaryProduct = filteredProducts[0] ?? null;
-  const backupProduct = filteredProducts[1] ?? null;
-  const otherProducts = filteredProducts.slice(2);
 
   const terpenesUnlocked = articleCount >= 5 || checklistComplete;
 
@@ -894,7 +901,7 @@ export default function DispensaryProfilePage() {
               color: "rgba(255,255,255,0.6)",
             }}
           >
-            {goalLabel} · {experienceLabel}
+            {allGoalIds.map(id => GOAL_LABELS[id] ?? id).join(', ')} · {experienceLabel}
           </p>
         </div>
 
@@ -948,11 +955,36 @@ export default function DispensaryProfilePage() {
           </p>
         )}
 
-        {/* ── 2. Start here — primary + backup product ── */}
-        {primaryProduct && (
-          <div style={{ marginBottom: 24 }}>
-            <p
+        {/* Filter row */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+          {["all", "ships", "dispensary"].map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setActiveFilter(f)}
               style={{
+                fontSize: "0.82rem",
+                fontWeight: 500,
+                padding: "8px 18px",
+                borderRadius: 999,
+                border: activeFilter === f ? "none" : "1px solid var(--rule)",
+                background: activeFilter === f ? "#1a3a3a" : "transparent",
+                color: activeFilter === f ? "#c8f135" : "#666666",
+                cursor: "pointer",
+              }}
+            >
+              {f === "all" ? "All" : f === "ships" ? "Ships to me" : "At a dispensary"}
+            </button>
+          ))}
+        </div>
+        {allGoalIds.map((goalId) => {
+          const goalProducts = getFilteredProducts(activeFilter).filter(
+            (p) => p.primary_goal_id === goalId || (p.goal_ids ?? []).includes(goalId)
+          ).slice(0, 3);
+          if (goalProducts.length < 1) return null;
+          return (
+            <div key={goalId} style={{ marginBottom: 32 }}>
+              <p style={{
                 fontSize: 13,
                 fontWeight: 500,
                 color: "#c8f135",
@@ -960,41 +992,11 @@ export default function DispensaryProfilePage() {
                 marginTop: 8,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-              }}
-            >
-              {activeFilter === "ships"
-                ? "Ships to you"
-                : activeFilter === "dispensary"
-                ? "At a dispensary near you"
-                : "Start here"}
-            </p>
-            {/* Filter row */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-              {["all", "ships", "dispensary"].map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setActiveFilter(f)}
-                  style={{
-                    fontSize: "0.82rem",
-                    fontWeight: 500,
-                    padding: "8px 18px",
-                    borderRadius: 999,
-                    border: activeFilter === f ? "none" : "1px solid var(--rule)",
-                    background: activeFilter === f ? "#1a3a3a" : "transparent",
-                    color: activeFilter === f ? "#c8f135" : "#666666",
-                    cursor: "pointer",
-                  }}
-                >
-                  {f === "all" ? "All" : f === "ships" ? "Ships to me" : "At a dispensary"}
-                </button>
-              ))}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {[primaryProduct, backupProduct]
-                .filter((p): p is Product => p !== null)
-                .filter((p, i, arr) => arr.findIndex((x) => x.id === p.id) === i)
-                .map((p, i) => (
+              }}>
+                {GOAL_LABELS[goalId] ?? goalId}
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {goalProducts.map((p, i) => (
                   <ProductCard
                     key={p.id}
                     product={p}
@@ -1003,44 +1005,10 @@ export default function DispensaryProfilePage() {
                     isSaved={savedProducts.some((saved) => saved.id === p.id)}
                   />
                 ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── 6. Other good options ── */}
-        {otherProducts.length > 0 && (
-          <div style={{ marginBottom: 16 }}>
-            <SectionCard>
-              <p
-                style={{
-                  fontWeight: 500,
-                  fontSize: 11,
-                  color: "#1a3a3a",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  marginBottom: 12,
-                }}
-              >
-                {activeFilter === "ships"
-                  ? "More options that ship"
-                  : activeFilter === "dispensary"
-                  ? "More dispensary options"
-                  : "Other good options"}
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {otherProducts.map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    isPrimary={false}
-                    onSave={handleSave}
-                    isSaved={savedProducts.some((saved) => saved.id === p.id)}
-                  />
-                ))}
               </div>
-            </SectionCard>
-          </div>
-        )}
+            </div>
+          );
+        })}
 
         {/* ── 3. Your plan ── */}
         <SectionCard>
