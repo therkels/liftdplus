@@ -203,7 +203,7 @@ export async function POST(req: NextRequest) {
     // 2. Get user's goal and experience level from recommendation profile
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from('user_recommendation_profile')
-      .select('primary_goal_id, experience_level_id')
+      .select('primary_goal_id, experience_level_id, secondary_goal_id, goal_scores')
       .eq('user_id', userId)
       .single();
 
@@ -218,6 +218,9 @@ export async function POST(req: NextRequest) {
     };
 
     const { primary_goal_id: goalId, experience_level_id: experienceId } = userProfile;
+    const secondary_goal_id = profileData.secondary_goal_id ?? null;
+    const tertiary_goal_id = (profileData.goal_scores as any)?.tertiary_goal_id ?? null;
+    const allGoalIds = [goalId, secondary_goal_id, tertiary_goal_id].filter(Boolean) as string[];
 
     // 3. Count content signals
     const { data: eventData, error: signalError } = await supabaseAdmin
@@ -332,13 +335,12 @@ export async function POST(req: NextRequest) {
             starter_dose_note, experience_tags,
             onset_minutes_min, onset_minutes_max,
             ships_nationally, available_at_dispensaries, price_range,
-            hemp_derived, available_in_states,
+            hemp_derived, available_in_states, goal_ids, primary_goal_id,
             brands:brand_id ( name )
           `)
-          .eq('primary_goal_id', goalId)
           .eq('beginner_friendly', true)
           .order('sort_order', { ascending: true }) // explicit sort order
-          .limit(6),
+          .limit(15),
 
         // Recently read articles
         supabaseAdmin
@@ -422,6 +424,8 @@ export async function POST(req: NextRequest) {
     // 8. Build the full profile snapshot (what gets stored + shown)
     const profileSnapshot = {
       goal_id: goalId,
+      secondary_goal_id,
+      tertiary_goal_id,
       experience_level_id: experienceId,
       milestone_key: currentMilestone.feature_key,
       unlocked_features: unlockedFeatures,
