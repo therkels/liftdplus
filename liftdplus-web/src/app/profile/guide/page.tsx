@@ -987,7 +987,7 @@ export default function DispensaryProfilePage() {
               <p style={{
                 fontSize: 13,
                 fontWeight: 500,
-                color: "#c8f135",
+                color: "#4f5a58",
                 marginBottom: 12,
                 marginTop: 8,
                 letterSpacing: "0.08em",
