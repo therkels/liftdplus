@@ -168,13 +168,15 @@ export default function OnboardingUsernamePage() {
         };
 
         const primary_goal_id = topicToGoal[firstTopic] ?? 'stress';
+        const secondary_goal_id = topicToGoal[onboardingData.topics?.[1] ?? ''] ?? null;
+        const tertiary_goal_id = topicToGoal[onboardingData.topics?.[2] ?? ''] ?? null;
         const experience_level_id = experienceToId[experienceLevel] ?? 'never';
 
         if (primary_goal_id && experience_level_id) {
           await fetch('/api/v0/user/onboarding-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ primary_goal_id, experience_level_id }),
+            body: JSON.stringify({ primary_goal_id, experience_level_id, secondary_goal_id, tertiary_goal_id }),
           });
         }
       } catch (e) {
