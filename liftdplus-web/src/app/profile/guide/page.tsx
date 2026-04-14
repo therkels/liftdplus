@@ -767,7 +767,7 @@ export default function DispensaryProfilePage() {
       style={{
         minHeight: "100vh",
         background: "var(--background)",
-        paddingBottom: 60,
+        paddingBottom: 124,
       }}
     >
       <div
@@ -1355,7 +1355,7 @@ export default function DispensaryProfilePage() {
             position: "fixed",
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: 64,
             zIndex: 50,
             padding: "0 12px 10px",
           }}
