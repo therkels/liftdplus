@@ -47,6 +47,8 @@ export async function updateSession(request: NextRequest) {
       user &&
       !pathname.startsWith("/onboarding") &&
       !pathname.startsWith("/mamas-network") &&
+      !pathname.startsWith("/welcome") &&
+      !pathname.startsWith("/disclaimer") &&
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&
       !pathname.startsWith("/api")
@@ -84,6 +86,8 @@ export async function updateSession(request: NextRequest) {
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&
       !pathname.startsWith("/mamas-network") &&
+      !pathname.startsWith("/welcome") &&
+      !pathname.startsWith("/disclaimer") &&
       !pathname.startsWith("/onboarding")
     ) {
       // no user, potentially respond by redirecting the user to the login page
