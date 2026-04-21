@@ -563,7 +563,9 @@ export async function GET(req: NextRequest) {
 
     const { data: profile, error } = await supabaseAdmin
       .from('user_recommendation_impressions')
-      .select('profile_snapshot, generated_summary, created_at, milestone_level')
+      .select(
+        'profile_snapshot, generated_summary, created_at, milestone_level, articles_viewed'
+      )
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -614,10 +616,15 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    const articlesAtLastGeneration = profile.articles_viewed ?? 0;
+
     return NextResponse.json({
       success: true,
       profile: profile.profile_snapshot,
       generated_at: profile.created_at,
+      last_generated_at: profile.created_at,
+      articles_viewed_count: signals.articles_viewed,
+      articles_at_last_generation: articlesAtLastGeneration,
       should_regenerate,
     });
   } catch (error) {

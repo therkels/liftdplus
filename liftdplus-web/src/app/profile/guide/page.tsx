@@ -538,8 +538,13 @@ export default function DispensaryProfilePage() {
         const getData = await getRes.json();
 
         if (getData.profile) {
-          if (getData.should_regenerate) {
-            // User has hit a new milestone — regenerate silently
+          const articlesViewedCount = getData.articles_viewed_count ?? 0;
+          const articlesAtLastGeneration = getData.articles_at_last_generation ?? 0;
+          const shouldRegenerateForNewReads =
+            articlesViewedCount > articlesAtLastGeneration;
+
+          if (getData.should_regenerate || shouldRegenerateForNewReads) {
+            // Milestone changed or user read new articles since last generation — regenerate silently
             setProfile(getData.profile); // show cached immediately
             setLoading(false);
             // Regenerate in background
