@@ -123,7 +123,7 @@ function buildPrompt(
   signals: SignalCounts,
   milestone: MilestoneRow,
   data: RecommendationData,
-  articleTitles: string
+  recentReadingContext: string
 ): string {
   const goalLabel = profile.primary_goal_id.replace(/_/g, ' ');
   const experienceLabel = profile.experience_level_id.replace(/_/g, ' ');
@@ -153,8 +153,8 @@ function buildPrompt(
     .map((p) => `${p.brand_name} ${p.name}`)
     .join(', ');
 
-  const recentReading = articleTitles
-    ? `Recent articles they've read: ${articleTitles}`
+  const recentReading = recentReadingContext
+    ? `The user has recently read these articles: ${recentReadingContext}. You must reference at least one specific concept or insight from these articles and connect it directly to your recommendation. This is a hard requirement: if your response does not include at least one concrete concept from the list above, it is invalid. Do not say "since you've been reading about X" - instead demonstrate the knowledge as if you already know what they learned. For example: "Because edibles metabolize through the liver and take 45-90 minutes to kick in, starting at 1mg gives you room to assess without overshooting." Show inference, not acknowledgment.`
     : 'No articles read yet.';
 
   return `You are writing a friendly, personalized dispensary profile summary for a cannabis beginner using the LIFTD+ app.
@@ -179,11 +179,38 @@ Recommendations pulled from database:
 ${recentReading}
 
 Write 2–3 sentences that feel like advice from a knowledgeable, calm friend — not a doctor, not a brochure, not a cannabis enthusiast.
-If their recent reading is relevant to their goal, briefly acknowledge what they already know before telling them what to do next.
+If no articles have been read, skip this entirely and do not reference reading at all.
 Speak directly to this person's goal (${goalLabel}) and experience level (${experienceLabel}).
 Be specific and actionable. Reference what to look for at a dispensary.
 Plain English only. Warm but not flowery. Never say "cannabis journey."
 Do not use markdown, headers, bullet points, or emoji. Plain sentences only.`;
+}
+
+function formatTopicFromSlug(slug?: string | null): string {
+  if (!slug) return 'General';
+  const firstChunk = slug.split('/').filter(Boolean)[0] ?? '';
+  if (!firstChunk) return 'General';
+  return firstChunk
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function extractKeyConceptFromConfig(config: any): string | null {
+  if (!config || typeof config !== 'object') return null;
+  const candidates = [
+    config.summary,
+    config.excerpt,
+    config.description,
+    config.key_concept,
+    config.key_takeaway,
+    config.meta_description,
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+  return null;
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
@@ -357,10 +384,30 @@ export async function POST(req: NextRequest) {
 
     const { data: recentArticles } =
       recentPostIds.length > 0
-        ? await supabaseAdmin.from('post').select('id, title').in('id', recentPostIds)
-        : { data: [] as { id: string; title: string }[] | null };
+        ? await supabaseAdmin
+            .from('post')
+            .select('id, title, secondary_title, slug, config')
+            .in('id', recentPostIds)
+        : {
+            data: [] as {
+              id: string;
+              title: string;
+              secondary_title: string | null;
+              slug: string | null;
+              config: any;
+            }[] | null,
+          };
 
-    const articleTitles = (recentArticles ?? []).map((a) => a.title).join(', ');
+    const recentReadingContext = (recentArticles ?? [])
+      .map((article: any) => {
+        const topic = formatTopicFromSlug(article.slug);
+        const concept =
+          article.secondary_title?.trim() ||
+          extractKeyConceptFromConfig(article.config) ||
+          'No summary available';
+        return `${article.title} (Topic: ${topic}; Key concept: ${concept})`;
+      })
+      .join('; ');
 
     // 6. Shape the recommendation data
     const recData: RecommendationData = {
@@ -405,7 +452,7 @@ export async function POST(req: NextRequest) {
                 signals,
                 currentMilestone,
                 recData,
-                articleTitles
+                recentReadingContext
               ),
             },
           ],
