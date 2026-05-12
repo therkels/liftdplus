@@ -19,6 +19,9 @@ export const metadata: Metadata = {
     shortcut: "/liftd-icon.svg",
     apple: "/liftd-icon.svg",
   },
+  verification: {
+    google: "Af8K6Ez_3BJwofpTPEoPBRsFrOofR2EVFhwN7lY4jQ0",
+  },
 };
 
 export default function RootLayout({
