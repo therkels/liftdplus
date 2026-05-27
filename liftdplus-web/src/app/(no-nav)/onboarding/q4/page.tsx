@@ -7,49 +7,78 @@ import { sendGAEvent } from "@next/third-parties/google";
 import { trackEvent } from "@/utils/analytics";
 
 const OPTIONS = [
-  "How to avoid feeling mentally foggy",
-  "How to avoid anxiety or feeling overwhelmed",
-  "How to find the right dosage",
-  "What to expect from different products",
-  "I'm mostly exploring and learning",
+  "How to feel relaxed without feeling out of control",
+  "How to avoid feeling too high or mentally foggy",
+  "How dosage actually works",
+  "What different products and formats feel like",
+  "How to find products that fit my lifestyle",
+  "I'm mostly here to learn and explore",
 ] as const;
 
 const STORAGE_KEY = "liftd_onboarding_q4";
 
+function ProgressDots({ activeStep }: { activeStep: 1 | 2 | 3 }) {
+  const dot = (step: 1 | 2 | 3) =>
+    step === activeStep
+      ? { width: "24px", height: "8px", background: "#ccff33" }
+      : step < activeStep
+        ? { width: "8px", height: "8px", background: "rgba(204,255,51,0.4)" }
+        : { width: "8px", height: "8px", background: "rgba(255,255,255,0.2)" };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+      {[1, 2, 3].map((step) => (
+        <div
+          key={step}
+          style={{ ...dot(step as 1 | 2 | 3), borderRadius: "9999px" }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function OnboardingQ4Page() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     sendGAEvent("event", "onboarding_q4_viewed", {});
   }, []);
 
   useEffect(() => {
-    trackEvent("onboarding_step_viewed", { step: "q4_goal" });
+    trackEvent("onboarding_step_viewed", { step: "q4_learning_goals" });
   }, []);
 
-  const select = (option: string) => {
-    setSelected(option);
-    trackEvent("onboarding_answer_selected", { step: "q4_goal", answer: option });
+  const toggle = (option: string) => {
+    trackEvent("onboarding_answer_selected", { step: "q4_learning_goals", answer: option });
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(option)) {
+        next.delete(option);
+      } else {
+        next.add(option);
+      }
+      return next;
+    });
   };
 
   const handleContinue = () => {
-    if (!selected) return;
-    sendGAEvent("event", "onboarding_q4_completed", { learningGoal: selected });
+    if (selected.size === 0) return;
+    const learningGoals = Array.from(selected);
+    sendGAEvent("event", "onboarding_q4_completed", { learningGoals });
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ learningGoal: selected }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ learningGoal: learningGoals }));
     }
-    router.push("/onboarding/username");
+    router.push("/onboarding/disclaimer-final");
   };
 
-  const canContinue = selected !== null;
+  const canContinue = selected.size > 0;
 
   return (
     <div
       className="relative m-0 min-h-screen h-screen w-[100vw] overflow-auto p-0"
       style={{ fontSize: "16px", WebkitTextSizeAdjust: "100%" }}
     >
-      {/* Full-screen background image */}
       <div className="fixed inset-0 z-0">
         <Image
           src="/images/satria-perkasa-gIuRClqbqzQ-unsplash.jpg"
@@ -62,7 +91,6 @@ export default function OnboardingQ4Page() {
         />
       </div>
 
-      {/* Blur overlay */}
       <div
         className="fixed inset-0 z-[1]"
         style={{
@@ -71,7 +99,6 @@ export default function OnboardingQ4Page() {
         }}
       />
 
-      {/* Dark overlay */}
       <div
         className="fixed inset-0 z-[2]"
         style={{
@@ -80,27 +107,15 @@ export default function OnboardingQ4Page() {
         }}
       />
 
-      {/* Content */}
-      <div
-        className="relative z-[3] min-h-screen flex flex-col items-center justify-center w-full"
-        style={{ fontSize: "16px", WebkitTextSizeAdjust: "100%" }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "540px",
-            margin: "0 auto",
-            padding: "0 24px",
-          }}
-        >
-          {/* Top nav row: Back + Progress dots */}
+      <div className="relative z-[3] min-h-screen flex flex-col items-center justify-center w-full py-8">
+        <div style={{ width: "100%", maxWidth: "540px", margin: "0 auto", padding: "0 24px" }}>
           <div className="w-full flex items-center justify-between mb-6">
             <div
               role="button"
               tabIndex={0}
               onClick={() => router.push("/onboarding/q3")}
               onKeyDown={(e) => e.key === "Enter" && router.push("/onboarding/q3")}
-              className="inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="inline-flex items-center gap-1.5 cursor-pointer"
               style={{
                 color: "rgba(255,255,255,0.75)",
                 fontSize: "14px",
@@ -108,105 +123,47 @@ export default function OnboardingQ4Page() {
                 minHeight: "44px",
                 padding: "0 8px",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "rgba(255,255,255,0.95)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "rgba(255,255,255,0.75)";
-              }}
             >
               ← Back
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-              }}
-            >
-              <div
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "9999px",
-                  background: "rgba(204,255,51,0.4)",
-                }}
-              />
-              <div
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "9999px",
-                  background: "rgba(204,255,51,0.4)",
-                }}
-              />
-              <div
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "9999px",
-                  background: "rgba(204,255,51,0.4)",
-                }}
-              />
-              <div
-                style={{
-                  width: "24px",
-                  height: "8px",
-                  borderRadius: "9999px",
-                  background: "#ccff33",
-                }}
-              />
-            </div>
+            <ProgressDots activeStep={3} />
           </div>
 
-          {/* Icon */}
           <div className="flex justify-center mb-4">
-            <div className="brightness-0 invert">
-              <Image
-                src="/liftd-icon.svg"
-                alt="LIFTD+"
-                width={52}
-                height={52}
-                className="w-[52px] h-[52px]"
-              />
-            </div>
+            <Image src="/liftd-icon.svg" alt="LIFTD+" width={140} height={140} className="w-[140px] h-[140px]" />
           </div>
 
-          {/* Question header */}
           <div className="text-center mt-2 mb-6">
             <p
               className="mb-2 text-[10px] font-bold uppercase tracking-widest"
-              style={{ color: "#ccff33" }}
+              style={{ color: "#6b938c" }}
             >
-              QUESTION 4 OF 4
+              QUESTION 3 OF 3
             </p>
             <h1 className="text-[22px] font-bold text-white leading-snug">
-              What would you most like to understand about cannabis?
+              What would you most like help understanding?
             </h1>
+            <p className="mt-2 text-sm text-white/70">Select all that apply.</p>
           </div>
 
-          {/* Options list */}
           <div className="flex flex-col gap-2 mb-4 w-full">
             {OPTIONS.map((option) => {
-              const isSelected = selected === option;
+              const isSelected = selected.has(option);
               return (
                 <div
                   key={option}
                   role="button"
                   tabIndex={0}
-                  onClick={() => select(option)}
+                  onClick={() => toggle(option)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      select(option);
+                      toggle(option);
                     }
                   }}
                   className="rounded-xl cursor-pointer"
                   style={{
-                    background: isSelected
-                      ? "rgba(204,255,51,0.13)"
-                      : "rgba(255,255,255,0.18)",
+                    background: isSelected ? "rgba(204,255,51,0.13)" : "rgba(255,255,255,0.18)",
                     border: "1px solid",
                     borderColor: isSelected ? "#ccff33" : "rgba(255,255,255,0.14)",
                     color: isSelected ? "#ffffff" : "rgba(255,255,255,0.75)",
@@ -230,19 +187,14 @@ export default function OnboardingQ4Page() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      boxShadow: isSelected ? "0 0 8px rgba(204,255,51,0.35)" : undefined,
                       flexShrink: 0,
                     }}
                   >
                     {isSelected && (
-                      <svg
-                        viewBox="0 0 13 13"
-                        fill="none"
-                        style={{ width: "13px", height: "13px" }}
-                      >
+                      <svg viewBox="0 0 13 13" fill="none" style={{ width: "13px", height: "13px" }}>
                         <path
                           d="M2 6.5l3.5 3.5 5.5-6"
-                          stroke="#1a2530"
+                          stroke="#313a43"
                           strokeWidth="2.2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -255,7 +207,6 @@ export default function OnboardingQ4Page() {
             })}
           </div>
 
-          {/* Continue button */}
           <div
             role="button"
             tabIndex={canContinue ? 0 : -1}
@@ -270,9 +221,8 @@ export default function OnboardingQ4Page() {
               fontWeight: 700,
               fontSize: "16px",
               textAlign: "center",
-              transition: "all 0.2s ease",
               backgroundColor: canContinue ? "#ccff33" : "rgba(255,255,255,0.12)",
-              color: canContinue ? "#1a2530" : "rgba(255,255,255,0.3)",
+              color: canContinue ? "#313a43" : "rgba(255,255,255,0.3)",
               boxShadow: canContinue ? "0 0 28px rgba(204,255,51,0.3)" : "none",
               cursor: canContinue ? "pointer" : "not-allowed",
             }}

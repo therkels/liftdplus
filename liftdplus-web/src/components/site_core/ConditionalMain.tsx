@@ -10,9 +10,10 @@ export default function ConditionalMain({ children }: ConditionalMainProps) {
   const pathname = usePathname();
 
   const isNoNavRoute =
-    pathname === "/welcome" ||
+    pathname === "/about" ||
+    pathname === "/faq" ||
     pathname.startsWith("/login") ||
-    pathname === "/onboarding/username" ||
+    pathname === "/getting-started" ||
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/disclaimer");
 

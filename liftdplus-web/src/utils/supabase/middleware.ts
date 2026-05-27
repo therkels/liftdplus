@@ -47,8 +47,10 @@ export async function updateSession(request: NextRequest) {
       user &&
       !pathname.startsWith("/onboarding") &&
       !pathname.startsWith("/mamas-network") &&
-      !pathname.startsWith("/welcome") &&
       !pathname.startsWith("/disclaimer") &&
+      !pathname.startsWith("/getting-started") &&
+      !pathname.startsWith("/about") &&
+      !pathname.startsWith("/faq") &&
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&
       !pathname.startsWith("/api")
@@ -83,11 +85,14 @@ export async function updateSession(request: NextRequest) {
     if (
       !user &&
       pathname !== "/" &&
+      !pathname.startsWith("/about") &&
+      !pathname.startsWith("/faq") &&
+      !pathname.startsWith("/api") &&
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&
       !pathname.startsWith("/mamas-network") &&
-      !pathname.startsWith("/welcome") &&
       !pathname.startsWith("/disclaimer") &&
+      !pathname.startsWith("/getting-started") &&
       !pathname.startsWith("/onboarding")
     ) {
       // no user, potentially respond by redirecting the user to the login page

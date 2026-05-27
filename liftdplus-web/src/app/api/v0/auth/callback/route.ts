@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     }
 
     if (!error) {
-      const redirectPath = isNewUser ? "/onboarding/username" : "/explore";
+      const redirectPath = isNewUser ? "/getting-started" : "/explore";
 
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";

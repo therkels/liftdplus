@@ -1,0 +1,685 @@
+/* Shared onboarding gradient — no background images */
+.gradientBg {
+  background: linear-gradient(
+    135deg,
+    rgba(122, 155, 147, 0.85) 0%,
+    rgba(79, 90, 88, 0.85) 100%
+  );
+}
+
+.flow {
+  width: 100%;
+}
+
+/* Break out of section inner for full-width transitions */
+.fullBleed {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.transitionScreen {
+  position: relative;
+  min-height: min(100vh, 900px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  box-sizing: border-box;
+}
+
+.transitionInner {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.transitionBackBtn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #ffffff;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.transitionBackBtn:hover {
+  opacity: 1;
+}
+
+/* Shared transition typography */
+.transitionHeadline {
+  margin: 0;
+  font-size: clamp(2rem, 5.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #ffffff;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.transitionBody {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #ffffff;
+  text-align: center;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Welcome */
+.welcomeBodyGroup {
+  margin-top: 40px;
+}
+
+.welcomeBodyGroup .transitionBody + .transitionBody {
+  margin-top: 1.25rem;
+}
+
+.welcomeCheckList {
+  list-style: none;
+  margin: 50px auto 0;
+  padding: 0;
+  max-width: 650px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.welcomeCheckItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 2;
+  color: #ffffff;
+  text-align: left;
+  padding-left: 60px;
+}
+
+.welcomeCheckMark {
+  color: #ccff33;
+  font-weight: 700;
+  font-size: 1.35rem;
+  line-height: 1.4;
+  flex-shrink: 0;
+  margin-left: -44px;
+  width: 30px;
+  text-align: center;
+}
+
+.welcomeCtaWrap {
+  margin-top: 60px;
+}
+
+/* Disclaimer */
+.disclaimerBodyGroup {
+  margin-top: 40px;
+}
+
+.disclaimerBodyGroup .transitionBody + .transitionBody {
+  margin-top: 30px;
+}
+
+.disclaimerCheckboxWrap {
+  margin-top: 50px;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.disclaimerCheckboxRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.disclaimerCheckboxLabel {
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #ffffff;
+}
+
+.disclaimerCheckboxBox {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.disclaimerCheckboxBoxChecked {
+  background: #ccff33;
+  border-color: #ccff33;
+}
+
+.disclaimerCtaWrap {
+  margin-top: 60px;
+}
+
+/* CTA buttons */
+.ctaBtn {
+  display: inline-block;
+  min-width: 220px;
+  max-width: 100%;
+  padding: 16px 40px;
+  border-radius: 9999px;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease,
+    box-shadow 0.2s ease;
+  text-align: center;
+  background: #ccff33;
+  color: #313a43;
+  box-shadow: 0 4px 28px rgba(204, 255, 51, 0.32);
+}
+
+.ctaBtn:hover:not(:disabled) {
+  background: #b8e62e;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 32px rgba(204, 255, 51, 0.4);
+}
+
+.ctaBtn:disabled {
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Question panels (Q1–Q3) */
+.flowPanelWrap {
+  width: 100%;
+  max-width: 560px;
+  margin: 24px auto 0;
+}
+
+.fullBleed .flowPanelWrap {
+  margin-top: 0;
+  max-width: 560px;
+}
+
+.questionBleed {
+  padding: 48px 24px 64px;
+  box-sizing: border-box;
+}
+
+.panel {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 32px 28px 36px;
+  min-height: 320px;
+  color: #fff;
+}
+
+.panelContent {
+  position: relative;
+}
+
+.questionsCard {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  padding: 20px 18px 22px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin-bottom: 20px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  min-height: 44px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.75);
+  transition: color 0.15s ease;
+}
+
+.backBtn:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.backBtnLight {
+  color: #6b938c;
+}
+
+.backBtnLight:hover {
+  color: #4f5a58;
+}
+
+.backSpacer {
+  width: 64px;
+}
+
+.iconWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.icon {
+  width: 72px;
+  height: 72px;
+}
+
+.iconInvert {
+  filter: brightness(0) invert(1);
+}
+
+.eyebrowOnDark {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a8c4be;
+  margin: 0 0 10px;
+}
+
+.headlineOnDark {
+  text-align: center;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.subhead {
+  text-align: center;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 20px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.progressDots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dot {
+  border-radius: 9999px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.dotActive {
+  width: 24px;
+  background: #ccff33;
+}
+
+.dotDone {
+  width: 8px;
+  background: rgba(204, 255, 51, 0.45);
+}
+
+.dotPending {
+  width: 8px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  width: 100%;
+}
+
+.option:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.optionSelected {
+  background: rgba(204, 255, 51, 0.13);
+  border-color: #ccff33;
+  color: #fff;
+  font-weight: 600;
+}
+
+.optionCheck {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optionCheckSelected {
+  background: #ccff33;
+  border: none;
+}
+
+.continueBtn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 9999px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.continueBtnActive {
+  background: #ccff33;
+  color: #313a43;
+  box-shadow: 0 4px 24px rgba(204, 255, 51, 0.3);
+}
+
+.continueBtnDisabled {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.35);
+  cursor: not-allowed;
+}
+
+.checkboxBox {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkboxBoxChecked {
+  background: #ccff33;
+  border: none;
+}
+
+.guideCard {
+  background: #fff;
+  border: 1px solid #e4e8ea;
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+}
+
+.guideTopic {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b938c;
+  margin: 0 0 10px;
+}
+
+.guideTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #313a43;
+  margin: 0 0 12px;
+  line-height: 1.25;
+}
+
+.guideBody {
+  font-size: 0.95rem;
+  color: #5a656e;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.emailForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.emailInput {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid #d0d8d6;
+  font-size: 1rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.emailInput:focus {
+  outline: 2px solid #6b938c;
+  outline-offset: 1px;
+}
+
+.emailBtn {
+  padding: 14px 20px;
+  border-radius: 9999px;
+  border: none;
+  background: #6b938c;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.emailBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.emailNote {
+  font-size: 0.8rem;
+  color: #8a9499;
+  margin-top: 12px;
+}
+
+.emailSuccess {
+  color: #6b938c;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.emailError {
+  color: #c45c5c;
+  font-size: 0.88rem;
+  margin-top: 8px;
+}
+
+.supportGrid {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.supportRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.supportRowBottom {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.supportRowBottom .topicBtn:nth-child(1) {
+  grid-column: 2 / span 2;
+}
+
+.supportRowBottom .topicBtn:nth-child(2) {
+  grid-column: 4 / span 2;
+}
+
+.topicBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 22px 32px;
+  border: none;
+  border-radius: 12px;
+  background: #6b938c;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.35;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 4px 16px rgba(107, 147, 140, 0.28);
+}
+
+.topicBtn:hover {
+  background: #4f5a58;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .supportRow {
+    grid-template-columns: 1fr;
+  }
+
+  .supportRowBottom {
+    grid-template-columns: 1fr;
+  }
+
+  .supportRowBottom .topicBtn:nth-child(1),
+  .supportRowBottom .topicBtn:nth-child(2) {
+    grid-column: auto;
+  }
+
+  .transitionScreen {
+    min-height: min(85vh, 720px);
+    padding: 48px 20px 40px;
+  }
+
+  .questionBleed {
+    padding: 32px 20px 40px;
+  }
+
+  .welcomeBodyGroup {
+    margin-top: 28px;
+  }
+
+  .welcomeCheckList {
+    margin-top: 32px;
+    gap: 16px;
+  }
+
+  .welcomeCtaWrap,
+  .disclaimerCtaWrap {
+    margin-top: 40px;
+  }
+
+  .disclaimerBodyGroup {
+    margin-top: 28px;
+  }
+
+  .disclaimerCheckboxWrap {
+    margin-top: 32px;
+  }
+
+  .transitionBackBtn {
+    top: 16px;
+    left: 16px;
+  }
+
+  .welcomeCheckItem {
+    padding-left: 44px;
+  }
+
+  .welcomeCheckMark {
+    margin-left: -32px;
+    width: 24px;
+    font-size: 1.2rem;
+  }
+
+  .panel {
+    padding: 24px 18px 28px;
+  }
+
+  .icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .welcomeCheckList,
+  .disclaimerCheckboxRow {
+    max-width: 100%;
+  }
+}
