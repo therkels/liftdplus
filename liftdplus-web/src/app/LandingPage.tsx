@@ -103,7 +103,7 @@ export default function LandingPage() {
       <section className={styles.hero}>
         <img
           className={styles.heroImage}
-          src="/images/LIFTD+ V2 Hero.png"
+          src="/images/liftd-v2-hero.png"
           alt=""
         />
         <div className={styles.heroNavGradient} aria-hidden />
