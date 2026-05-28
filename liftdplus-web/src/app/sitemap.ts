@@ -9,12 +9,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select("slug, published_at")
     .eq("post_status", "published");
 
+  console.log("Sitemap query result:", { dataLength: data?.length, error });
+
   if (error) {
     console.error("Sitemap error:", error);
     return [
       { url: `${BASE_URL}/`, lastModified: new Date(), priority: 1 },
-      { url: `${BASE_URL}/explore`, lastModified: new Date() },
-      { url: `${BASE_URL}/resources`, lastModified: new Date() },
+      { url: `${BASE_URL}/resources`, lastModified: new Date(), priority: 0.9 },
     ];
   }
 
@@ -22,10 +23,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("No published articles found in sitemap");
     return [
       { url: `${BASE_URL}/`, lastModified: new Date(), priority: 1 },
-      { url: `${BASE_URL}/explore`, lastModified: new Date() },
-      { url: `${BASE_URL}/resources`, lastModified: new Date() },
+      { url: `${BASE_URL}/resources`, lastModified: new Date(), priority: 0.9 },
     ];
   }
+
+  console.log(`Building sitemap with ${data.length} articles`);
 
   const posts: MetadataRoute.Sitemap = data.map((row) => ({
     url: `${BASE_URL}/resources/${encodeURIComponent(row.slug)}`,
@@ -36,7 +38,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: `${BASE_URL}/`, lastModified: new Date(), priority: 1 },
-    { url: `${BASE_URL}/explore`, lastModified: new Date() },
     { url: `${BASE_URL}/resources`, lastModified: new Date(), priority: 0.9 },
     ...posts,
   ];
