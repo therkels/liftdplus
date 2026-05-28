@@ -5,6 +5,7 @@ const BASE_URL = "https://liftdplus.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data, error } = await supabaseAdmin
+    .schema("public")
     .from("post")
     .select("slug, published_at")
     .eq("post_status", "published");
@@ -29,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   console.log(`Building sitemap with ${data.length} articles`);
 
-  const posts: MetadataRoute.Sitemap = data.map((row) => ({
+  const posts: MetadataRoute.Sitemap = data.map((row: any) => ({
     url: `${BASE_URL}/resources/${encodeURIComponent(row.slug)}`,
     lastModified: row.published_at ? new Date(row.published_at) : new Date(),
     changeFrequency: "weekly" as const,
