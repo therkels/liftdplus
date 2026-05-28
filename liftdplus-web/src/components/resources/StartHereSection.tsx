@@ -16,21 +16,21 @@ const START_HERE_GUIDES = [
     title: "Curious About THC vs CBD?",
     excerpt: "Understand the difference and what each experience can feel like.",
     icon: Beaker,
-    slug: "thc-vs-cbd",
+    slug: "thc-vs-cbd-whats-the-difference",
   },
   {
     id: "3",
     title: "Nervous About Trying Cannabis?",
     excerpt: "What to expect, how dosage works, and how to stay in control.",
     icon: Heart,
-    slug: "nervous-about-cannabis",
+    slug: "why-cannabis-can-sometimes-feel-anxious--and-how-to-handle-it",
   },
   {
     id: "4",
     title: "Visiting a Dispensary for the First Time?",
     excerpt: "What to know before you go so you feel prepared.",
     icon: Building2,
-    slug: "first-dispensary-visit",
+    slug: "know-the-lingo",
   },
 ];
 
