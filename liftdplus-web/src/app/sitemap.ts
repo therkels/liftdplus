@@ -9,7 +9,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select("slug, published_at")
     .eq("post_status", "published");
 
-  if (error || !data) {
+  if (error) {
+    console.error("Sitemap error:", error);
+    return [
+      { url: `${BASE_URL}/`, lastModified: new Date(), priority: 1 },
+      { url: `${BASE_URL}/explore`, lastModified: new Date() },
+      { url: `${BASE_URL}/resources`, lastModified: new Date() },
+    ];
+  }
+
+  if (!data || data.length === 0) {
+    console.warn("No published articles found in sitemap");
     return [
       { url: `${BASE_URL}/`, lastModified: new Date(), priority: 1 },
       { url: `${BASE_URL}/explore`, lastModified: new Date() },
