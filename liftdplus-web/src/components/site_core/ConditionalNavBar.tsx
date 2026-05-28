@@ -10,6 +10,7 @@ export default function ConditionalNavBar() {
     pathname === "/" ||
     pathname === "/about" ||
     pathname === "/faq" ||
+    pathname.startsWith("/resources") ||
     pathname === "" ||
     pathname.startsWith("/login") ||
     pathname === "/getting-started" ||

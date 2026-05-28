@@ -90,7 +90,7 @@ export default function LandingPage() {
             FAQ
           </Link>
           <Link
-            href="/explore"
+            href="/resources"
             className={styles.navSignIn}
             onClick={() => trackEvent("cta_click", { label: "nav_resources" })}
           >

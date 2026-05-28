@@ -1,9 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { PostData } from "./PostContent";
-import { usePostInteractions } from "@/hooks/usePostInteractions";
 import { useReadArticles } from "@/hooks/useReadArticles";
 import { ArticleReadBadge } from "@/components/ArticleReadBadge";
 
@@ -13,14 +11,6 @@ interface PostMetadataProps {
 }
 
 const PostMetadata: React.FC<PostMetadataProps> = ({ post, onShare }) => {
-  const {
-    isLiked,
-    isArchived,
-    likeCount,
-    isLoading,
-    handleLike,
-    handleArchive,
-  } = usePostInteractions(post);
   const { readSlugs } = useReadArticles();
 
   const slug =
@@ -37,25 +27,11 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post, onShare }) => {
           <div className="h-4 bg-gray-300 rounded w-1/2" />
         </div>
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gray-300 rounded-full" />
-            <div>
-              <div className="h-4 bg-gray-300 rounded w-24 mb-1" />
-              <div className="h-3 bg-gray-300 rounded w-16" />
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-300 rounded-full" />
-            <div className="w-10 h-10 bg-gray-300 rounded-full" />
-          </div>
+          <div className="h-4 bg-gray-300 rounded w-24" />
         </div>
       </div>
     );
   }
-
-  const handleBookmarkClick = () => {
-    handleArchive();
-  };
 
   return (
     <>
@@ -75,106 +51,31 @@ const PostMetadata: React.FC<PostMetadataProps> = ({ post, onShare }) => {
           <p className="text-gray-600">{post.secondary_title}</p>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div
-              className="w-12 h-12 border-2 rounded-full overflow-hidden flex-shrink-0"
-              style={{ borderColor: "var(--accent-light)" }}
-            >
-              {post.author_photo ? (
-                <Image
-                  src={post.author_photo}
-                  alt={post.author_name}
-                  width={48}
-                  height={48}
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <Image
-                  src="/woman.jpg"
-                  alt={post.author_name}
-                  width={48}
-                  height={48}
-                  className="rounded-full object-cover"
-                />
-              )}
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">{post.author_name}</p>
-              <p className="text-sm text-gray-500">{likeCount} likes</p>
-            </div>
+        <div className="flex w-full items-center justify-between">
+          {/* Author name - make it clear */}
+          <div>
+            <p className="text-sm font-bold text-gray-600">by {post.author_name}</p>
           </div>
 
-          {/* Like / Share / Save Buttons - Right Side */}
+          {/* Share button only - no Like/Bookmark */}
           <div className="flex items-center space-x-3">
-            {/* Share button */}
             {onShare && (
               <button
                 type="button"
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                 onClick={onShare}
-                aria-label="Share this post"
+                className="rounded-full p-2 transition hover:bg-gray-100"
+                title="Share"
               >
-                <svg
-                  className="w-6 h-6"
-                  style={{ color: "var(--accent-light)" }}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
-                  <path d="M16 8l-4-4-4 4" />
-                  <path d="M12 4v13" />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
                 </svg>
               </button>
             )}
-
-            {/* Like button */}
-            <button
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              onClick={handleLike}
-              disabled={isLoading}
-            >
-              <svg
-                className="w-6 h-6"
-                style={{ color: "var(--accent-light)" }}
-                fill={isLiked ? "currentColor" : "none"}
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-            </button>
-
-            {/* Bookmark button */}
-            <button
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              onClick={handleBookmarkClick}
-              disabled={isLoading}
-            >
-              <svg
-                className="w-6 h-6"
-                style={{ color: "var(--accent-light)" }}
-                fill={isArchived ? "currentColor" : "none"}
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                />
-              </svg>
-            </button>
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ export default function ConditionalMain({ children }: ConditionalMainProps) {
   const isNoNavRoute =
     pathname === "/about" ||
     pathname === "/faq" ||
+    pathname.startsWith("/resources") ||
     pathname.startsWith("/login") ||
     pathname === "/getting-started" ||
     pathname.startsWith("/onboarding") ||

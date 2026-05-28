@@ -28,7 +28,7 @@ export default function SubPageLayout({ children }: SubPageLayoutProps) {
           <Link href="/faq" className={styles.navLink}>
             FAQ
           </Link>
-          <Link href="/explore" className={styles.navSignIn}>
+          <Link href="/resources" className={styles.navSignIn}>
             Resources
           </Link>
         </div>

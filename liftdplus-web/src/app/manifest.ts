@@ -2,24 +2,12 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Liftd+ PWA",
+    name: "Liftd+",
     short_name: "Liftd+",
-    description: "Liftd+'s mobile application",
+    description: "Cannabis education for cautious adults",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#000000",
-    icons: [
-      {
-        src: "/liftd-icon.png",
-        sizes: "192x192",
-        type: "image/png",
-      },
-      {
-        src: "/liftd-icon.png",
-        sizes: "512x512",
-        type: "image/png",
-      },
-    ],
-  }
+    theme_color: "#6b938c",
+  };
 }

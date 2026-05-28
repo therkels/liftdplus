@@ -90,7 +90,10 @@ async function fetchFullPost(keys: {
 
 /* ---------- component ---------- */
 
-const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
+const PostContent: React.FC<{ post: PostData; showShare?: boolean }> = ({
+  post,
+  showShare = true,
+}) => {
   const [fullPost, setFullPost] = useState<PostData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -251,7 +254,7 @@ const PostContent: React.FC<{ post: PostData }> = ({ post }) => {
       ) : (
         <PostContentBase
           post={postWithImages}
-          onShare={handleShareClick}
+          onShare={showShare ? handleShareClick : undefined}
         />
       )}
     </div>

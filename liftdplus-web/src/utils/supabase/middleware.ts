@@ -51,6 +51,7 @@ export async function updateSession(request: NextRequest) {
       !pathname.startsWith("/getting-started") &&
       !pathname.startsWith("/about") &&
       !pathname.startsWith("/faq") &&
+      !pathname.startsWith("/resources") &&
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&
       !pathname.startsWith("/api")
@@ -87,6 +88,7 @@ export async function updateSession(request: NextRequest) {
       pathname !== "/" &&
       !pathname.startsWith("/about") &&
       !pathname.startsWith("/faq") &&
+      !pathname.startsWith("/resources") &&
       !pathname.startsWith("/api") &&
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&
