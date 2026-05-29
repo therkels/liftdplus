@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { trackEvent } from "@/utils/analytics";
 import InlineOnboardingFlow from "@/components/landing/InlineOnboardingFlow";
+import { Testimonials } from "@/components/Testimonials";
 import styles from "./page.module.css";
 
 const HOW_IT_WORKS_STEPS = [
@@ -21,7 +22,7 @@ const HOW_IT_WORKS_STEPS = [
   {
     title: "Explore it your way",
     description:
-      "Read it, screenshot it, or save it with your email so it can get more helpful over time based on what you find useful.",
+      "Read it, screenshot it, or save it with your email for ongoing improvements based on what works for you.",
   },
 ];
 
@@ -106,6 +107,7 @@ export default function LandingPage() {
           src="/images/liftd-v2-hero.png"
           alt=""
         />
+        <div className={styles.heroBgGradient} aria-hidden />
         <div className={styles.heroNavGradient} aria-hidden />
         <div className={styles.heroLeft}>
           <div className={styles.heroTextCard}>
@@ -144,23 +146,44 @@ export default function LandingPage() {
         <div className={styles.sectionInner}>
           <div className={`${styles.howWorkStack} ${styles.reveal}`}>
             <h2 className={styles.howWorkHeadline}>Here&apos;s how it works</h2>
-            <ol className={styles.howWorkSteps}>
-              {HOW_IT_WORKS_STEPS.map((step, index) => (
-                <li key={step.title} className={styles.howWorkStep}>
-                  <span className={styles.howWorkStepNum}>{index + 1}</span>
-                  <div className={styles.howWorkStepBody}>
-                    <div className={styles.howWorkStepTitle}>{step.title}</div>
-                    <p className={styles.howWorkStepDesc}>{step.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <div className={styles.howWorkSteps}>
+              <div className={styles.howWorkStep}>
+                <div className={styles.howWorkStepNum}>1</div>
+                <div className={styles.howWorkStepBody}>
+                  <h3 className={styles.howWorkStepTitle}>{HOW_IT_WORKS_STEPS[0].title}</h3>
+                  <p className={styles.howWorkStepDesc}>{HOW_IT_WORKS_STEPS[0].description}</p>
+                </div>
+              </div>
+              <div className={styles.howWorkConnector}>
+                <div className={styles.howWorkConnectorLine} />
+              </div>
+              <div className={styles.howWorkStep}>
+                <div className={styles.howWorkStepNum}>2</div>
+                <div className={styles.howWorkStepBody}>
+                  <h3 className={styles.howWorkStepTitle}>{HOW_IT_WORKS_STEPS[1].title}</h3>
+                  <p className={styles.howWorkStepDesc}>{HOW_IT_WORKS_STEPS[1].description}</p>
+                </div>
+              </div>
+              <div className={styles.howWorkConnector}>
+                <div className={styles.howWorkConnectorLine} />
+              </div>
+              <div className={styles.howWorkStep}>
+                <div className={styles.howWorkStepNum}>3</div>
+                <div className={styles.howWorkStepBody}>
+                  <h3 className={styles.howWorkStepTitle}>{HOW_IT_WORKS_STEPS[2].title}</h3>
+                  <p className={styles.howWorkStepDesc}>{HOW_IT_WORKS_STEPS[2].description}</p>
+                </div>
+              </div>
+            </div>
             <p className={styles.howWorkFooterNote}>
-              Takes about 60 seconds. No knowledge needed.
+              Designed for beginners. No prior cannabis experience needed.
             </p>
           </div>
         </div>
       </section>
+
+      {/* Testimonials hidden until real user quotes available */}
+      {false && <Testimonials />}
 
       {/* Newsletter */}
       <section className={styles.newsletterSection}>
@@ -174,6 +197,11 @@ export default function LandingPage() {
           </h2>
           <p className={styles.nlBody}>
             Beginner-friendly guides on sleep, stress, and winding down, sent to adults exploring cannabis for the first time. Or the first time in a long time.
+          </p>
+          <p className={styles.nlHelper}>
+            Monthly guides for people exploring cannabis for the first time.
+            <br />
+            No spam. Unsubscribe anytime.
           </p>
           <form
             className={styles.emailRow}
@@ -215,7 +243,7 @@ export default function LandingPage() {
               disabled={newsletterStatus === "loading"}
             />
             <button type="submit" disabled={newsletterStatus === "loading"}>
-              {newsletterStatus === "loading" ? "Sending…" : "Send me the guides"}
+              {newsletterStatus === "loading" ? "Sending…" : "Send Me the Guides →"}
             </button>
           </form>
           {newsletterStatus === "success" && (
@@ -228,33 +256,40 @@ export default function LandingPage() {
               {newsletterError}
             </p>
           )}
-          <p className={styles.fine}>No spam. Unsubscribe anytime. Built for adults who prefer to decide for themselves.</p>
+          <p className={styles.fine}>Built for adults who prefer to decide for themselves.</p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className={styles.footer}>
-        <div>
-          <Image
-            src="/logos/04 LIFTD+ Logo - White.png"
-            alt="LIFTD+"
-            width={160}
-            height={44}
-            className={styles.footerLogo}
-          />
-          <p className={styles.footerTagline}>
-            LIFTD+ is education, not retail. We&apos;re here to help you
-            understand cannabis before you decide what&apos;s right for you.
-          </p>
-        </div>
-        <div className={styles.footerRight}>
-          <div>© 2026 LIFTD+</div>
-          <div>
-            <Link href="/privacy">Privacy Policy</Link>
-            &nbsp;·&nbsp;
-            <Link href="/terms">Terms</Link>
-            &nbsp;·&nbsp;
-            <Link href="mailto:support@liftdplus.com">Contact</Link>
+      <footer className="bg-[#2e3a45] px-6 py-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8">
+            <Image
+              src="/logos/04 LIFTD+ Logo - White.png"
+              alt="LIFTD+"
+              width={160}
+              height={44}
+              className="mb-4 h-11 w-auto"
+            />
+            <p className="max-w-xs text-sm text-[#bac8b2]">
+              Cannabis guidance for curious and cautious beginners.
+            </p>
+          </div>
+
+          <div className="mt-6 border-t border-[#4f5a58]/30 pt-6">
+            <div className="flex flex-wrap gap-6 text-sm text-[#bac8b2]">
+              <Link href="/privacy" className="no-underline hover:text-white">
+                Privacy Policy
+              </Link>
+              <span className="text-[#4f5a58]">·</span>
+              <Link href="/terms" className="no-underline hover:text-white">
+                Terms
+              </Link>
+              <span className="text-[#4f5a58]">·</span>
+              <Link href="mailto:support@liftdplus.com" className="no-underline hover:text-white">
+                Contact
+              </Link>
+            </div>
+            <p className="mt-6 text-xs text-[#4f5a58]">© 2026 LIFTD+</p>
           </div>
         </div>
       </footer>

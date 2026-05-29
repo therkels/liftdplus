@@ -188,3 +188,39 @@ html {
     rgba(79, 90, 88, 0.85) 100%
   );
 }
+
+/* Primary buttons */
+button,
+.button-primary {
+  transition:
+    background-color 200ms ease-in-out,
+    box-shadow 200ms ease-in-out;
+}
+
+button:hover,
+.button-primary:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Link hover states */
+a {
+  transition:
+    color 200ms ease-in-out,
+    text-decoration 200ms ease-in-out;
+}
+
+a:hover {
+  color: #5a7d75;
+  text-decoration: underline;
+}
+
+/* Card hover states */
+article,
+.card {
+  transition: box-shadow 200ms ease-out;
+}
+
+article:hover,
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
