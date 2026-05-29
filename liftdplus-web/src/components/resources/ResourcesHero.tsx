@@ -29,9 +29,9 @@ export default function ResourcesHero({
             <h1 className="mb-4 text-3xl font-bold leading-tight text-[#313a43] lg:text-4xl">
               Explore Cannabis, Without the Overwhelm
             </h1>
-            <p className="mb-8 text-sm leading-relaxed text-[#4f5a58] lg:text-base">
-              Beginner-friendly guides, product education, and wellness-focused resources
-              designed to help you feel more informed and more confident.
+            <p className="mb-8 mt-4 max-w-2xl text-base text-[#4f5a58]">
+              Beginner-friendly guides and cannabis wellness resources designed to help you feel
+              more informed and more confident.
             </p>
 
             {/* Search Input */}

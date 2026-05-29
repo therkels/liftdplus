@@ -114,6 +114,14 @@ export async function GET(
 
     const content_type: "text" | "image" = isCarousel ? "image" : "text";
 
+    const { data: postTagRows } = await supabaseAdmin
+      .schema("public")
+      .from("post_tag")
+      .select("tag_id, tag(display_name, category)")
+      .eq("post_id", row.id);
+
+    const post_tag = postTagRows ?? [];
+
     const post = {
       id: row.id,
       title: row.title,
@@ -130,6 +138,7 @@ export async function GET(
       display_id: row.display_id ?? null,
       slug: row.slug ?? null,
       config: cfg ?? null,
+      post_tag,
     };
 
     // TEMP DEBUG (remove once fixed)

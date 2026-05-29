@@ -62,11 +62,23 @@ const PostContentBase: React.FC<PostContentBaseProps> = ({ post, onShare }) => {
                     {children}
                   </h3>
                 ),
-                p: ({ children, ...props }: any) => (
-                  <p className="text-gray-700 mb-4 leading-relaxed" {...props}>
-                    {children}
-                  </p>
-                ),
+                p: ({ node, children, ...props }: any) => {
+                  const onlyImage =
+                    node?.children?.length === 1 &&
+                    node.children[0]?.type === "element" &&
+                    node.children[0]?.tagName === "img";
+                  if (onlyImage) {
+                    return <>{children}</>;
+                  }
+                  return (
+                    <p
+                      className="text-gray-700 mb-4 leading-relaxed"
+                      {...props}
+                    >
+                      {children}
+                    </p>
+                  );
+                },
                 a: ({ href, children }) => (
                   <a
                     href={href}
@@ -82,14 +94,14 @@ const PostContentBase: React.FC<PostContentBaseProps> = ({ post, onShare }) => {
                     {children}
                   </a>
                 ),
-                img: ({ src, alt, ...props }: any) => (
+                img: ({ src, alt, title, ...props }: any) => (
                   <div className="my-6">
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={src || ""}
-                      alt={alt || ""}
-                      width={800}
-                      height={600}
-                      className="rounded-lg object-cover w-full"
+                      alt={alt || "Article image"}
+                      title={title}
+                      className="w-full rounded-lg object-cover"
                       {...props}
                     />
                   </div>

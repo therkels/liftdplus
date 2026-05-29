@@ -17,7 +17,7 @@ export default function ArticleGrid({
 }) {
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
         {articles.map((article) => (
           <ArticleCard key={article.id} article={article} categoryLabel={categoryLabel} />
         ))}
@@ -36,7 +36,7 @@ export default function ArticleGrid({
           <button
             onClick={onLoadMore}
             disabled={isLoading}
-            className="rounded-full border-2 border-[#6b938c] px-6 py-2 text-xs font-semibold text-[#6b938c] transition hover:bg-[#6b938c] hover:text-white disabled:opacity-50 lg:text-sm"
+            className="rounded-full border-2 border-[#6b938c] px-6 py-2 text-xs font-semibold text-[#6b938c] transition-colors duration-200 hover:bg-[#6b938c] hover:text-white disabled:opacity-50 lg:text-sm"
           >
             {isLoading ? "Loading..." : "Load More Articles"}
           </button>

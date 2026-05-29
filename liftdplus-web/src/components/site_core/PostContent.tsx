@@ -1,6 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
+import ArticleGuidanceCTA from "@/components/resources/ArticleGuidanceCTA";
+import ArticleReadNextFromMarkdown from "@/components/resources/ArticleReadNextFromMarkdown";
+import { getRelatedArticlesByTopic } from "@/actions/articleRelated";
+import {
+  prepareArticleMarkdown,
+  type ParsedRelatedArticle,
+} from "@/lib/markdown/articleMarkdownCleanup";
 import PostContentBase from "./PostContentBase";
 import PostContentCarousel from "./PostContentCarousel";
 
@@ -23,6 +30,10 @@ export interface PostData {
   user_liked?: boolean;
   user_archived?: boolean;
   tags?: string[];
+  post_tag?: {
+    tag_id?: string;
+    tag?: { display_name?: string; category?: string };
+  }[];
 
   // what may be missing when the modal opens
   content_type: PostContentType;
@@ -90,12 +101,16 @@ async function fetchFullPost(keys: {
 
 /* ---------- component ---------- */
 
-const PostContent: React.FC<{ post: PostData; showShare?: boolean }> = ({
-  post,
-  showShare = true,
-}) => {
+const PostContent: React.FC<{
+  post: PostData;
+  showShare?: boolean;
+  showGuidanceFooter?: boolean;
+}> = ({ post, showShare = true, showGuidanceFooter = false }) => {
   const [fullPost, setFullPost] = useState<PostData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [relatedArticles, setRelatedArticles] = useState<ParsedRelatedArticle[]>(
+    []
+  );
 
   const needsFetch = useMemo(() => {
     // If text but no content, or image but no images, we need to fetch the full post
@@ -190,6 +205,22 @@ const PostContent: React.FC<{ post: PostData; showShare?: boolean }> = ({
     };
   }, [needsFetch, post]);
 
+  useEffect(() => {
+    const topicTag = fullPost?.post_tag?.find(
+      (pt) => pt.tag?.category === "topic"
+    )?.tag?.display_name;
+
+    console.log("Primary topic:", topicTag);
+
+    if (fullPost?.slug && topicTag) {
+      getRelatedArticlesByTopic(fullPost.slug, topicTag, 3).then(
+        setRelatedArticles
+      );
+    } else {
+      setRelatedArticles([]);
+    }
+  }, [fullPost?.slug, fullPost?.post_tag]);
+
   const handleShareClick = useCallback(async () => {
     if (!fullPost) return;
 
@@ -222,6 +253,15 @@ const PostContent: React.FC<{ post: PostData; showShare?: boolean }> = ({
     }
   }, [fullPost]);
 
+  const isImage = fullPost?.content_type === "image";
+
+  const cleanContent = useMemo(() => {
+    if (!fullPost?.content || isImage) {
+      return fullPost?.content ?? "";
+    }
+    return prepareArticleMarkdown(fullPost.content).cleanContent;
+  }, [fullPost?.content, isImage]);
+
   if (error) {
     return (
       <div className="p-6 text-center">
@@ -230,7 +270,6 @@ const PostContent: React.FC<{ post: PostData; showShare?: boolean }> = ({
     );
   }
 
-  // While we fetch, show something lightweight to avoid a blank modal
   if (!fullPost) {
     return (
       <div className="p-6 text-center text-gray-600">
@@ -239,23 +278,29 @@ const PostContent: React.FC<{ post: PostData; showShare?: boolean }> = ({
     );
   }
 
-  const isImage = fullPost.content_type === "image";
   const postWithImages: PostData = isImage
     ? {
         ...fullPost,
         images: fullPost.images ?? [],
       }
-    : fullPost;
+    : {
+        ...fullPost,
+        content: cleanContent,
+      };
 
   return (
     <div className="space-y-4">
       {isImage ? (
         <PostContentCarousel post={postWithImages} />
       ) : (
-        <PostContentBase
-          post={postWithImages}
-          onShare={showShare ? handleShareClick : undefined}
-        />
+        <>
+          <PostContentBase
+            post={postWithImages}
+            onShare={showShare ? handleShareClick : undefined}
+          />
+          <ArticleReadNextFromMarkdown articles={relatedArticles} />
+          {showGuidanceFooter && <ArticleGuidanceCTA />}
+        </>
       )}
     </div>
   );

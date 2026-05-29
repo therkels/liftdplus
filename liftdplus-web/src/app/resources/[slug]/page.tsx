@@ -3,40 +3,41 @@ import PostContent from "@/components/site_core/PostContent";
 import BackButton from "@/components/BackButton";
 import { ArticleReadTracker } from "@/components/ArticleReadTracker";
 import { ArticleViewTracker } from "@/components/ArticleViewTracker";
-import { createClient } from "@/utils/supabase/server";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 import { CHECKLIST_ITEMS } from "@/types/checklist";
 
 export const dynamic = "force-dynamic";
 
 async function getPost(slug: string) {
-  console.log("🔍 getPost called with slug:", slug);
-
-  const supabase = await createClient();
-  const { data: row, error } = await supabase
+  const { data: row, error } = await supabaseAdmin
+    .schema("public")
     .from("post")
     .select(`
       id, title, secondary_title, cover_image_url, author,
       contributor_name, post_template_id, markdown, config,
-      created_at, published_at, display_id, slug, seo_title, meta_description
+      created_at, published_at, display_id, slug, seo_title, meta_description,
+      post_tag(
+        tag_id,
+        tag(display_name, category)
+      )
     `)
     .eq("slug", slug)
     .maybeSingle();
 
-  console.log("📊 Supabase response:", { error, rowExists: !!row });
-  if (row) console.log("✅ Found post:", row.title);
-
   if (error || !row) {
-    console.error("❌ Error fetching post:", error);
     return null;
   }
 
   const cfg = row.config && typeof row.config === "object" ? row.config : null;
   const isCarousel = row.post_template_id === "carousel_block";
-  const images = Array.isArray((cfg as any)?.images) ? (cfg as any).images : [];
+  const images = Array.isArray((cfg as { images?: unknown })?.images)
+    ? (cfg as { images: unknown[] }).images
+    : [];
 
-  // Skip author photo lookup for now — just use contributor name
   const author_name: string | null = row.contributor_name ?? null;
   const author_photo: string | null = null;
+
+  const post_tag = (row as { post_tag?: unknown[] }).post_tag ?? [];
 
   return {
     id: row.id,
@@ -56,6 +57,7 @@ async function getPost(slug: string) {
     seo_title: row.seo_title ?? null,
     meta_description: row.meta_description ?? null,
     config: cfg ?? null,
+    post_tag,
   };
 }
 
@@ -132,18 +134,19 @@ export default async function Page({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ArticleReadTracker
-        slug={params.slug}
-        checklistItemId={checklistItem?.id}
-      />
+      <ArticleReadTracker slug={params.slug} checklistItemId={checklistItem?.id} />
       <ArticleViewTracker
         slug={params.slug}
         postId={post.id}
         source={searchParams?.source ?? "direct"}
       />
-      <div className="container mx-auto px-4 md:px-0 py-6">
+      <div className="container mx-auto max-w-3xl px-4 py-6 md:px-0">
         <BackButton />
-        <PostContent post={{ ...normalized, author_photo: null } as any} showShare={false} />
+        <PostContent
+          post={{ ...normalized, post_id: post.id, author_photo: null } as any}
+          showShare={false}
+          showGuidanceFooter
+        />
       </div>
     </div>
   );

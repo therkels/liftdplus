@@ -88,15 +88,10 @@ export default function ResourcesPage() {
     <main className="bg-white">
       <ResourcesHero onSearch={handleSearch} />
 
-      {/* Start Here Section - White background, taupe cards */}
-      <section className="bg-white px-6 py-12 lg:py-16">
-        <div className="mx-auto max-w-7xl">
-          <StartHereSection />
-        </div>
-      </section>
+      <StartHereSection />
 
       {/* Browse + All Guides + CTA Section */}
-      <section className="px-6 py-12 lg:py-16">
+      <section className="mt-16 px-6 py-12 lg:py-16">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 lg:gap-10">
             {/* Sidebar - Taupe background */}
