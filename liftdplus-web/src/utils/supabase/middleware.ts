@@ -52,6 +52,8 @@ export async function updateSession(request: NextRequest) {
       !pathname.startsWith("/about") &&
       !pathname.startsWith("/faq") &&
       !pathname.startsWith("/resources") &&
+      !pathname.startsWith("/privacy") &&
+      !pathname.startsWith("/terms") &&
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&
       !pathname.startsWith("/api")
@@ -89,6 +91,8 @@ export async function updateSession(request: NextRequest) {
       !pathname.startsWith("/about") &&
       !pathname.startsWith("/faq") &&
       !pathname.startsWith("/resources") &&
+      !pathname.startsWith("/privacy") &&
+      !pathname.startsWith("/terms") &&
       !pathname.startsWith("/api") &&
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&

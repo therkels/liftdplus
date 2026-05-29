@@ -1,25 +1,28 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import MarketingNav from "@/components/landing/MarketingNav";
 import NavBar from "./nav";
+
+const MARKETING_ROUTES = ["/about", "/faq", "/resources", "/privacy", "/terms"];
+const NO_NAV_ROUTES = ["/", "", "/getting-started"];
 
 export default function ConditionalNavBar() {
   const pathname = usePathname();
 
-  const isNoNavRoute =
-    pathname === "/" ||
-    pathname === "/about" ||
-    pathname === "/faq" ||
-    pathname.startsWith("/resources") ||
-    pathname === "" ||
+  const isNoNav =
+    NO_NAV_ROUTES.includes(pathname) ||
     pathname.startsWith("/login") ||
-    pathname === "/getting-started" ||
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/disclaimer");
 
-  if (isNoNavRoute) {
-    return null;
-  }
+  const isMarketingNav =
+    MARKETING_ROUTES.includes(pathname) ||
+    pathname.startsWith("/resources") ||
+    pathname.startsWith("/privacy") ||
+    pathname.startsWith("/terms");
 
+  if (isNoNav) return null;
+  if (isMarketingNav) return <MarketingNav />;
   return <NavBar />;
 }

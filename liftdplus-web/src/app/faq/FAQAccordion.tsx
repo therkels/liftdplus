@@ -35,7 +35,7 @@ const FAQ_SECTIONS: FAQSection[] = [
     subtitle: "THC, CBD, gummies, tinctures, and what to expect.",
     items: [
       { id: "product-types", question: "What kinds of cannabis products do you recommend?", answer: "Your recommendations are based on what you are trying to support, whether that is THC, CBD, CBN, or hemp-derived options. Everything is tailored to your goals and comfort level, not a generic list." },
-      { id: "personalization", question: "How does the personalization actually work?", answer: "You answer two questions: what you are trying to support and what you are unsure about. We use that to create guidance based on your goals and comfort level. If you save your guide, it can improve over time based on what you engage with." },
+      { id: "personalization", question: "How does the personalization actually work?", answer: "You answer a few short questions about what you are trying to support and what feels important to you. We use that to create guidance tailored to your goals and comfort level. If you save your guide, it can improve over time based on what you engage with." },
       { id: "what-is", question: "What is LIFTD+?", answer: "LIFTD+ is a solution-first cannabis education platform that helps you understand what may support how you feel day to day like sleep, stress, focus, or hormonal shifts. Instead of searching through endless content, you get simple, relevant guidance based on your answers." },
     ],
   },

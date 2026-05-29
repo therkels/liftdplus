@@ -30,11 +30,10 @@ export default function CategorySidebar({
 }) {
   return (
     <aside className="w-full lg:w-56">
-      <div className="rounded-lg bg-[#f4f7f5] p-5 pb-6 lg:bg-transparent lg:p-0 lg:pb-6">
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-[#313a43] lg:text-sm">
-          Browse by Category
-        </h3>
-        <div className="space-y-1.5">
+
+      {/* MOBILE: horizontal scrolling pill row */}
+      <div className="lg:hidden">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {TOPIC_TAGS.map((tag) => {
             const isActive = activeCategory === tag.id;
             const Icon = tag.icon;
@@ -42,14 +41,14 @@ export default function CategorySidebar({
               <button
                 key={tag.id}
                 onClick={() => onCategorySelect(isActive ? null : tag.id)}
-                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium transition lg:text-sm ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   isActive
                     ? "bg-[#6b938c] text-white"
-                    : "bg-white text-[#313a43] hover:bg-[#f4f7f5] lg:bg-transparent lg:hover:bg-[#f4f7f5]"
+                    : "bg-[#f4f7f5] text-[#313a43]"
                 }`}
               >
                 <Icon
-                  className={`h-4 w-4 shrink-0 stroke-[1.5] lg:h-5 lg:w-5 ${
+                  className={`h-3.5 w-3.5 shrink-0 stroke-[1.5] ${
                     isActive ? "text-white" : "text-[#6b938c]"
                   }`}
                   aria-hidden
@@ -60,6 +59,39 @@ export default function CategorySidebar({
           })}
         </div>
       </div>
+
+      {/* DESKTOP: vertical sidebar — unchanged */}
+      <div className="hidden lg:block rounded-lg bg-transparent p-0 pb-6">
+        <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-[#313a43]">
+          Browse by Category
+        </h3>
+        <div className="space-y-1.5">
+          {TOPIC_TAGS.map((tag) => {
+            const isActive = activeCategory === tag.id;
+            const Icon = tag.icon;
+            return (
+              <button
+                key={tag.id}
+                onClick={() => onCategorySelect(isActive ? null : tag.id)}
+                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
+                  isActive
+                    ? "bg-[#6b938c] text-white"
+                    : "bg-transparent text-[#313a43] hover:bg-[#f4f7f5]"
+                }`}
+              >
+                <Icon
+                  className={`h-5 w-5 shrink-0 stroke-[1.5] ${
+                    isActive ? "text-white" : "text-[#6b938c]"
+                  }`}
+                  aria-hidden
+                />
+                <span>{tag.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
     </aside>
   );
 }
