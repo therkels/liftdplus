@@ -117,8 +117,14 @@ export default function LandingPage() {
             <p className={styles.heroIntro}>
               Better sleep. A quieter mind. Support that helps you slow down without checking out.
             </p>
+            <p className={styles.heroIdentity}>
+              For women who are curious about cannabis but want to
+              start slowly, safely, and on their own terms.
+            </p>
             <p className={styles.heroCtaSubtext}>
-              Answer a few quick questions and get personalized guidance without having to figure it all out yourself.
+              Answer a few quick questions and get personalized guidance
+              without having to figure it all out yourself. No account
+              needed to get started.
             </p>
           </div>
         </div>

@@ -800,6 +800,15 @@ export default function ResultsClient({ detectedState }: { detectedState: string
   const experienceLabel = EXPERIENCE_LABELS[onboarding!.experience_level] || onboarding!.experience_level
   const stateName = result?.stateName || (onboarding!.state ? US_STATES.find(([c]) => c === onboarding!.state)?.[1] || onboarding!.state : null)
 
+  const goalEyebrow: Record<string, string> = {
+    sleep: 'YOUR PERSONALIZED SLEEP GUIDE',
+    stress: 'YOUR PERSONALIZED STRESS GUIDE',
+    pain: 'YOUR PERSONALIZED PAIN RELIEF GUIDE',
+    focus: 'YOUR PERSONALIZED FOCUS GUIDE',
+    hormonal: 'YOUR PERSONALIZED HORMONAL SUPPORT GUIDE',
+    intimacy: 'YOUR PERSONALIZED INTIMACY GUIDE',
+  }
+
   const allProducts = result?.products || []
   const filteredProducts = allProducts.filter(p => {
     if (activeFilter === 'ships') return p.ships_nationally
@@ -821,60 +830,40 @@ export default function ResultsClient({ detectedState }: { detectedState: string
         {/* Hero */}
         <section
           style={{
-            background: 'linear-gradient(135deg, rgba(107,147,140,0.25) 0%, rgba(107,147,140,0.12) 35%, #f9f8f7 65%)',
+            background: 'linear-gradient(135deg, rgba(107,147,140,0.22) 0%, rgba(107,147,140,0.08) 45%, #f9f8f7 72%)',
           }}
-          className="pt-20 pb-16 px-4 min-h-[420px] md:min-h-[480px]"
+          className="pt-20 pb-16 px-4 min-h-[460px] md:min-h-[520px]"
         >
           <div className="max-w-5xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="flex-1">
                 <p className="text-[10px] font-semibold text-[#6b938c] uppercase tracking-widest mb-2">
-                  Your Personalized Guide
+                  {goalEyebrow[onboarding.goal] || 'YOUR PERSONALIZED GUIDE'}
                 </p>
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-[#313a43] mb-3">
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#313a43] leading-none mb-3">
                   Your guide is ready.
                 </h1>
-                <p className="text-xl text-[#4f5a58] mb-8">
-                  We found the best products to support{' '}
-                  <span className="text-[#6b938c] font-semibold">{goalLabel.toLowerCase()}</span> based on
-                  your answers.
+                <p className="text-base text-[#4f5a58] mt-4 max-w-lg">
+                  Built for {EXPERIENCE_LABELS[onboarding.experience_level]?.toLowerCase() || 'beginners'},
+                  based on your {goalLabel.toLowerCase()} goals
+                  {stateName ? `, and what's available in ${stateName}` : ''}.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <div className="flex items-center gap-2 bg-white border border-[#cdcec7] rounded-lg px-4 py-2.5 shadow-sm">
-                    <span className="text-[10px] font-bold text-[#6b938c] uppercase tracking-widest">
-                      Goal
-                    </span>
-                    <span className="text-sm font-semibold text-[#313a43]">{goalLabel}</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white border border-[#cdcec7] rounded-lg px-4 py-2.5 shadow-sm">
-                    <span className="text-[10px] font-bold text-[#6b938c] uppercase tracking-widest">
-                      Experience
-                    </span>
-                    <span className="text-sm font-semibold text-[#313a43]">{experienceLabel}</span>
-                  </div>
-                  {stateName && (
-                    <div className="flex items-center gap-2 bg-white border border-[#cdcec7] rounded-lg px-4 py-2.5 shadow-sm">
-                      <MapPin className="w-3 h-3 text-[#6b938c]" />
-                      <span className="text-[10px] font-bold text-[#6b938c] uppercase tracking-widest">
-                        Location
-                      </span>
-                      <span className="text-sm font-semibold text-[#313a43]">{stateName}</span>
-                    </div>
-                  )}
-                </div>
+                <div className="w-16 h-0.5 bg-[#6b938c] mt-6 mb-2 rounded-full" />
               </div>
               <div className="flex-shrink-0 self-center">
                 <div className="rounded-full p-2 border-2 border-[#6b938c]/30">
                   <div className="w-52 h-52 rounded-full bg-[#6b938c] flex flex-col items-center justify-center shadow-lg">
-                    <Check className="text-white w-8 h-8" />
-                    <p className="text-white text-base font-bold mt-2 text-center px-6 leading-tight">
-                      Your guide is ready
+                    <p className="text-sm font-bold text-white text-center px-6 leading-tight">
+                      Your guide
                     </p>
-                    <p className="text-white text-xs font-medium text-center px-6 leading-tight mt-1">
-                      Personalized for you.
+                    <p className="text-sm font-bold text-white text-center px-6 leading-tight">
+                      is ready
+                    </p>
+                    <p className="text-xs text-white/80 text-center px-6 leading-tight mt-1">
+                      {goalLabel}
                     </p>
                     <p className="text-[10px] text-white/60 text-center px-6 leading-tight mt-1">
-                      Built with care.
+                      Personalized for you.
                     </p>
                   </div>
                 </div>
@@ -914,10 +903,10 @@ export default function ResultsClient({ detectedState }: { detectedState: string
             </div>
           </div>
 
-          <WhatMakesItIn />
-
           {/* Account CTA */}
           {!isLoggedIn && !loading && <AccountCreationBlock />}
+
+          <WhatMakesItIn />
 
           {/* Products */}
           {!loading && result && result.products.length > 0 && (
@@ -926,6 +915,10 @@ export default function ResultsClient({ detectedState }: { detectedState: string
                 <div>
                   <h2 className="text-sm font-bold text-[#313a43] uppercase tracking-widest">Products We'd Start With</h2>
                   <p className="text-xs text-[#4f5a58] mt-1">Selected based on your goals, experience level, and what's available{stateName ? ` in ${stateName}` : ''}.</p>
+                  <p className="text-sm text-[#6b938c] font-medium mt-1">
+                    There&apos;s no wrong choice here — these are starting points,
+                    not prescriptions.
+                  </p>
                 </div>
                 <div className="flex gap-1 bg-[#f4f7f5] rounded-full p-1 self-start md:self-auto flex-shrink-0">
                   {(['all','ships','dispensary'] as const).map(f => (

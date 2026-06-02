@@ -291,6 +291,10 @@ export default function InlineOnboardingFlow({
           </label>
         </div>
 
+        <p className="text-xs text-center opacity-60 mt-2">
+          You can always change your answers or start over.
+        </p>
+
         <div className={flowStyles.disclaimerCtaWrap}>
           <button
             type="button"
