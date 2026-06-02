@@ -6,7 +6,7 @@ interface ConditionalMainProps {
   children: React.ReactNode;
 }
 
-const MARKETING_ROUTES = ["/about", "/faq", "/privacy", "/terms"];
+const MARKETING_ROUTES = ["/about", "/faq", "/privacy", "/terms", "/results"];
 
 export default function ConditionalMain({ children }: ConditionalMainProps) {
   const pathname = usePathname();

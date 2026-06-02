@@ -14,6 +14,14 @@ const OPTIONS = [
   "I used cannabis in the past but not anymore",
 ] as const;
 
+const EXPERIENCE_LEVEL_BY_OPTION: Record<(typeof OPTIONS)[number], string> = {
+  "I've never tried cannabis before": "never",
+  "I've tried it once or twice": "tried_once",
+  "I use it occasionally": "occasional",
+  "I use it somewhat regularly": "regular",
+  "I used cannabis in the past but not anymore": "tried_once",
+};
+
 const STORAGE_KEY = "liftd_onboarding_q2";
 
 function ProgressDots({ activeStep }: { activeStep: 1 | 2 | 3 }) {
@@ -57,7 +65,12 @@ export default function OnboardingQ2Page() {
     if (!selected) return;
     sendGAEvent("event", "onboarding_q2_completed", { experienceLevel: selected });
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ experienceLevel: selected }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          experience_level: EXPERIENCE_LEVEL_BY_OPTION[selected as (typeof OPTIONS)[number]],
+        })
+      );
     }
     router.push("/onboarding/q3");
   };

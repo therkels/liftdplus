@@ -14,6 +14,14 @@ const OPTIONS = [
   "I used to use cannabis but stopped",
 ] as const;
 
+const EXPERIENCE_LEVEL_BY_OPTION: Record<(typeof OPTIONS)[number], string> = {
+  "I've never tried cannabis": "never",
+  "I've tried it a few times": "tried_once",
+  "I use it occasionally": "occasional",
+  "I use it regularly": "regular",
+  "I used to use cannabis but stopped": "tried_once",
+};
+
 const STORAGE_KEY = "liftd_legacy_q2";
 
 export default function LegacyOnboardingQ2Page() {
@@ -37,7 +45,12 @@ export default function LegacyOnboardingQ2Page() {
     if (!selected) return;
     sendGAEvent("event", "onboarding_legacy_q2_completed", { experienceLevel: selected });
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ experienceLevel: selected }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          experience_level: EXPERIENCE_LEVEL_BY_OPTION[selected as (typeof OPTIONS)[number]],
+        })
+      );
     }
     router.push("/onboarding/legacy/q3");
   };

@@ -68,17 +68,16 @@ export default function LegacyOnboardingQ4Page() {
     setSaving(true);
 
     const q1 = readLegacyJson<{ topics?: string[] }>("liftd_legacy_q1");
-    const q2 = readLegacyJson<{ experienceLevel?: string }>("liftd_legacy_q2");
+    const q2 = readLegacyJson<{ experience_level?: string }>("liftd_legacy_q2");
     const q3 = readLegacyJson<{ purchaseBehavior?: string }>("liftd_legacy_q3");
     const learningGoal = selected;
 
     const firstTopic = q1?.topics?.[0] ?? "";
-    const experienceLabel = q2?.experienceLevel ?? "";
+    const experience_level_id = q2?.experience_level ?? "never";
 
     const primary_goal_id = TOPIC_TO_GOAL[firstTopic] ?? "stress";
     const secondary_goal_id = TOPIC_TO_GOAL[q1?.topics?.[1] ?? ""] ?? null;
     const tertiary_goal_id = TOPIC_TO_GOAL[q1?.topics?.[2] ?? ""] ?? null;
-    const experience_level_id = EXPERIENCE_TO_ID[experienceLabel] ?? "never";
 
     try {
       const res = await fetch("/api/v0/user/onboarding-profile", {

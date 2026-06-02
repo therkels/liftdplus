@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { sendGAEvent } from "@next/third-parties/google";
 import { trackEvent } from "@/utils/analytics";
@@ -13,6 +14,14 @@ const TOPIC_PROMPTS = [
   "I want to feel more focused",
   "I don't know where to start",
 ] as const;
+
+const TOPIC_TO_GOAL: Record<string, string> = {
+  "I'm exhausted": "sleep",
+  "I need help relaxing": "stress",
+  "I want to feel more present": "stress",
+  "I want to feel more focused": "focus",
+  "I don't know where to start": "stress",
+};
 
 const WELCOME_CHECKMARKS = [
   "Product recommendations tailored to your comfort level and goals",
@@ -27,6 +36,14 @@ const Q1_OPTIONS = [
   "I use it somewhat regularly",
   "I used cannabis in the past but not anymore",
 ] as const;
+
+const EXPERIENCE_LEVEL_BY_OPTION: Record<(typeof Q1_OPTIONS)[number], string> = {
+  "I've never tried cannabis before": "never",
+  "I've tried it once or twice": "tried_once",
+  "I use it occasionally": "occasional",
+  "I use it somewhat regularly": "regular",
+  "I used cannabis in the past but not anymore": "tried_once",
+};
 
 const Q2_OPTIONS = [
   "I've never been to one before",
@@ -99,6 +116,7 @@ export default function InlineOnboardingFlow({
   sectionTitleClassName,
   sectionHelperClassName,
 }: InlineOnboardingFlowProps) {
+  const router = useRouter();
   const flowRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState<Step>("support");
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
@@ -144,7 +162,13 @@ export default function InlineOnboardingFlow({
   const selectTopic = (label: string) => {
     trackEvent("cta_click", { label: "topic_prompt", prompt: label });
     trackEvent("onboarding_answer_selected", { step: "support_topic", answer: label });
-    localStorage.setItem("liftd_onboarding_q1", JSON.stringify({ topics: [label] }));
+    localStorage.setItem(
+      "liftd_onboarding_q1",
+      JSON.stringify({
+        topic: label,
+        goal: TOPIC_TO_GOAL[label] ?? "stress",
+      })
+    );
     setSelectedTopic(label);
     goTo("welcome");
   };
@@ -278,7 +302,21 @@ export default function InlineOnboardingFlow({
                 "liftd_disclaimer",
                 JSON.stringify({ disclaimerAccepted: true })
               );
-              goTo("guide");
+              const q1 = JSON.parse(localStorage.getItem("liftd_onboarding_q1") ?? "{}");
+              const q2 = JSON.parse(localStorage.getItem("liftd_onboarding_q2") ?? "{}");
+
+              localStorage.setItem(
+                "liftdplus_onboarding",
+                JSON.stringify({
+                  goal: q1.goal ?? "stress",
+                  experience_level: q2.experience_level ?? "never",
+                  state: null,
+                  interests: [],
+                  dispensary_visit: false,
+                  has_medical_card: null,
+                })
+              );
+              router.push("/results");
             }}
           >
             Continue →
@@ -335,7 +373,9 @@ export default function InlineOnboardingFlow({
                 sendGAEvent("event", "onboarding_q2_completed", { experienceLevel: q1 });
                 localStorage.setItem(
                   "liftd_onboarding_q2",
-                  JSON.stringify({ experienceLevel: q1 })
+                  JSON.stringify({
+                    experience_level: EXPERIENCE_LEVEL_BY_OPTION[q1 as (typeof Q1_OPTIONS)[number]],
+                  })
                 );
                 goTo("q2");
               })}

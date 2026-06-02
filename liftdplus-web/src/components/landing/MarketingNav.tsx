@@ -56,6 +56,18 @@ export default function MarketingNav() {
       </Link>
       <div style={{ display: "flex", alignItems: "center", gap: "36px" }}>
         <Link
+          href="/results"
+          style={{
+            fontSize: "1rem",
+            fontWeight: 500,
+            color: "var(--navy)",
+            textDecoration: "none",
+            letterSpacing: "0.015em",
+          }}
+        >
+          My Guide
+        </Link>
+        <Link
           href="/about"
           style={{
             fontSize: "1rem",

@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
 import LandingPage from "./LandingPage";
 
 export const dynamic = "force-dynamic";
@@ -39,14 +37,5 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) {
-    redirect("/explore");
-  }
-
   return <LandingPage />;
 }
