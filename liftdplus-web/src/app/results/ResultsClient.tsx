@@ -869,26 +869,11 @@ export default function ResultsClient({ detectedState }: { detectedState: string
               <div className="flex-shrink-0 self-center">
                 <div className="rounded-full p-2 border-2 border-[#6b938c]/30">
                   <div className="w-52 h-52 rounded-full bg-[#6b938c] flex flex-col items-center justify-center shadow-lg">
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 64 64"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <text
-                        x="32"
-                        y="42"
-                        textAnchor="middle"
-                        fontSize="52"
-                        fontWeight="bold"
-                        fill="white"
-                        fontFamily="system-ui, sans-serif"
-                        opacity="0.9"
-                      >
-                        ✦
-                      </text>
-                    </svg>
+                    <img
+                      src="/icons/09 LIFTD+ Icon - White.png"
+                      alt="LIFTD+"
+                      className="w-20 h-20 object-contain"
+                    />
                   </div>
                 </div>
               </div>
