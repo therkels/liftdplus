@@ -869,13 +869,26 @@ export default function ResultsClient({ detectedState }: { detectedState: string
               <div className="flex-shrink-0 self-center">
                 <div className="rounded-full p-2 border-2 border-[#6b938c]/30">
                   <div className="w-52 h-52 rounded-full bg-[#6b938c] flex flex-col items-center justify-center shadow-lg">
-                    <Check className="text-white w-14 h-14 mb-1" strokeWidth={1.5} />
-                    <p className="text-white text-sm font-bold text-center px-4 leading-tight">
-                      {goalLabel}
-                    </p>
-                    <p className="text-white/60 text-[9px] text-center px-4 leading-tight mt-1">
-                      Personalized for you.
-                    </p>
+                    <svg
+                      width="64"
+                      height="64"
+                      viewBox="0 0 64 64"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <text
+                        x="32"
+                        y="42"
+                        textAnchor="middle"
+                        fontSize="52"
+                        fontWeight="bold"
+                        fill="white"
+                        fontFamily="system-ui, sans-serif"
+                        opacity="0.9"
+                      >
+                        ✦
+                      </text>
+                    </svg>
                   </div>
                 </div>
               </div>
