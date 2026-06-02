@@ -869,7 +869,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
               <div className="flex-shrink-0 self-center">
                 <div className="rounded-full p-2 border-2 border-[#6b938c]/30">
                   <div className="w-52 h-52 rounded-full bg-[#6b938c] flex flex-col items-center justify-center shadow-lg">
-                    <Check className="text-white w-8 h-8 mb-2" />
+                    <Check className="text-white w-14 h-14 mb-1" strokeWidth={1.5} />
                     <p className="text-white text-sm font-bold text-center px-4 leading-tight">
                       {goalLabel}
                     </p>
