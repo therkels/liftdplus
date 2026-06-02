@@ -44,22 +44,21 @@ export default function MarketingNav() {
         backdropFilter: scrolled ? "blur(12px)" : "none",
       }}
     >
-      <Link href="/">
+      <Link href="/" className="flex-shrink-0">
         <Image
           src="/logos/01 LIFTD+ Logo - Primary.png"
           alt="LIFTD+"
-          width={140}
-          height={40}
-          style={{ height: 40, width: "auto" }}
+          width={80}
+          height={24}
+          className="object-contain"
           priority
         />
       </Link>
-      <div style={{ display: "flex", alignItems: "center", gap: "36px" }}>
+      <div className="flex items-center gap-3 md:gap-6">
         <Link
           href="/results"
-          className="whitespace-nowrap"
+          className="whitespace-nowrap text-xs md:text-sm"
           style={{
-            fontSize: "1rem",
             fontWeight: 500,
             color: "var(--navy)",
             textDecoration: "none",
@@ -70,9 +69,8 @@ export default function MarketingNav() {
         </Link>
         <Link
           href="/about"
-          className="whitespace-nowrap"
+          className="whitespace-nowrap text-xs md:text-sm"
           style={{
-            fontSize: "1rem",
             fontWeight: 500,
             color: "var(--navy)",
             textDecoration: "none",
@@ -83,9 +81,8 @@ export default function MarketingNav() {
         </Link>
         <Link
           href="/faq"
-          className="whitespace-nowrap"
+          className="whitespace-nowrap text-xs md:text-sm"
           style={{
-            fontSize: "1rem",
             fontWeight: 500,
             color: "var(--navy)",
             textDecoration: "none",
@@ -96,9 +93,8 @@ export default function MarketingNav() {
         </Link>
         <Link
           href="/resources"
-          className="whitespace-nowrap"
+          className="whitespace-nowrap text-xs md:text-sm"
           style={{
-            fontSize: "1rem",
             fontWeight: 500,
             color: "var(--navy)",
             textDecoration: "none",

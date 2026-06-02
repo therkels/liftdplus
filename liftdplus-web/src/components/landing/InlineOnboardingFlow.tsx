@@ -194,16 +194,16 @@ export default function InlineOnboardingFlow({
   );
 
   const renderWelcome = () => (
-    <div className={`${flowStyles.fullBleed} ${flowStyles.gradientBg} ${flowStyles.transitionScreen} relative`}>
-      <button
-        type="button"
-        onClick={() => goTo("topics")}
-        className="absolute top-4 left-4 text-white/70 hover:text-white text-sm flex items-center gap-1 transition-colors"
-      >
-        ← Back
-      </button>
+    <div className={`${flowStyles.fullBleed} ${flowStyles.gradientBg} ${flowStyles.transitionScreen}`}>
       <div className={flowStyles.transitionInner}>
         <h2 className={flowStyles.transitionHeadline}>You&apos;re in the right place.</h2>
+        <button
+          type="button"
+          onClick={() => goTo("topics")}
+          className="mt-6 text-white/80 hover:text-white text-sm font-medium flex items-center justify-center gap-1 underline underline-offset-2 transition-colors"
+        >
+          ← Back
+        </button>
 
         <div className={flowStyles.welcomeBodyGroup}>
           <p className={flowStyles.transitionBody}>
