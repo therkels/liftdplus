@@ -247,16 +247,10 @@ export default function InlineOnboardingFlow({
 
         <div className={flowStyles.disclaimerBodyGroup}>
           <p className={flowStyles.transitionBody}>
-            LIFTD+ is designed to help you better understand cannabis and cannabis products through
-            educational content and personalized guidance.
-          </p>
-          <p className={flowStyles.transitionBody}>
-            We do not provide medical advice, treatment, or healthcare recommendations. If you have
-            questions about medications, health conditions, pregnancy, breastfeeding, or cannabis use,
-            please speak with a qualified healthcare professional.
-          </p>
-          <p className={flowStyles.transitionBody}>
-            Nothing on LIFTD+ is intended to diagnose, treat, cure, or prevent any medical condition.
+            LIFTD+ provides cannabis education and personalized
+            guidance only. We are not a medical service and nothing
+            here is intended to diagnose, treat, or replace
+            professional healthcare advice.
           </p>
         </div>
 
@@ -291,7 +285,7 @@ export default function InlineOnboardingFlow({
           </label>
         </div>
 
-        <p className="text-xs text-center opacity-60 mt-2">
+        <p className="text-sm text-center opacity-80 mt-3">
           You can always change your answers or start over.
         </p>
 
@@ -308,12 +302,15 @@ export default function InlineOnboardingFlow({
               );
               const q1 = JSON.parse(localStorage.getItem("liftd_onboarding_q1") ?? "{}");
               const q2 = JSON.parse(localStorage.getItem("liftd_onboarding_q2") ?? "{}");
+              const q4 = JSON.parse(localStorage.getItem("liftd_onboarding_q4") ?? "{}");
 
               localStorage.setItem(
                 "liftdplus_onboarding",
                 JSON.stringify({
                   goal: q1.goal ?? "stress",
+                  topic: q1.topic ?? "",
                   experience_level: q2.experience_level ?? "never",
+                  learning_goal: Array.isArray(q4.learningGoal) ? q4.learningGoal[0] : "",
                   state: null,
                   interests: [],
                   dispensary_visit: false,

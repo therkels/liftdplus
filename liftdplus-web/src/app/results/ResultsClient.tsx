@@ -736,6 +736,8 @@ export default function ResultsClient({ detectedState }: { detectedState: string
         if (onboarding!.has_medical_card !== null && onboarding!.has_medical_card !== undefined) {
           params.set('has_medical_card', String(onboarding!.has_medical_card))
         }
+        if (onboarding!.topic) params.set('topic', onboarding!.topic)
+        if (onboarding!.learning_goal) params.set('learning_goal', onboarding!.learning_goal)
         const res = await fetch(`/api/v0/products/recommendations?${params}`)
         if (!res.ok) throw new Error()
         const data = await res.json()
@@ -844,7 +846,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
         {/* Hero */}
         <section
           style={{
-            background: 'linear-gradient(135deg, rgba(107,147,140,0.22) 0%, rgba(107,147,140,0.08) 45%, #f9f8f7 72%)',
+            background: 'linear-gradient(135deg, rgba(107,147,140,0.28) 0%, rgba(107,147,140,0.14) 40%, rgba(107,147,140,0.04) 70%, transparent 100%)',
           }}
           className="pt-20 pb-16 px-4 min-h-[460px] md:min-h-[520px]"
         >
@@ -867,16 +869,11 @@ export default function ResultsClient({ detectedState }: { detectedState: string
               <div className="flex-shrink-0 self-center">
                 <div className="rounded-full p-2 border-2 border-[#6b938c]/30">
                   <div className="w-52 h-52 rounded-full bg-[#6b938c] flex flex-col items-center justify-center shadow-lg">
-                    <p className="text-sm font-bold text-white text-center px-6 leading-tight">
-                      Your guide
-                    </p>
-                    <p className="text-sm font-bold text-white text-center px-6 leading-tight">
-                      is ready
-                    </p>
-                    <p className="text-xs text-white/80 text-center px-6 leading-tight mt-1">
+                    <Check className="text-white w-8 h-8 mb-2" />
+                    <p className="text-white text-sm font-bold text-center px-4 leading-tight">
                       {goalLabel}
                     </p>
-                    <p className="text-[10px] text-white/60 text-center px-6 leading-tight mt-1">
+                    <p className="text-white/60 text-[9px] text-center px-4 leading-tight mt-1">
                       Personalized for you.
                     </p>
                   </div>
@@ -900,10 +897,16 @@ export default function ResultsClient({ detectedState }: { detectedState: string
                     const firstSentence = sentences[0]
                     const rest = sentences.slice(1).join(' ')
                     return (
-                      <p className="text-base text-[#4f5a58] leading-relaxed">
-                        <strong className="text-[#313a43] font-semibold">{firstSentence}</strong>
-                        {rest ? ' ' + rest : ''}
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-base font-semibold text-[#313a43] leading-relaxed">
+                          {firstSentence}
+                        </p>
+                        {rest && (
+                          <p className="text-base text-[#4f5a58] leading-relaxed">
+                            {rest}
+                          </p>
+                        )}
+                      </div>
                     )
                   })()
                 : null}

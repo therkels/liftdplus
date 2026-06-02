@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/utils/supabase/admin'
-import { GoalSlug, ExperienceLevel, LegalStatus, BrandProduct } from '@/lib/lp2-types'
+import { GoalSlug, ExperienceLevel, LegalStatus, BrandProduct, GOAL_LABELS } from '@/lib/lp2-types'
 
 export async function GET(req: NextRequest) {
   try {
@@ -175,6 +175,8 @@ export async function GET(req: NextRequest) {
       goal, experience, stateName: stateName || 'your state',
       legalStatus, hasMedicalCard, stateCode,
       products: products.slice(0, 3),
+      topic: (searchParams.get('topic') || ''),
+      learning_goal: (searchParams.get('learning_goal') || ''),
     })
 
     return NextResponse.json({
@@ -192,10 +194,13 @@ export async function GET(req: NextRequest) {
 
 async function generateSummary({
   goal, experience, stateName, legalStatus, hasMedicalCard, stateCode, products,
+  topic, learning_goal,
 }: {
   goal: string; experience: string; stateName: string; stateCode: string | null
   legalStatus: LegalStatus; hasMedicalCard: boolean | null; products: BrandProduct[]
+  topic: string; learning_goal: string
 }): Promise<string> {
+  const goalLabel = GOAL_LABELS[goal as GoalSlug] || goal
   try {
     const systemPrompt = `You are the LIFTD+ guide engine. You write short, plain-language cannabis education summaries for cautious adult beginners — primarily women 35+. Your tone is calm, peer-to-peer, and trustworthy. Never clinical, never hype-y.
 
@@ -247,6 +252,8 @@ Goal framing:
           content: `Generate a personalized guide summary for:
 Goal: ${goal}
 Experience level: ${experience}
+Topic they selected: ${topic || goalLabel}
+Specific concern they want addressed: ${learning_goal || 'not specified'}
 State: ${stateContext}
 Top recommended product: ${products[0]?.name || ''}
 
