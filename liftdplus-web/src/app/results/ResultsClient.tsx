@@ -870,7 +870,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
                 <div className="rounded-full p-2 border-2 border-[#6b938c]/30">
                   <div className="w-52 h-52 rounded-full bg-[#6b938c] flex flex-col items-center justify-center shadow-lg">
                     <img
-                      src="/icons/09 LIFTD+ Icon - White.png"
+                      src="/icons/liftdplus-icon-white.png"
                       alt="LIFTD+"
                       className="w-20 h-20 object-contain"
                     />
