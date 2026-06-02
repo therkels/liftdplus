@@ -13,7 +13,7 @@ export default function AboutStory() {
           </p>
           <p className="text-[15px] md:text-base leading-8 text-[#4f5a58]">
             I was exhausted, overwhelmed, and quietly curious about
-            cannabis — but everything I found felt either too clinical,
+            cannabis, but everything I found felt either too clinical,
             too casual, or designed for someone with way more confidence
             than I had at the time.
           </p>
@@ -23,7 +23,7 @@ export default function AboutStory() {
         <div className="border-l-2 border-[#6b938c]/40 pl-8 my-16">
           <p className="text-xl leading-relaxed tracking-[-0.01em] text-[#313a43] font-medium">
             &quot;I didn&apos;t need more information. I needed someone to
-            tell me what to actually do — and to make it feel safe
+            tell me what to actually do, and to make it feel safe
             to start.&quot;
           </p>
         </div>
@@ -41,7 +41,7 @@ export default function AboutStory() {
         {/* Builder paragraph */}
         <div className="mb-16">
           <p className="text-[15px] md:text-base leading-8 text-[#4f5a58]">
-            So I built LIFTD+ — a guided recommendation system for
+            So I built LIFTD+: a guided recommendation system for
             people who are curious but cautious. Every product in our
             catalog is independently tested and evaluated against a
             set of standards I&apos;d want applied to something I was
@@ -59,25 +59,37 @@ export default function AboutStory() {
             And the name matters, too.
           </p>
           <p className="text-[15px] md:text-base leading-8 text-[#4f5a58]">
-            Yes, "lifted" can mean getting high, but LIFTD+ is also about
-            elevating your understanding, reframing your relationship with the
-            plant, and finding products that genuinely fit your life. The
-            "plus" is intentional: more clarity, more confidence, more
-            support, and a more informed way to explore cannabis.
+            &quot;Lifted&quot; speaks to getting high, because yes, that is part
+            of it. But the &quot;+&quot; is intentional. Get high (or don&apos;t),
+            then go further. Reframe your relationship with the plant,
+            build a clearer understanding of what works for you, and
+            discover products that actually fit your life and your
+            wellness goals. We are here to support every step with a
+            more informed, intentional way to explore cannabis.
           </p>
         </div>
 
         {/* Closing */}
         <div className="mt-16">
           <p className="text-[15px] md:text-base leading-8 text-[#4f5a58] mb-6">
-            This is for the woman who has been thinking about it for
-            months but hasn&apos;t known where to start. The one who wants
-            to feel better without feeling out of control.
+            This is for the woman who already has too much on her plate
+            and doesn&apos;t have time to figure out something new, navigate
+            confusing terms, or worry about getting it wrong. LIFTD+
+            exists to make it simple enough that it&apos;s actually worth trying.
           </p>
           <p className="text-[15px] md:text-base leading-8 text-[#4f5a58] mb-10">
             You&apos;re in the right place. Take your time.
           </p>
-          <p className="text-sm font-medium text-[#313a43]">— Erin, Founder</p>
+          <div className="flex items-center gap-3 mt-8">
+            <img
+              src="/photos/founder-hero.jpg"
+              alt="Erin, Founder of LIFTD+"
+              className="w-12 h-12 rounded-full object-cover object-top"
+            />
+            <p className="text-sm font-medium text-[#313a43]">
+              Erin, Founder
+            </p>
+          </div>
         </div>
 
       </div>

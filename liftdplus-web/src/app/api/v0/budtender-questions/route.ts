@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('budtender_questions')
-    .select('question, sort_order')
+    .select('question, why_it_matters, sort_order')
     .eq('goal_id', goal)
     .eq('experience_level_id', experienceLevelId)
     .order('sort_order', { ascending: true })
@@ -33,6 +33,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ questions: [] })
   }
 
-  const questions = (data || []).map((row: { question: string }) => row.question)
+  const questions = (data || []).map((row: { question: string; why_it_matters: string }) => ({
+    question: row.question,
+    why_it_matters: row.why_it_matters,
+  }))
   return NextResponse.json({ questions })
 }

@@ -118,9 +118,8 @@ function ProductCard({
       {isFirst && (
         <div className="bg-[#6b938c] px-5 py-3 flex items-center justify-between">
           <span className="text-white text-xs font-bold uppercase tracking-widest">
-            ★ Recommended Start
+            ★ RECOMMENDED START
           </span>
-          <span className="text-white/70 text-xs">Start here</span>
         </div>
       )}
 
@@ -459,7 +458,7 @@ function AccountCreationBlock() {
 
 const ARTICLES_BY_GOAL: Record<string, { slug: string; title: string; description: string }[]> = {
   sleep: [
-    { slug: 'how-to-time-your-cannabis-for-better-sleep', title: 'How to Time Your Cannabis for Better Sleep', description: 'When and how much — timing makes a bigger difference than most people realize.' },
+    { slug: 'how-to-time-your-cannabis-for-better-sleep', title: 'How to Time Your Cannabis for Better Sleep', description: 'When and how much. Timing makes a bigger difference than most people realize.' },
     { slug: 'thc-vs-cbd-for-sleep-whats-the-difference', title: 'THC vs. CBD for Sleep', description: 'Which one actually helps you fall asleep and stay asleep.' },
     { slug: 'new-to-cannabis', title: 'New to Cannabis?', description: 'A beginner\'s guide to getting started safely and confidently.' },
   ],
@@ -475,7 +474,7 @@ const ARTICLES_BY_GOAL: Record<string, { slug: string; title: string; descriptio
   ],
   focus: [
     { slug: 'microdosing-for-focus-creativity-and-flow-a-beginner-playbook', title: 'Microdosing for Focus, Creativity, and Flow', description: 'A beginner playbook for using cannabis to get into a flow state.' },
-    { slug: 'myth-cannabis-makes-you-lazy-unmotivated-or-numb', title: 'Myth: Cannabis Makes You Lazy', description: 'The truth about cannabis and motivation — it\'s more nuanced than you think.' },
+    { slug: 'myth-cannabis-makes-you-lazy-unmotivated-or-numb', title: 'Myth: Cannabis Makes You Lazy', description: 'The truth about cannabis and motivation. It\'s more nuanced than you think.' },
     { slug: 'thc-vs-cbd-whats-the-difference', title: 'THC vs. CBD: What\'s the Difference?', description: 'Understand the difference and what each experience can feel like.' },
   ],
   hormonal: [
@@ -512,7 +511,7 @@ function ReadNextSection({ goal }: { goal: GoalSlug }) {
   )
 }
 
-function DispensarySection({ questions }: { questions: string[] }) {
+function DispensarySection({ questions }: { questions: { question: string; why_it_matters: string }[] }) {
   const [open, setOpen] = useState<number | null>(null)
   if (questions.length === 0) return null
   return (
@@ -526,9 +525,14 @@ function DispensarySection({ questions }: { questions: string[] }) {
               onClick={() => setOpen(open === i ? null : i)}
               className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-[#f4f7f5] transition-colors"
             >
-              <span className="text-sm text-[#313a43] font-medium pr-4">{q}</span>
+              <span className="text-sm text-[#313a43] font-medium pr-4">{q.question}</span>
               <ChevronRight className={`w-4 h-4 text-[#6b938c] flex-shrink-0 transition-transform duration-200 ${open === i ? 'rotate-90' : ''}`} />
             </button>
+            {open === i && (
+              <div className="px-4 pb-4 text-xs text-[#4f5a58] leading-relaxed border-t border-[#f0f0ee] pt-3">
+                {q.why_it_matters}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -549,13 +553,13 @@ function YourPlanSection({ goal, experience, products }: { goal: GoalSlug; exper
       <h2 className="text-[10px] font-semibold text-[#313a43] uppercase tracking-widest mb-3">Your Plan</h2>
       <div className="space-y-5">
         {[
-          { label: 'Format to try first', value: formatLabel, icon: <FormatIcon format={top.format} className="w-5 h-5 text-[#6b938c]" /> },
-          { label: 'What to look for', value: lookForMap[goal] || 'Low-dose, full spectrum', icon: <Check className="w-5 h-5 text-[#6b938c]" /> },
-          { label: 'Start low', value: startingDose, icon: <Star className="w-5 h-5 text-[#6b938c]" /> },
-          { label: 'When to take it', value: timingMap[goal] || 'As needed', icon: <Loader className="w-5 h-5 text-[#6b938c]" /> },
+          { label: 'Format to try first', value: formatLabel, icon: <FormatIcon format={top.format} className="w-4 h-4 text-[#6b938c]" /> },
+          { label: 'What to look for', value: lookForMap[goal] || 'Low-dose, full spectrum', icon: <Check className="w-4 h-4 text-[#6b938c]" /> },
+          { label: 'Start low', value: startingDose, icon: <Star className="w-4 h-4 text-[#6b938c]" /> },
+          { label: 'When to take it', value: timingMap[goal] || 'As needed', icon: <Loader className="w-4 h-4 text-[#6b938c]" /> },
         ].map(({ label, value, icon }) => (
           <div key={label} className="flex items-start gap-2">
-            <div className="w-10 h-10 rounded-xl bg-[#f4f7f5] flex items-center justify-center flex-shrink-0 mt-0.5">{icon}</div>
+            <div className="w-8 h-8 rounded-xl bg-[#f4f7f5] flex items-center justify-center flex-shrink-0 mt-0.5">{icon}</div>
             <div>
               <p className="text-xs font-semibold text-[#6b938c] uppercase tracking-widest">{label}</p>
               <p className="text-lg font-bold text-[#313a43]">{value}</p>
@@ -605,7 +609,7 @@ function FeedbackSection({ sessionId, goal, stateCode }: {
       setSent(true)
       setShowFeedbackModal(false)
     } catch {
-      setSent(true) // fail silently — don't block user
+      setSent(true) // fail silently, don't block user
       setShowFeedbackModal(false)
     }
     setSubmitting(false)
@@ -698,7 +702,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
   const [userRatings, setUserRatings] = useState<Map<string, ExistingRating>>(new Map())
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [showStateModal, setShowStateModal] = useState(false)
-  const [budtenderQuestions, setBudtenderQuestions] = useState<string[]>([])
+  const [budtenderQuestions, setBudtenderQuestions] = useState<{ question: string; why_it_matters: string }[]>([])
   const [activeFilter, setActiveFilter] = useState<'all' | 'ships' | 'dispensary'>('all')
   const [showAllProducts, setShowAllProducts] = useState(false)
   const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false)
@@ -775,24 +779,34 @@ export default function ResultsClient({ detectedState }: { detectedState: string
 
   if (showOnboardingPrompt && !onboarding) {
     return (
-      <>
-        <MarketingNav />
-        <div className="fixed inset-x-0 top-16 bottom-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl space-y-4">
-            <h3 className="font-semibold text-[#313a43]">Start with your goals first.</h3>
-            <p className="text-sm text-[#4f5a58]">
-              Answer a few quick questions and we&apos;ll build your personalized guide.
-            </p>
-            <button
-              type="button"
-              onClick={() => router.push('/')}
-              className="w-full bg-[#313a43] text-white rounded-xl py-3 font-medium hover:bg-[#4f5a58] transition-colors"
-            >
-              Get started
-            </button>
+      <div className="fixed inset-0 bg-[#f9f8f7] flex items-center justify-center z-50 p-6">
+        <div className="max-w-sm w-full text-center space-y-6">
+          <div className="w-16 h-16 rounded-full bg-[#6b938c] flex items-center justify-center mx-auto">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </div>
+          <div>
+            <p className="text-[10px] font-semibold text-[#6b938c] uppercase tracking-widest mb-2">
+              Your Personalized Guide
+            </p>
+            <h2 className="text-2xl font-bold text-[#313a43] mb-3">
+              Start with your goals first.
+            </h2>
+            <p className="text-sm text-[#4f5a58] leading-relaxed">
+              Answer a few quick questions and we&apos;ll build a personalized guide based on what you&apos;re looking to support.
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/')}
+            className="w-full py-3.5 bg-[#313a43] text-white rounded-xl font-medium hover:bg-[#4f5a58] transition-colors">
+            Get started
+          </button>
+          <p className="text-xs text-[#4f5a58]">
+            No account needed to get started.
+          </p>
         </div>
-      </>
+      </div>
     )
   }
 
@@ -916,7 +930,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
                   <h2 className="text-sm font-bold text-[#313a43] uppercase tracking-widest">Products We'd Start With</h2>
                   <p className="text-xs text-[#4f5a58] mt-1">Selected based on your goals, experience level, and what's available{stateName ? ` in ${stateName}` : ''}.</p>
                   <p className="text-sm text-[#6b938c] font-medium mt-1">
-                    There&apos;s no wrong choice here — these are starting points,
+                    There&apos;s no wrong choice here. These are starting points,
                     not prescriptions.
                   </p>
                 </div>

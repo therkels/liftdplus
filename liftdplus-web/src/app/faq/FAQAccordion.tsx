@@ -12,7 +12,7 @@ const FAQ_SECTIONS: FAQSection[] = [
     title: "Getting Started",
     subtitle: "New to cannabis? Start here.",
     items: [
-      { id: "for-me", question: "Is this for me if I've never used cannabis before?", answer: "Yes. LIFTD+ is built for beginners and people who are not sure where to start. You do not need any prior knowledge. There are no wrong questions and no wrong starting points — just start with how you are feeling and we guide the rest. You can take your time." },
+      { id: "for-me", question: "Is this for me if I've never used cannabis before?", answer: "Yes. LIFTD+ is built for beginners and people who are not sure where to start. You do not need any prior knowledge. There are no wrong questions and no wrong starting points: just start with how you are feeling and we guide the rest. You can take your time." },
       { id: "why-use", question: "Why would I use LIFTD+?", answer: "If you feel overwhelmed, exhausted, or unsure what might help, LIFTD+ takes the guesswork out of it. You answer a few questions and get guidance based on what you are trying to support like sleep, stress, focus, or hormonal shifts." },
       { id: "overwhelmed", question: "I'm overwhelmed. I don't know where to start.", answer: "That is exactly who this is for. You do not need to know anything about cannabis or products. Start with how you are feeling and we will guide you from there." },
       { id: "sign-up", question: "Do I need to sign up to use this?", answer: "No. You can get your guide without creating an account. If you choose to save it with email, we can remember your preferences and improve future recommendations based on what you find helpful." },

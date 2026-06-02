@@ -84,6 +84,9 @@ export default function LandingPage() {
           />
         </Link>
         <div className={styles.navLinks}>
+          <Link href="/results" className={styles.navLink}>
+            My Guide
+          </Link>
           <Link href="/about" className={styles.navLink}>
             About
           </Link>
