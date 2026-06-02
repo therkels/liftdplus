@@ -141,7 +141,7 @@ export default function ResourcesPageClient() {
               <Link
                 href="/"
                 onClick={() => sendGAEvent("event", "cta_click", { source: "resources_page" })}
-                className="inline-block flex-shrink-0 whitespace-nowrap rounded-full bg-[#ccff33] px-6 py-2 text-xs font-semibold text-black transition hover:opacity-90 lg:text-sm"
+                className="inline-block w-auto flex-shrink-0 whitespace-nowrap rounded-full bg-[#ccff33] px-6 py-2 text-xs font-semibold text-black transition hover:opacity-90 lg:text-sm"
               >
                 Get My Guide →
               </Link>

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import MarketingNav from "@/components/landing/MarketingNav";
 import NavBar from "./nav";
 
-const MARKETING_ROUTES = ["/about", "/faq", "/resources", "/privacy", "/terms"];
+const MARKETING_ROUTES = ["/about", "/faq", "/resources", "/privacy", "/terms", "/results"];
 const NO_NAV_ROUTES = ["/", "", "/getting-started"];
 
 export default function ConditionalNavBar() {

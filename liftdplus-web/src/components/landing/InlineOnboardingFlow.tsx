@@ -61,9 +61,9 @@ const Q3_OPTIONS = [
   "I'm mostly here to learn and explore",
 ] as const;
 
-type Step = "support" | "welcome" | "q1" | "q2" | "q3" | "disclaimer" | "guide";
+type Step = "topics" | "welcome" | "q1" | "q2" | "q3" | "disclaimer" | "guide";
 
-const STEP_ORDER: Step[] = ["support", "welcome", "q1", "q2", "q3", "disclaimer", "guide"];
+const STEP_ORDER: Step[] = ["topics", "welcome", "q1", "q2", "q3", "disclaimer", "guide"];
 
 const QUESTION_STEPS: Step[] = ["q1", "q2", "q3"];
 const TRANSITION_STEPS: Step[] = ["welcome", "disclaimer"];
@@ -118,7 +118,7 @@ export default function InlineOnboardingFlow({
 }: InlineOnboardingFlowProps) {
   const router = useRouter();
   const flowRef = useRef<HTMLDivElement>(null);
-  const [step, setStep] = useState<Step>("support");
+  const [step, setStep] = useState<Step>("topics");
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [q1, setQ1] = useState<string | null>(null);
   const [q2, setQ2] = useState<string | null>(null);
@@ -142,7 +142,7 @@ export default function InlineOnboardingFlow({
 
   useEffect(() => {
     const viewed: Record<Step, string> = {
-      support: "inline_support",
+      topics: "inline_support",
       welcome: "inline_welcome",
       q1: "inline_q1_experience",
       q2: "inline_q2_dispensary",
@@ -194,7 +194,14 @@ export default function InlineOnboardingFlow({
   );
 
   const renderWelcome = () => (
-    <div className={`${flowStyles.fullBleed} ${flowStyles.gradientBg} ${flowStyles.transitionScreen}`}>
+    <div className={`${flowStyles.fullBleed} ${flowStyles.gradientBg} ${flowStyles.transitionScreen} relative`}>
+      <button
+        type="button"
+        onClick={() => goTo("topics")}
+        className="absolute top-4 left-4 text-white/70 hover:text-white text-sm flex items-center gap-1 transition-colors"
+      >
+        ← Back
+      </button>
       <div className={flowStyles.transitionInner}>
         <h2 className={flowStyles.transitionHeadline}>You&apos;re in the right place.</h2>
 
@@ -549,7 +556,7 @@ export default function InlineOnboardingFlow({
       className={flowStyles.flow}
       data-onboarding-immersive={isImmersiveStep ? "true" : undefined}
     >
-      {step === "support" && (
+      {step === "topics" && (
         <>
           <h2 className={sectionTitleClassName}>
             What do you need support with right now?

@@ -84,7 +84,7 @@ export default function AboutStory() {
             <img
               src="/photos/founder-hero.jpg"
               alt="Erin, Founder of LIFTD+"
-              className="w-12 h-12 rounded-full object-cover object-top"
+              className="w-16 h-16 rounded-full object-cover object-top"
             />
             <p className="text-sm font-medium text-[#313a43]">
               Erin, Founder

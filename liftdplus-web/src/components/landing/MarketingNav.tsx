@@ -57,6 +57,7 @@ export default function MarketingNav() {
       <div style={{ display: "flex", alignItems: "center", gap: "36px" }}>
         <Link
           href="/results"
+          className="whitespace-nowrap"
           style={{
             fontSize: "1rem",
             fontWeight: 500,
@@ -69,6 +70,7 @@ export default function MarketingNav() {
         </Link>
         <Link
           href="/about"
+          className="whitespace-nowrap"
           style={{
             fontSize: "1rem",
             fontWeight: 500,
@@ -81,6 +83,7 @@ export default function MarketingNav() {
         </Link>
         <Link
           href="/faq"
+          className="whitespace-nowrap"
           style={{
             fontSize: "1rem",
             fontWeight: 500,
@@ -93,6 +96,7 @@ export default function MarketingNav() {
         </Link>
         <Link
           href="/resources"
+          className="whitespace-nowrap"
           style={{
             fontSize: "1rem",
             fontWeight: 500,

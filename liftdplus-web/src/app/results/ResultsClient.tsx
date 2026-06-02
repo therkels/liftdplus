@@ -13,8 +13,6 @@ import {
   GOAL_LABELS, EXPERIENCE_LABELS, FORMAT_LABELS, GoalSlug, LegalStatus,
 } from '@/lib/lp2-types'
 import { getAvailabilityText, shouldShowDispensarySection } from '@/lib/lp2-utils'
-import MarketingNav from '@/components/landing/MarketingNav'
-
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface SavedProduct { product_id: string }
 interface ExistingRating { product_id: string; rating: number; note?: string }
@@ -838,7 +836,6 @@ export default function ResultsClient({ detectedState }: { detectedState: string
 
   return (
     <>
-      <MarketingNav />
       {showSaveModal && <SavePromptModal onClose={() => setShowSaveModal(false)} />}
       {showStateModal && <StateChangeModal onClose={() => setShowStateModal(false)} />}
 
@@ -851,7 +848,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
           className="pt-20 pb-16 px-4 min-h-[460px] md:min-h-[520px]"
         >
           <div className="max-w-5xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex flex-row items-center justify-between gap-4">
               <div className="flex-1">
                 <p className="text-[10px] font-semibold text-[#6b938c] uppercase tracking-widest mb-2">
                   {goalEyebrow[onboarding.goal] || 'YOUR PERSONALIZED GUIDE'}
@@ -867,12 +864,12 @@ export default function ResultsClient({ detectedState }: { detectedState: string
                 <div className="w-16 h-0.5 bg-[#6b938c] mt-6 mb-2 rounded-full" />
               </div>
               <div className="flex-shrink-0 self-center">
-                <div className="rounded-full p-2 border-2 border-[#6b938c]/30">
-                  <div className="w-52 h-52 rounded-full bg-[#6b938c] flex flex-col items-center justify-center shadow-lg">
+                <div className="rounded-full p-2 border-2 border-[#6b938c]/30 w-32 h-32 md:w-64 md:h-64 flex items-center justify-center flex-shrink-0">
+                  <div className="w-28 h-28 md:w-56 md:h-56 rounded-full bg-[#6b938c] flex flex-col items-center justify-center shadow-lg">
                     <img
                       src="/icons/liftdplus-icon-white.png"
                       alt="LIFTD+"
-                      className="w-20 h-20 object-contain"
+                      className="w-12 h-12 md:w-20 md:h-20 object-contain"
                     />
                   </div>
                 </div>
