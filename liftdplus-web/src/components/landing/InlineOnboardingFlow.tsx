@@ -196,23 +196,15 @@ export default function InlineOnboardingFlow({
   const renderWelcome = () => (
     <div className={`${flowStyles.fullBleed} ${flowStyles.gradientBg} ${flowStyles.transitionScreen}`}>
       <div className={flowStyles.transitionInner}>
-        <h2 className={flowStyles.transitionHeadline}>You&apos;re in the right place.</h2>
-        <button
-          type="button"
-          onClick={() => goTo("topics")}
-          className="mt-6 text-white/80 hover:text-white text-sm font-medium flex items-center justify-center gap-1 underline underline-offset-2 transition-colors"
-        >
+        <button type="button" className={flowStyles.backBtn} onClick={goBack}>
           ← Back
         </button>
+        <h2 className={flowStyles.transitionHeadline}>You&apos;re in the right place.</h2>
 
         <div className={flowStyles.welcomeBodyGroup}>
           <p className={flowStyles.transitionBody}>
             Based on your answers, we&apos;ll build you a personalized guide with beginner-friendly
             education, dosage guidance, and product recommendations tailored to your comfort level.
-          </p>
-          <p className={flowStyles.transitionBody}>
-            You&apos;ll learn about THC, CBD, product types, and what different experiences can feel
-            like — without the pressure or jargon.
           </p>
         </div>
 
