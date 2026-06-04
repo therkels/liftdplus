@@ -7,6 +7,9 @@ export async function updateSession(request: NextRequest) {
   });
 
   const pathname = request.nextUrl.pathname;
+  if (pathname === '/api/v0/auth/callback') {
+    return NextResponse.next({ request });
+  }
   const hasCode = request.nextUrl.searchParams.has("code");
 
   const supabase = createServerClient(
