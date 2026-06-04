@@ -16,7 +16,7 @@ export default function ResultsPage() {
   const headersList = headers()
   // Vercel injects region as US-MI, US-CA, etc — extract state code
   const region = headersList.get('x-vercel-ip-country-region') || ''
-  const detectedState = region.startsWith('US-') ? region.slice(3) : null
+  const detectedState = region.startsWith('US-') ? region.slice(3) : region.length === 2 ? region : null
   console.log('[results] region header:', region, 'detectedState:', detectedState)
 
   return (
