@@ -13,6 +13,7 @@ import {
   GOAL_LABELS, EXPERIENCE_LABELS, FORMAT_LABELS, GoalSlug, LegalStatus,
 } from '@/lib/lp2-types'
 import { getAvailabilityText, shouldShowDispensarySection } from '@/lib/lp2-utils'
+import { createClient } from '@/utils/supabase/client'
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface SavedProduct { product_id: string }
 interface ExistingRating { product_id: string; rating: number; note?: string }
@@ -392,12 +393,19 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/v0/auth/magic-link', {
+      const supabase = createClient()
+      const { error: authError } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/api/v0/auth/callback?next=%2Fresults%3Fsaved%3Dtrue`,
+        },
+      })
+      if (authError) throw authError
+      fetch('/api/v0/auth/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
-      })
-      if (!res.ok) throw new Error('Failed')
+      }).catch(() => {})
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')

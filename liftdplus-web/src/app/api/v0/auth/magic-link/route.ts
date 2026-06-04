@@ -1,26 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
 
 export async function POST(req: NextRequest) {
   const { email } = await req.json()
 
   if (!email) {
     return NextResponse.json({ error: 'Email required' }, { status: 400 })
-  }
-
-  const supabase = await createClient()
-
-  // Send magic link
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/v0/auth/callback?next=%2Fresults%3Fsaved%3Dtrue`,
-    },
-  })
-
-  if (error) {
-    console.error('Magic link error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
   // Add to Mailchimp with lp2-signup tag
