@@ -397,7 +397,7 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          emailRedirectTo: `${window.location.origin}/api/v0/auth/callback?next=%2Fresults%3Fsaved%3Dtrue`,
+          emailRedirectTo: `${window.location.origin}/api/v0/auth/callback?next=/results%3Fsaved%3Dtrue`,
         },
       })
       if (authError) throw authError
