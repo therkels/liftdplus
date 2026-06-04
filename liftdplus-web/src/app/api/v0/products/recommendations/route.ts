@@ -214,7 +214,7 @@ Rules:
 - Never say "consult your doctor"
 - Never use the word "journey"
 - Write like a knowledgeable friend, not a brand
-- In your final sentence, mention one key terpene for this goal in plain language. Example: "If you visit a dispensary, look for strains with myrcene or linalool in the terpene profile." Frame it as something to look for, not a proven cure. Only mention terpenes if the user has dispensary access (recreational or medical states). Skip for hemp_only states.
+- In your final sentence, mention one key terpene for this goal in plain language, but only if the state has dispensary access (recreational or medical). Frame it as: "If you visit a dispensary and are looking at flower, ask about strains with [terpene] in the profile." This is flower-specific guidance. Skip entirely for hemp_only states.
 
 Cannabinoid reference:
 - CBN = sleep cannabinoid, mild sedative, non-intoxicating

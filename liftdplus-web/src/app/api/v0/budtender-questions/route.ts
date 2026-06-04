@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     .eq('goal_id', goal)
     .eq('experience_level_id', experienceLevelId)
     .order('sort_order', { ascending: true })
-    .limit(4)
+    .limit(5)
 
   if (error) {
     console.error('budtender_questions error:', error)
