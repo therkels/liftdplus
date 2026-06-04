@@ -36,10 +36,8 @@ export async function GET(request: Request) {
         profile_icon_url: user.user_metadata?.avatar_url,
       });
       if (createError && !createError.message.includes("duplicate key")) {
-        return new Response(JSON.stringify({ error: createError.message }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        });
+        console.error('create_user error (non-fatal for magic link):', createError.message)
+        // Don't block the redirect — user is authenticated
       }
       isNewUser = true;
     } else {
