@@ -4,11 +4,18 @@ import { supabaseAdmin } from "@/utils/supabase/admin";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
+
+  console.log('[callback] full URL:', request.url)
+  console.log('[callback] code present:', !!searchParams.get('code'))
+  console.log('[callback] next param:', searchParams.get('next'))
+
   let next = searchParams.get("next") ?? "/";
   if (!next.startsWith("/")) {
     next = "/";
   }
+
+  const code = searchParams.get("code");
+
   if (code) {
     const supabase = await createClient();
     const {
@@ -16,20 +23,21 @@ export async function GET(request: Request) {
       error,
     } = await supabase.auth.exchangeCodeForSession(code);
 
+    console.log('[callback] exchange error:', error)
+    console.log('[callback] user:', user?.id)
+
     if (!user || !user.id) {
       return NextResponse.redirect(`${origin}/auth/auth-code-error`);
     }
 
-    // Use admin client to bypass RLS for user checks
     const { data: userData } = await supabaseAdmin
       .from("users")
       .select("id, username")
       .eq("id", user.id)
       .maybeSingle();
-    let isNewUser = false;
 
+    let isNewUser = false;
     if (!userData) {
-      // Create new user
       const { error: createError } = await supabaseAdmin.rpc("create_user", {
         user_id: user.id,
         username: "user_" + Math.random().toString(36).substring(2, 10),
@@ -37,12 +45,9 @@ export async function GET(request: Request) {
       });
       if (createError && !createError.message.includes("duplicate key")) {
         console.error('create_user error (non-fatal for magic link):', createError.message)
-        // Don't block the redirect — user is authenticated
       }
       isNewUser = true;
     } else {
-      // If user has a username that starts with "user_" they haven't completed onboarding
-      // Otherwise they're an existing user — send to explore
       const username = userData?.username ?? "";
       if (username.startsWith("user_") || username === "") {
         isNewUser = true;
@@ -50,13 +55,13 @@ export async function GET(request: Request) {
     }
 
     if (!error) {
-      const nextParam = searchParams.get('next')
-      const redirectPath = nextParam && nextParam.startsWith('/')
-        ? nextParam
+      const redirectPath = next !== "/"
+        ? next
         : isNewUser ? "/getting-started" : "/explore";
 
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";
+
       if (isLocalEnv) {
         return NextResponse.redirect(`${origin}${redirectPath}`);
       } else if (forwardedHost) {
@@ -66,5 +71,6 @@ export async function GET(request: Request) {
       }
     }
   }
+
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
