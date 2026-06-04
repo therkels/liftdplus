@@ -52,7 +52,10 @@ export async function GET(request: Request) {
     }
 
     if (!error) {
-      const redirectPath = isNewUser ? "/getting-started" : "/explore";
+      const nextParam = searchParams.get('next')
+      const redirectPath = nextParam && nextParam.startsWith('/')
+        ? nextParam
+        : isNewUser ? "/getting-started" : "/explore";
 
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";

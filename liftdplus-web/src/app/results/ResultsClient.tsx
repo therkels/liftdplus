@@ -17,6 +17,14 @@ import { getAvailabilityText, shouldShowDispensarySection } from '@/lib/lp2-util
 interface SavedProduct { product_id: string }
 interface ExistingRating { product_id: string; rating: number; note?: string }
 
+function Toast({ message }: { message: string }) {
+  return (
+    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#313a43] text-white text-sm px-5 py-3 rounded-full shadow-lg">
+      {message}
+    </div>
+  )
+}
+
 const US_STATES: [string, string][] = [
   ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],
   ['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],
@@ -239,7 +247,7 @@ function ProductCard({
           {!isLoggedIn && (
             <div className="mt-3 flex items-center gap-1.5 text-xs text-[#4f5a58] bg-[#f9f8f7] rounded-lg px-3 py-2">
               <Bookmark className="w-3 h-3 text-[#6b938c] flex-shrink-0" />
-              <span><a href="/login" className="text-[#6b938c] font-medium hover:underline">Create a free account</a> to save this product and keep your guide.</span>
+              <span><button type="button" onClick={onSaveAttempt} className="text-[#6b938c] font-medium hover:underline">Create a free account</button> to save this product and keep your guide.</span>
             </div>
           )}
         </div>
@@ -374,20 +382,87 @@ function StateChangeModal({ onClose }: { onClose: () => void }) {
 }
 
 function SavePromptModal({ onClose }: { onClose: () => void }) {
+  const [email, setEmail] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleSubmit() {
+    if (!email.trim()) return
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/v0/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      setSubmitted(true)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    }
+    setLoading(false)
+  }
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-xl">
-        <div className="w-10 h-10 rounded-full bg-[#6b938c] flex items-center justify-center">
-          <Bookmark className="w-5 h-5 text-white" />
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="font-semibold text-[#313a43] mb-1">
+              Save your guide
+            </h3>
+            <p className="text-sm text-[#4f5a58]">
+              Enter your email and we'll send you a link to access your guide anytime.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[#cdcec7] hover:text-[#313a43] transition-colors ml-4 flex-shrink-0">
+            ✕
+          </button>
         </div>
-        <div>
-          <h3 className="font-semibold text-[#313a43] mb-1">Save this product</h3>
-          <p className="text-sm text-[#4f5a58]">Create a free account to save products and keep your guide.</p>
-        </div>
-        <div className="flex flex-col gap-2">
-          <a href="/login" className="block w-full text-center py-3 bg-[#313a43] text-white rounded-xl font-medium text-sm hover:bg-[#4f5a58] transition-colors">Create free account</a>
-          <button onClick={onClose} className="text-xs text-[#6b938c] underline py-1">Not now</button>
-        </div>
+        {!submitted ? (
+          <>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSubmit() }}
+              placeholder="your@email.com"
+              className="w-full text-sm border border-[#cdcec7] rounded-xl px-4 py-3 focus:outline-none focus:border-[#6b938c] text-[#313a43] placeholder:text-[#cdcec7]"
+              autoFocus
+            />
+            {error && <p className="text-xs text-red-500">{error}</p>}
+            <button
+              onClick={handleSubmit}
+              disabled={!email.trim() || loading}
+              className="w-full py-3 bg-[#313a43] text-white rounded-xl font-medium hover:bg-[#4f5a58] transition-colors disabled:opacity-40">
+              {loading ? 'Sending...' : 'Send me the link'}
+            </button>
+            <p className="text-xs text-center text-[#4f5a58]">
+              No password needed. One click and you're in.
+            </p>
+          </>
+        ) : (
+          <div className="text-center space-y-3 py-2">
+            <div className="w-12 h-12 rounded-full bg-[#f4f7f5] flex items-center justify-center mx-auto">
+              <svg className="w-6 h-6 text-[#6b938c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <p className="font-semibold text-[#313a43]">Check your inbox</p>
+            <p className="text-sm text-[#4f5a58]">
+              We sent a link to {email}. Click it to save your guide and come back anytime.
+            </p>
+            <button
+              onClick={onClose}
+              className="text-sm text-[#6b938c] underline">
+              Done
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -429,7 +504,7 @@ function WhatMakesItIn() {
   )
 }
 
-function AccountCreationBlock() {
+function AccountCreationBlock({ onOpenSaveModal }: { onOpenSaveModal: () => void }) {
   return (
     <div className="bg-[#f4f7f5] border border-[#cdcec7] rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
       <div className="flex items-start gap-4">
@@ -447,7 +522,7 @@ function AccountCreationBlock() {
         </div>
       </div>
       <div className="flex flex-col items-start md:items-end gap-2 flex-shrink-0">
-        <a href="/login" className="px-6 py-3 bg-[#313a43] text-white rounded-xl font-medium hover:bg-[#4f5a58] transition-colors text-sm whitespace-nowrap">Save My Guide</a>
+        <button type="button" onClick={onOpenSaveModal} className="px-6 py-3 bg-[#313a43] text-white rounded-xl font-medium hover:bg-[#4f5a58] transition-colors text-sm whitespace-nowrap">Save My Guide</button>
         <a href="/login" className="text-xs text-[#6b938c] underline">Already have an account? Log in</a>
       </div>
     </div>
@@ -699,11 +774,21 @@ export default function ResultsClient({ detectedState }: { detectedState: string
   const [savedProducts, setSavedProducts] = useState<Set<string>>(new Set())
   const [userRatings, setUserRatings] = useState<Map<string, ExistingRating>>(new Map())
   const [showSaveModal, setShowSaveModal] = useState(false)
+  const [showToast, setShowToast] = useState(false)
   const [showStateModal, setShowStateModal] = useState(false)
   const [budtenderQuestions, setBudtenderQuestions] = useState<{ question: string; why_it_matters: string }[]>([])
   const [activeFilter, setActiveFilter] = useState<'all' | 'ships' | 'dispensary'>('all')
   const [showAllProducts, setShowAllProducts] = useState(false)
   const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('saved') === 'true') {
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+      window.history.replaceState({}, '', '/results')
+    }
+  }, [])
 
   useEffect(() => {
     const raw = localStorage.getItem('liftdplus_onboarding')
@@ -836,6 +921,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
 
   return (
     <>
+      {showToast && <Toast message="Your guide is saved." />}
       {showSaveModal && <SavePromptModal onClose={() => setShowSaveModal(false)} />}
       {showStateModal && <StateChangeModal onClose={() => setShowStateModal(false)} />}
 
@@ -916,7 +1002,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
           </div>
 
           {/* Account CTA */}
-          {!isLoggedIn && !loading && <AccountCreationBlock />}
+          {!isLoggedIn && !loading && <AccountCreationBlock onOpenSaveModal={() => setShowSaveModal(true)} />}
 
           <WhatMakesItIn />
 
