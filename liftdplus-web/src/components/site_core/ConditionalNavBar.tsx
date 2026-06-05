@@ -14,7 +14,8 @@ export default function ConditionalNavBar() {
     NO_NAV_ROUTES.includes(pathname) ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/disclaimer");
+    pathname.startsWith("/disclaimer") ||
+    pathname.startsWith("/thanks");
 
   const isMarketingNav =
     MARKETING_ROUTES.includes(pathname) ||

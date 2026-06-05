@@ -17,7 +17,8 @@ export default function ConditionalMain({ children }: ConditionalMainProps) {
     pathname.startsWith("/login") ||
     pathname === "/getting-started" ||
     pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/disclaimer");
+    pathname.startsWith("/disclaimer") ||
+    pathname.startsWith("/thanks");
 
   const isMarketingRoute =
     MARKETING_ROUTES.includes(pathname) ||

@@ -60,7 +60,8 @@ export async function updateSession(request: NextRequest) {
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/auth") &&
       !pathname.startsWith("/api") &&
-      !pathname.startsWith("/results")
+      !pathname.startsWith("/results") &&
+      !pathname.startsWith("/thanks")
     ) {
       try {
         const { data: profileRow, error: profileError } = await supabase
@@ -104,7 +105,8 @@ export async function updateSession(request: NextRequest) {
       !pathname.startsWith("/disclaimer") &&
       !pathname.startsWith("/getting-started") &&
       !pathname.startsWith("/onboarding") &&
-      !pathname.startsWith("/results")
+      !pathname.startsWith("/results") &&
+      !pathname.startsWith("/thanks")
     ) {
       // no user, potentially respond by redirecting the user to the login page
       const url = request.nextUrl.clone();
