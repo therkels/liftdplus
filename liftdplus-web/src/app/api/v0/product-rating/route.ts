@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   const { product_id, rating, note } = await req.json();
 
-  await supabaseAdmin.from("product_ratings").upsert(
+  const { data, error } = await supabaseAdmin.from("product_ratings").upsert(
     {
       user_id: user.id,
       product_id,
@@ -27,6 +27,12 @@ export async function POST(req: Request) {
     },
     { onConflict: "user_id,product_id" }
   );
+
+  if (error) {
+    console.error('[product-rating] upsert error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+  console.log('[product-rating] upsert success:', data)
 
   return NextResponse.json({ success: true });
 }
