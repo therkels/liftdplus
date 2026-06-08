@@ -855,7 +855,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
           if (Array.isArray(ratings)) {
             setUserRatings(prev => {
               const next = new Map(prev)
-              ratings.forEach(r => next.set(r.product_id, r))
+              ratings.forEach(r => next.set(String(r.product_id), r))
               return next
             })
           }
@@ -1049,7 +1049,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
                 {visibleProducts.map((product, i) => (
                   <ProductCard key={product.id} product={product}
                     isFirst={i === 0 && activeFilter === 'all'} isLoggedIn={isLoggedIn}
-                    isSaved={savedProducts.has(product.id)} existingRating={userRatings.get(product.id) || null}
+                    isSaved={savedProducts.has(product.id)} existingRating={userRatings.get(String(product.id)) || null}
                     legalStatus={result.legalStatus} stateName={stateName || ''}
                     sessionId={result.sessionId} onSaveAttempt={() => setShowSaveModal(true)}
                     onRatingSubmit={handleRatingSubmit}
