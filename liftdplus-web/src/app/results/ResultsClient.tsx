@@ -848,7 +848,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
     fetch('/api/v0/profile/me').then(r => r.ok ? r.json() : null).then(data => {
       if (data?.user) {
         setIsLoggedIn(true)
-        fetch('/api/v0/product-saves').then(r => r.json()).then((saves: SavedProduct[]) => {
+        fetch('/api/v0/user/product-saves').then(r => r.json()).then((saves: SavedProduct[]) => {
           setSavedProducts(new Set(saves.map(s => s.product_id)))
         }).catch(() => {})
       }
