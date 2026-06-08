@@ -851,6 +851,15 @@ export default function ResultsClient({ detectedState }: { detectedState: string
         fetch('/api/v0/user/product-saves').then(r => r.json()).then((saves: SavedProduct[]) => {
           setSavedProducts(new Set(saves.map(s => s.product_id)))
         }).catch(() => {})
+        fetch('/api/v0/product-rating').then(r => r.json()).then((ratings: ExistingRating[]) => {
+          if (Array.isArray(ratings)) {
+            setUserRatings(prev => {
+              const next = new Map(prev)
+              ratings.forEach(r => next.set(r.product_id, r))
+              return next
+            })
+          }
+        }).catch(() => {})
       }
     }).catch(() => {})
   }, [])
