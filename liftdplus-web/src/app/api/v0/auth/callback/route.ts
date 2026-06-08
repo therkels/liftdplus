@@ -38,11 +38,15 @@ export async function GET(request: Request) {
 
     let isNewUser = false;
     if (!userData) {
-      const { error: createError } = await supabaseAdmin.rpc("create_user", {
-        user_id: user.id,
-        username: "user_" + Math.random().toString(36).substring(2, 10),
-        profile_icon_url: user.user_metadata?.avatar_url,
-      });
+      const { error: createError } = await supabaseAdmin
+        .from("users")
+        .upsert({
+          id: user.id,
+          username: "user_" + Math.random().toString(36).substring(2, 10),
+          profile_icon_url: user.user_metadata?.avatar_url || null,
+          user_type_id: "viewer"
+        }, { onConflict: "id" })
+
       if (createError && !createError.message.includes("duplicate key")) {
         console.error('create_user error (non-fatal for magic link):', createError.message)
       }
