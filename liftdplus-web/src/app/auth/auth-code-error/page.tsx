@@ -49,7 +49,7 @@ export default function AuthErrorPage() {
           </h1>
           <p className="text-base text-[#4f5a58] max-w-md">
             That link didn't work. Save links need to be opened in the same
-            browser where you requested them.
+            browser where you requested them. Private or incognito windows won't work.
           </p>
         </div>
       </div>
