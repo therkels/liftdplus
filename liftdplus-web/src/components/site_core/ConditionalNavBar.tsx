@@ -21,7 +21,8 @@ export default function ConditionalNavBar() {
     MARKETING_ROUTES.includes(pathname) ||
     pathname.startsWith("/resources") ||
     pathname.startsWith("/privacy") ||
-    pathname.startsWith("/terms");
+    pathname.startsWith("/terms") ||
+    pathname.startsWith("/auth");
 
   if (isNoNav) return null;
   if (isMarketingNav) return <MarketingNav />;

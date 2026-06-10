@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 
 export async function POST(req: NextRequest) {
   const { email } = await req.json()
@@ -7,14 +8,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Email required' }, { status: 400 })
   }
 
-  // Add to Mailchimp with lp2-signup tag
   try {
     const apiKey = process.env.MAILCHIMP_API_KEY
     const audienceId = process.env.MAILCHIMP_AUDIENCE_ID
     const serverPrefix = process.env.MAILCHIMP_SERVER_PREFIX
 
-    const mcRes = await fetch(
-      `https://${serverPrefix}.api.mailchimp.com/3.0/lists/${audienceId}/members`,
+    const subscriberHash = crypto
+      .createHash('md5')
+      .update(email.toLowerCase().trim())
+      .digest('hex')
+
+    // Upsert contact — adds if new, updates if existing, never errors on duplicates
+    await fetch(
+      `https://${serverPrefix}.api.mailchimp.com/3.0/lists/${audienceId}/members/${subscriberHash}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `apikey ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email_address: email.toLowerCase().trim(),
+          status_if_new: 'subscribed',
+        }),
+      }
+    )
+
+    // Apply lp2-signup tag — works for new and existing members
+    await fetch(
+      `https://${serverPrefix}.api.mailchimp.com/3.0/lists/${audienceId}/members/${subscriberHash}/tags`,
       {
         method: 'POST',
         headers: {
@@ -22,27 +44,12 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email_address: email,
-          status: 'subscribed',
-          tags: ['lp2-signup'],
+          tags: [{ name: 'lp2-signup', status: 'active' }],
         }),
       }
     )
-
-    // If member already exists, update their tags
-    if (mcRes.status === 400) {
-      const mcData = await mcRes.json()
-      if (mcData.title === 'Member Exists') {
-        const md5 = await crypto.subtle.digest(
-          'SHA-256',
-          new TextEncoder().encode(email.toLowerCase())
-        )
-        // Just log — don't fail the request over Mailchimp
-        console.log('Mailchimp member already exists:', email)
-      }
-    }
   } catch (mcError) {
-    // Log but don't fail — magic link still sent
+    // Log but don't fail — magic link still sent regardless
     console.error('Mailchimp error:', mcError)
   }
 

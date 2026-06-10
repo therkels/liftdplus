@@ -462,7 +462,7 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
             </div>
             <p className="font-semibold text-[#313a43]">Check your inbox</p>
             <p className="text-sm text-[#4f5a58]">
-              We sent a link to {email}. Click it to save your guide and come back anytime.
+              We sent a link to {email}. Open it on this device to save your guide.
             </p>
             <button
               onClick={onClose}
