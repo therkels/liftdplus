@@ -29,7 +29,7 @@ export default function FAQPage() {
             We're here to help you explore at your own pace.<br />No pressure. No judgment.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/contact" className="px-6 py-3 border border-[#6b938c] text-[#6b938c] rounded-lg font-medium hover:bg-[#f4f7f5] transition-colors duration-200">Contact Us</a>
+            <a href="mailto:info@liftdplus.com" className="px-6 py-3 border border-[#6b938c] text-[#6b938c] rounded-lg font-medium hover:bg-[#f4f7f5] transition-colors duration-200">Contact Us</a>
             <a href="/" className="px-6 py-3 bg-[#6b938c] text-white rounded-lg font-medium hover:bg-[#5a7d75] transition-colors duration-200">Get My Personalized Guide →</a>
           </div>
         </div>
