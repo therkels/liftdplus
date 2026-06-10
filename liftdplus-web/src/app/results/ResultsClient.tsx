@@ -1086,13 +1086,20 @@ export default function ResultsClient({ detectedState }: { detectedState: string
           {!loading && (
             <div>
               <h2 className="text-sm font-semibold text-[#313a43] mb-1">Explore Something Else?</h2>
-              <p className="text-xs text-[#4f5a58] mb-3">Your needs can change. Explore other ways cannabis can support you.</p>
+              <p className="text-xs text-[#4f5a58] mb-3">Your needs can change. Explore other ways cannabis can support you. We recommend exploring one topic at a time — the ability to save products across multiple goals is coming soon.</p>
               <div className="flex flex-wrap gap-2">
-                {Object.entries(GOAL_LABELS).filter(([slug]) => slug !== onboarding.goal).map(([slug, label]) => (
-                  <a key={slug} href={`/?goal=${slug}`}
+                {Object.entries(GOAL_LABELS).filter(([slug]) => slug !== onboarding?.goal).map(([slug, label]) => (
+                  <button
+                    key={slug}
+                    onClick={() => {
+                      if (!onboarding) return
+                      const updated = { ...onboarding, goal: slug }
+                      localStorage.setItem('liftdplus_onboarding', JSON.stringify(updated))
+                      setOnboarding(updated)
+                    }}
                     className="px-4 py-2 rounded-full border border-[#cdcec7] text-sm text-[#4f5a58] hover:border-[#6b938c] hover:text-[#313a43] transition-colors bg-white">
                     {label}
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>
