@@ -121,24 +121,36 @@
   position: relative;
   min-height: 1000px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 48% 52%;
   align-items: center;
-  padding-top: 76px;
+  padding-top: 0;
   padding-bottom: 0;
   margin-bottom: 120px;
   overflow: hidden;
-  background-color: #1a211e;
+  background-color: #f0ede8;
+}
+
+.heroImmersive {
+  overflow: visible;
+  min-height: auto;
+}
+
+.flowInHero {
+  position: absolute;
+  bottom: 0;
+  left: 80px;
+  width: 560px;
+  z-index: 3;
+  padding-bottom: 80px;
+}
+
+.onboardingImmersive {
+  width: 100%;
+  min-height: 100vh;
 }
 
 .heroNavGradient {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.22) 0%, transparent 100%);
+  display: none;
 }
 
 .heroBgGradient {
@@ -148,28 +160,27 @@
   pointer-events: none;
   display: block;
   background-image: linear-gradient(
-    180deg,
-    rgba(249, 248, 247, 0.7) 0%,
-    rgba(249, 248, 247, 0.35) 35%,
-    transparent 100%
+    to right,
+    #f0ede8 0%,
+    #f0ede8 38%,
+    rgba(240, 237, 232, 0.85) 50%,
+    rgba(240, 237, 232, 0.2) 62%,
+    rgba(240, 237, 232, 0.0) 72%
   );
 }
 
 .heroLeft {
   position: relative;
   z-index: 2;
-  padding: 130px 40px 40px 40px;
-  max-width: 640px;
+  padding: 140px 60px 100px 72px;
+  max-width: 580px;
 }
 
 .heroTextCard {
-  padding: 40px 40px 42px;
-  border-radius: 20px;
-  background: rgba(244, 247, 245, 0.7);
-  box-shadow:
-    inset 0 0 0 1px #e0e8e5,
-    0 8px 28px rgba(49, 58, 67, 0.1);
-  border: 1px solid #e0e8e5;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
 }
 
 .heroOverlay {
@@ -178,11 +189,12 @@
 
 .heroImage {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  right: 0;
+  width: 65%;
   height: 100%;
   object-fit: cover;
-  object-position: 90% center;
+  object-position: 30% 45%;
   z-index: 0;
   display: block;
 }
@@ -220,10 +232,10 @@
 }
 
 .heroIntro {
-  font-size: 1.4rem;
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-weight: 400;
   color: #4f5a58;
-  max-width: 500px;
+  max-width: 460px;
   line-height: 1.65;
   margin-bottom: 0;
   margin-top: 0;
@@ -244,22 +256,50 @@
 }
 
 .heroTitle {
-  font-size: clamp(4rem, 5.2vw, 4.5rem);
+  font-size: clamp(2.8rem, 4vw, 3.8rem);
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.2;
   letter-spacing: -0.025em;
-  color: #313a43;
-  margin-bottom: 28px;
+  color: #1a2e2a;
+  margin-bottom: 24px;
   margin-top: 0;
 }
 
+.heroTitleAccent {
+  color: #4a7a74;
+}
+
 .heroSub {
-  font-size: 1rem;
-  color: #4a5568;
-  line-height: 1.8;
+  font-size: 0.95rem;
+  color: #6b7c79;
+  line-height: 1.7;
   max-width: 440px;
-  margin-bottom: 40px;
+  margin-bottom: 0;
+  margin-top: 12px;
   font-weight: 400;
+}
+
+.heroCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 32px;
+  padding: 16px 32px;
+  border-radius: 100px;
+  background: #4a7a74;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: background 0.2s ease, transform 0.15s ease;
+  cursor: pointer;
+}
+
+.heroCta:hover {
+  background: #3a6a64;
+  transform: translateY(-1px);
 }
 
 .btnPrimary {
@@ -305,6 +345,12 @@
   line-height: 1.55;
   max-width: 600px;
   margin: 0 0 48px;
+}
+
+.onboardingFlowSection {
+  padding: 60px 0 80px;
+  background: #f4f7f5;
+  margin-top: -60px;
 }
 
 .topicsButtonGrid {
@@ -403,6 +449,20 @@
   z-index: 2;
   height: 100%;
   min-height: 0;
+}
+
+.heroTopicsLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #313a43;
+  margin-bottom: 10px;
+  margin-top: 28px;
+}
+
+.heroTopicsHelper {
+  font-size: 0.9rem;
+  color: #4f5a58;
+  margin-bottom: 16px;
 }
 
 .uiWrapper {

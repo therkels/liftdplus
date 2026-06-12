@@ -10,19 +10,19 @@ import styles from "./page.module.css";
 
 const HOW_IT_WORKS_STEPS = [
   {
-    title: "Answer a few quick questions",
+    title: "Tell us what you're dealing with",
     description:
-      "Tell us what you need support with and what you are unsure about. No research. No terminology needed.",
+      "Choose the goal or challenge that feels most relevant right now — sleep, stress, focus, or figuring out where to start.",
   },
   {
-    title: "Get your personalized guide",
+    title: "See what fits your needs",
     description:
-      "Clear recommendations based on sleep, stress, focus, or hormonal support. Includes dosing guidance, what to avoid, and what to ask if you visit a dispensary.",
+      "Get recommendations tailored to your goals, experience level, and what's available where you live — including CBD, CBN, and where available, THC.",
   },
   {
-    title: "Explore it your way",
+    title: "Move forward with confidence",
     description:
-      "Read it, screenshot it, or save it with your email for ongoing improvements based on what works for you.",
+      "Understand what may help, how it works, and what to consider so you can decide what feels right for you.",
   },
 ];
 
@@ -103,40 +103,42 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero — full-bleed image; contrast only behind copy */}
+      {/* Hero */}
       <section className={styles.hero}>
         <img
           className={styles.heroImage}
-          src="/images/liftd-v2-hero.png"
+          src="/images/hero-woman.jpg"
           alt=""
         />
         <div className={styles.heroBgGradient} aria-hidden />
         <div className={styles.heroNavGradient} aria-hidden />
         <div className={styles.heroLeft}>
           <div className={styles.heroTextCard}>
+            <p className={styles.heroEyebrow}>
+              <span className={styles.heroDot} aria-hidden />
+              A gentler place to begin
+            </p>
             <h1 className={styles.heroTitle}>
-              Exhaustion isn&apos;t a badge of honor. It&apos;s a signal.
+              Exhaustion isn&apos;t a badge of honor. It&apos;s a{" "}
+              <span className={styles.heroTitleAccent}>signal.</span>
             </h1>
             <p className={styles.heroIntro}>
-              Better sleep. A quieter mind. Support that helps you slow down without checking out.
+              Whether you&apos;re looking for better sleep, less stress, or a little more breathing room, LIFTD+ helps you explore CBD, CBN, and THC options with personalized guidance for women.
             </p>
-            <p className={styles.heroIdentity}>
-              For women who are curious about cannabis but want to
-              start slowly, safely, and on their own terms.
+            <p className={styles.heroSub}>
+              Answer a few questions and get a guide tailored to your goals. No account, no prior experience needed.
             </p>
-            <p className={styles.heroCtaSubtext}>
-              Answer a few quick questions and get personalized guidance
-              without having to figure it all out yourself. No account
-              needed to get started.
-            </p>
+            <a href="#topics" className={styles.heroCta}>
+              Get my free guide
+            </a>
           </div>
         </div>
         <div className={styles.heroRight} />
       </section>
 
-      {/* Topic buttons — main action */}
+      {/* Quiz */}
       <section
-        className={`${styles.section} ${styles.howSection} ${styles.topicsLeadSection} ${styles.topicsSection}`}
+        className={`${styles.section} ${styles.topicsSection}`}
         id="topics"
       >
         <div className={`${styles.sectionInner} ${styles.reveal}`}>
@@ -202,15 +204,13 @@ export default function LandingPage() {
             Stay in the loop
           </div>
           <h2 className={styles.sectionTitle}>
-            One email a month. The kind you actually save.
+            Curious, but not ready to start?
           </h2>
           <p className={styles.nlBody}>
-            Beginner-friendly guides on sleep, stress, and winding down, sent to adults exploring cannabis for the first time. Or the first time in a long time.
+            Get one practical email each month with beginner-friendly education, product insights, and guidance for women who are exploring but not ready to start yet.
           </p>
           <p className={styles.nlHelper}>
-            Monthly guides for people exploring cannabis for the first time.
-            <br />
-            No spam. Unsubscribe anytime.
+            No pressure. No jargon. Just simple guidance to help you make better decisions when you&apos;re ready.
           </p>
           <form
             className={styles.emailRow}
@@ -252,7 +252,7 @@ export default function LandingPage() {
               disabled={newsletterStatus === "loading"}
             />
             <button type="submit" disabled={newsletterStatus === "loading"}>
-              {newsletterStatus === "loading" ? "Sending…" : "Send Me the Guides →"}
+              {newsletterStatus === "loading" ? "Sending…" : "Subscribe for monthly guidance"}
             </button>
           </form>
           {newsletterStatus === "success" && (
@@ -265,7 +265,6 @@ export default function LandingPage() {
               {newsletterError}
             </p>
           )}
-          <p className={styles.fine}>Built for adults who prefer to decide for themselves.</p>
         </div>
       </section>
 

@@ -586,8 +586,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   width: 100%;
-  padding: 22px 32px;
+  padding: 22px 24px;
   border: none;
   border-radius: 12px;
   background: #6b938c;
@@ -596,7 +597,7 @@
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   text-align: center;
   line-height: 1.35;
@@ -607,6 +608,26 @@
 .topicBtn:hover {
   background: #4f5a58;
   transform: translateY(-1px);
+}
+
+.topicBtnInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topicIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.85);
+  width: 20px;
+  height: 20px;
+}
+
+.topicArrow {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -681,5 +702,23 @@
   .welcomeCheckList,
   .disclaimerCheckboxRow {
     max-width: 100%;
+  }
+}
+
+.helperTouch {
+  display: none;
+}
+
+.helperMouse {
+  display: inline;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .helperTouch {
+    display: inline;
+  }
+
+  .helperMouse {
+    display: none;
   }
 }

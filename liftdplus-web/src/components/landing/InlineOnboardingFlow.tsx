@@ -545,39 +545,76 @@ export default function InlineOnboardingFlow({
   return (
     <div
       ref={flowRef}
-      className={flowStyles.flow}
+      className={`${flowStyles.flow}${isImmersiveStep ? ` ${flowStyles.fullBleed}` : ""}`}
       data-onboarding-immersive={isImmersiveStep ? "true" : undefined}
     >
       {step === "topics" && (
         <>
           <h2 className={sectionTitleClassName}>
-            What do you need support with right now?
+            Pick one to start
           </h2>
           <p className={sectionHelperClassName}>
-            Just pick what feels closest. No wrong answer.
+            Takes about a minute. No account needed.
           </p>
           <div className={flowStyles.supportGrid}>
             <div className={flowStyles.supportRow}>
-              {TOPIC_PROMPTS.slice(0, 3).map((label) => (
+              {TOPIC_PROMPTS.slice(0, 3).map((label, i) => (
                 <button
                   key={label}
                   type="button"
                   className={flowStyles.topicBtn}
                   onClick={() => selectTopic(label)}
                 >
-                  {label}
+                  <span className={flowStyles.topicBtnInner}>
+                    <span className={flowStyles.topicIcon}>
+                      {i === 0 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                      )}
+                      {i === 1 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M8.56 2.9A7 7 0 0 1 19 9v4a2 2 0 0 0 2 2H3a2 2 0 0 0 2-2V9c0-2.38 1.19-4.47 3-5.74"/>
+                          <path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
+                        </svg>
+                      )}
+                      {i === 2 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      )}
+                    </span>
+                    {label}
+                  </span>
                 </button>
               ))}
             </div>
             <div className={flowStyles.supportRowBottom}>
-              {TOPIC_PROMPTS.slice(3).map((label) => (
+              {TOPIC_PROMPTS.slice(3).map((label, i) => (
                 <button
                   key={label}
                   type="button"
                   className={flowStyles.topicBtn}
                   onClick={() => selectTopic(label)}
                 >
-                  {label}
+                  <span className={flowStyles.topicBtnInner}>
+                    <span className={flowStyles.topicIcon}>
+                      {i === 0 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                        </svg>
+                      )}
+                      {i === 1 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                          <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                      )}
+                    </span>
+                    {label}
+                  </span>
                 </button>
               ))}
             </div>
