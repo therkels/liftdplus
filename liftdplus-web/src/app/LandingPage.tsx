@@ -252,7 +252,7 @@ export default function LandingPage() {
               disabled={newsletterStatus === "loading"}
             />
             <button type="submit" disabled={newsletterStatus === "loading"}>
-              {newsletterStatus === "loading" ? "Sending…" : "Subscribe for monthly guidance"}
+              {newsletterStatus === "loading" ? "Sending…" : "Subscribe →"}
             </button>
           </form>
           {newsletterStatus === "success" && (
