@@ -384,7 +384,8 @@ function StateChangeModal({ onClose }: { onClose: () => void }) {
 
 function SavePromptModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  const [token, setToken] = useState('')
+  const [step, setStep] = useState<'email' | 'code' | 'success'>('email')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -397,7 +398,7 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          emailRedirectTo: `${window.location.origin}/api/v0/auth/callback?next=/results%3Fsaved%3Dtrue`,
+          shouldCreateUser: true,
         },
       })
       if (authError) throw authError
@@ -406,9 +407,45 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
       }).catch(() => {})
-      setSubmitted(true)
+      setStep('code')
     } catch {
       setError('Something went wrong. Please try again.')
+    }
+    setLoading(false)
+  }
+
+  async function handleVerify() {
+    if (!token.trim()) return
+    setLoading(true)
+    setError('')
+    try {
+      const supabase = createClient()
+      
+      // Step 1 — verify the OTP code
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: token.trim(),
+        type: 'email',
+      })
+      if (verifyError) throw verifyError
+
+      // Step 2 — ask the server to create the user record
+      const response = await fetch('/api/v0/user/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        console.error('User creation failed:', data.error)
+        // Don't block the redirect — user is authenticated even if record creation fails
+      }
+
+      setStep('success')
+      window.location.href = '/results?saved=true'
+
+    } catch {
+      setError("That code didn't work. Check your email and try again.")
     }
     setLoading(false)
   }
@@ -416,13 +453,19 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-xl">
+
+        {/* Header — unchanged */}
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-semibold text-[#313a43] mb-1">
               Save your guide
             </h3>
             <p className="text-sm text-[#4f5a58]">
-              Enter your email and we'll send you a link to access your guide anytime.
+              {step === 'email'
+                ? "Enter your email and we'll send you a code to save your guide."
+                : step === 'code'
+                ? "Enter the 6-digit code we just sent you."
+                : "You're all set."}
             </p>
           </div>
           <button
@@ -431,7 +474,9 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
             ✕
           </button>
         </div>
-        {!submitted ? (
+
+        {/* Step 1 — Email entry */}
+        {step === 'email' && (
           <>
             <input
               type="email"
@@ -447,30 +492,58 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
               onClick={handleSubmit}
               disabled={!email.trim() || loading}
               className="w-full py-3 bg-[#313a43] text-white rounded-xl font-medium hover:bg-[#4f5a58] transition-colors disabled:opacity-40">
-              {loading ? 'Sending...' : 'Send me the link'}
+              {loading ? 'Sending...' : 'Send me a code'}
             </button>
             <p className="text-xs text-center text-[#4f5a58]">
-              No password needed. One click and you're in.
+              No password needed. Enter the code and you're in.
             </p>
           </>
-        ) : (
+        )}
+
+        {/* Step 2 — Code entry */}
+        {step === 'code' && (
+          <>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={token}
+              onChange={e => setToken(e.target.value.replace(/\D/g, ''))}
+              onKeyDown={e => { if (e.key === 'Enter') handleVerify() }}
+              placeholder="123456"
+              className="w-full text-sm border border-[#cdcec7] rounded-xl px-4 py-3 focus:outline-none focus:border-[#6b938c] text-[#313a43] placeholder:text-[#cdcec7] tracking-widest text-center"
+              autoFocus
+            />
+            {error && <p className="text-xs text-red-500">{error}</p>}
+            <button
+              onClick={handleVerify}
+              disabled={token.length !== 6 || loading}
+              className="w-full py-3 bg-[#313a43] text-white rounded-xl font-medium hover:bg-[#4f5a58] transition-colors disabled:opacity-40">
+              {loading ? 'Verifying...' : 'Access my guide'}
+            </button>
+            <button
+              onClick={() => { setStep('email'); setError(''); setToken('') }}
+              className="w-full text-xs text-[#6b938c] hover:underline">
+              Wrong email? Go back
+            </button>
+          </>
+        )}
+
+        {/* Step 3 — Success */}
+        {step === 'success' && (
           <div className="text-center space-y-3 py-2">
             <div className="w-12 h-12 rounded-full bg-[#f4f7f5] flex items-center justify-center mx-auto">
               <svg className="w-6 h-6 text-[#6b938c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="font-semibold text-[#313a43]">Check your inbox</p>
+            <p className="font-semibold text-[#313a43]">You're in.</p>
             <p className="text-sm text-[#4f5a58]">
-              We sent a link to {email}. Open it on this device to save your guide — avoid private or incognito windows.
+              Taking you to your guide...
             </p>
-            <button
-              onClick={onClose}
-              className="text-sm text-[#6b938c] underline">
-              Done
-            </button>
           </div>
         )}
+
       </div>
     </div>
   )
