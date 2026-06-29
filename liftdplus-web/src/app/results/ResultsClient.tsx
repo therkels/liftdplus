@@ -18,10 +18,21 @@ import { createClient } from '@/utils/supabase/client'
 interface SavedProduct { product_id: string }
 interface ExistingRating { product_id: string; rating: number; note?: string }
 
-function Toast({ message }: { message: string }) {
+function SavedGuideBanner({ onDismiss }: { onDismiss: () => void }) {
   return (
-    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#313a43] text-white text-sm px-5 py-3 rounded-full shadow-lg">
-      {message}
+    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 w-full max-w-sm px-4">
+      <div className="bg-[#313a43] text-white text-sm rounded-2xl px-5 py-4 shadow-lg flex items-start justify-between gap-4">
+        <p className="leading-snug">
+          Your guide is saved — bookmark this page or come back anytime from your email.
+        </p>
+        <button
+          onClick={onDismiss}
+          aria-label="Dismiss"
+          className="text-white/60 hover:text-white transition-colors shrink-0 mt-0.5"
+        >
+          ✕
+        </button>
+      </div>
     </div>
   )
 }
@@ -41,6 +52,16 @@ const US_STATES: [string, string][] = [
   ['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],
   ['WI','Wisconsin'],['WY','Wyoming'],['DC','District of Columbia'],
 ]
+
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/^#{1,6}\s+/gm, '')      // headings
+    .replace(/\*\*(.*?)\*\*/g, '$1')  // bold
+    .replace(/\*(.*?)\*/g, '$1')      // italic
+    .replace(/`(.*?)`/g, '$1')        // inline code
+    .replace(/^\s*[-•]\s+/gm, '')     // bullet points
+    .trim()
+}
 
 function getOnsetLabel(product: BrandProduct): string {
   if (product.onset_minutes_min && product.onset_minutes_max) {
@@ -585,6 +606,58 @@ function WhatMakesItIn() {
   )
 }
 
+function SharePrompt() {
+  const [copied, setCopied] = useState(false)
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'LIFTD+ Wellness Guide',
+      text: "I found something that helped me figure out cannabis for stress and sleep — thought you might want to check it out.",
+      url: 'https://liftdplus.com',
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // user cancelled — do nothing
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText('https://liftdplus.com')
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch {
+        // clipboard not available — silent fail
+      }
+    }
+  }
+
+  return (
+    <section className="bg-[#eef3f1] border border-[#cdcec7] rounded-2xl px-8 py-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <p className="text-[10px] font-semibold text-[#6b938c] uppercase tracking-widest">
+            Share
+          </p>
+          <p className="text-base font-semibold text-[#313a43] leading-snug">
+            Know someone running on empty and open to trying something new?
+          </p>
+          <p className="text-sm text-[#4f5a58]">
+            Send her this — it takes two minutes.
+          </p>
+        </div>
+        <button
+          onClick={handleShare}
+          className="shrink-0 text-sm font-medium text-white bg-[#6b938c] rounded-xl px-6 py-3 hover:bg-[#4f5a58] transition-colors duration-150"
+        >
+          {copied ? 'Link copied' : 'Send her this'}
+        </button>
+      </div>
+    </section>
+  )
+}
+
 function AccountCreationBlock({ onOpenSaveModal }: { onOpenSaveModal: () => void }) {
   return (
     <div className="bg-[#f4f7f5] border border-[#cdcec7] rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -855,7 +928,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
   const [savedProducts, setSavedProducts] = useState<Set<string>>(new Set())
   const [userRatings, setUserRatings] = useState<Map<string, ExistingRating>>(new Map())
   const [showSaveModal, setShowSaveModal] = useState(false)
-  const [showToast, setShowToast] = useState(false)
+  const [showSavedBanner, setShowSavedBanner] = useState(false)
   const [showStateModal, setShowStateModal] = useState(false)
   const [budtenderQuestions, setBudtenderQuestions] = useState<{ question: string; why_it_matters: string }[]>([])
   const [activeFilter, setActiveFilter] = useState<'all' | 'ships' | 'dispensary'>('all')
@@ -865,8 +938,8 @@ export default function ResultsClient({ detectedState }: { detectedState: string
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('saved') === 'true') {
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
+      const dismissed = localStorage.getItem('liftdplus_save_banner_dismissed')
+      if (!dismissed) setShowSavedBanner(true)
       window.history.replaceState({}, '', '/results')
     }
   }, [])
@@ -950,6 +1023,11 @@ export default function ResultsClient({ detectedState }: { detectedState: string
     setUserRatings(prev => { const next = new Map(prev); next.set(productId, { product_id: productId, rating, note }); return next })
   }, [])
 
+  const handleBannerDismiss = () => {
+    localStorage.setItem('liftdplus_save_banner_dismissed', 'true')
+    setShowSavedBanner(false)
+  }
+
   if (!onboarding && !showOnboardingPrompt) return null
 
   if (showOnboardingPrompt && !onboarding) {
@@ -1011,7 +1089,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
 
   return (
     <>
-      {showToast && <Toast message="Your guide is saved." />}
+      {showSavedBanner && <SavedGuideBanner onDismiss={handleBannerDismiss} />}
       {showSaveModal && <SavePromptModal onClose={() => setShowSaveModal(false)} />}
       {showStateModal && <StateChangeModal onClose={() => setShowStateModal(false)} />}
 
@@ -1064,7 +1142,8 @@ export default function ResultsClient({ detectedState }: { detectedState: string
               {loading ? <LoadingGuide stateName={stateName || undefined} />
                 : error ? <div><p className="text-sm text-red-600 mb-2">{error}</p><button onClick={() => window.location.reload()} className="text-xs text-[#6b938c] underline">Try again</button></div>
                 : result?.claudeSummary ? (() => {
-                    const sentences = result.claudeSummary.split(/(?<=\.)\s+/)
+                    const cleaned = stripMarkdown(result.claudeSummary)
+                    const sentences = cleaned.split(/(?<=\.)\s+/)
                     const firstSentence = sentences[0]
                     const rest = sentences.slice(1).join(' ')
                     return (
@@ -1178,15 +1257,16 @@ export default function ResultsClient({ detectedState }: { detectedState: string
             </div>
           )}
 
-          {/* Feedback */}
+          {/* Share + Feedback */}
           {!loading && result && (
-            <div className="border-t border-[#cdcec7] pt-6">
+            <>
+              <SharePrompt />
               <FeedbackSection
                 sessionId={result.sessionId}
                 goal={onboarding.goal}
                 stateCode={onboarding.state}
               />
-            </div>
+            </>
           )}
         </div>
       </div>
