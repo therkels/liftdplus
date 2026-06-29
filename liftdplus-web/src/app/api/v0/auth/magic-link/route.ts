@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { magicLinkRatelimit } from '@/lib/ratelimit'
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
+  const { success } = await magicLinkRatelimit.limit(ip)
+  if (!success) {
+    return new Response('Too many requests', { status: 429 })
+  }
+
   const { email } = await req.json()
 
   if (!email) {

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/utils/supabase/admin'
+import { feedbackRatelimit } from '@/lib/ratelimit'
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
+  const { success } = await feedbackRatelimit.limit(ip)
+  if (!success) {
+    return new Response('Too many requests', { status: 429 })
+  }
+
   const body = await req.json()
   const { session_id, goal, state_code, feedback } = body
 

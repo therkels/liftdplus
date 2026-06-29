@@ -4,8 +4,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/utils/supabase/admin'
 import { GoalSlug, ExperienceLevel, LegalStatus, BrandProduct, GOAL_LABELS } from '@/lib/lp2-types'
+import { recommendationsRatelimit } from '@/lib/ratelimit'
 
 export async function GET(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
+  const { success } = await recommendationsRatelimit.limit(ip)
+  if (!success) {
+    return new Response('Too many requests', { status: 429 })
+  }
+
   try {
     const { searchParams } = new URL(req.url)
     const goal = searchParams.get('goal') as GoalSlug
