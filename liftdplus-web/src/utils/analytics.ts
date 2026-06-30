@@ -10,7 +10,11 @@ type EventName =
   | "legacy_onboarding_completed"
   | "signup_initiated"
   | "signup_completed"
-  | "article_read";
+  | "article_read"
+  | "results_viewed"
+  | "save_guide_clicked"
+  | "otp_requested"
+  | "guide_saved";
 
 type EventParams = Record<string, string | number | boolean>;
 

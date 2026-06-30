@@ -14,6 +14,7 @@ import {
 } from '@/lib/lp2-types'
 import { getAvailabilityText, shouldShowDispensarySection } from '@/lib/lp2-utils'
 import { createClient } from '@/utils/supabase/client'
+import { trackEvent } from '@/utils/analytics'
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface SavedProduct { product_id: string }
 interface ExistingRating { product_id: string; rating: number; note?: string }
@@ -423,11 +424,14 @@ function SavePromptModal({ onClose }: { onClose: () => void }) {
         },
       })
       if (authError) throw authError
-      fetch('/api/v0/auth/magic-link', {
+      const magicLinkRes = await fetch('/api/v0/auth/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
-      }).catch(() => {})
+      }).catch(() => null)
+      if (magicLinkRes?.ok) {
+        trackEvent('otp_requested')
+      }
       setStep('code')
     } catch {
       setError('Something went wrong. Please try again.')
@@ -939,7 +943,10 @@ export default function ResultsClient({ detectedState }: { detectedState: string
     const params = new URLSearchParams(window.location.search)
     if (params.get('saved') === 'true') {
       const dismissed = localStorage.getItem('liftdplus_save_banner_dismissed')
-      if (!dismissed) setShowSavedBanner(true)
+      if (!dismissed) {
+        trackEvent('guide_saved')
+        setShowSavedBanner(true)
+      }
       window.history.replaceState({}, '', '/results')
     }
   }, [])
@@ -979,6 +986,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
         if (!res.ok) throw new Error()
         const data = await res.json()
         setResult(data)
+        trackEvent('results_viewed')
         fetch('/api/v0/recommendation-session', { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session_id: data.sessionId, goal: onboarding!.goal, experience_level: onboarding!.experience_level,
             state_code: onboarding!.state || null, legal_status: data.legalStatus,
@@ -1026,6 +1034,11 @@ export default function ResultsClient({ detectedState }: { detectedState: string
   const handleBannerDismiss = () => {
     localStorage.setItem('liftdplus_save_banner_dismissed', 'true')
     setShowSavedBanner(false)
+  }
+
+  const handleOpenSaveModal = () => {
+    trackEvent('save_guide_clicked')
+    setShowSaveModal(true)
   }
 
   if (!onboarding && !showOnboardingPrompt) return null
@@ -1171,7 +1184,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
           </div>
 
           {/* Account CTA */}
-          {!isLoggedIn && !loading && <AccountCreationBlock onOpenSaveModal={() => setShowSaveModal(true)} />}
+          {!isLoggedIn && !loading && <AccountCreationBlock onOpenSaveModal={handleOpenSaveModal} />}
 
           <WhatMakesItIn />
 
@@ -1203,7 +1216,7 @@ export default function ResultsClient({ detectedState }: { detectedState: string
                     isFirst={i === 0 && activeFilter === 'all'} isLoggedIn={isLoggedIn}
                     isSaved={savedProducts.has(product.id)} existingRating={userRatings.get(String(product.id)) || null}
                     legalStatus={result.legalStatus} stateName={stateName || ''}
-                    sessionId={result.sessionId} onSaveAttempt={() => setShowSaveModal(true)}
+                    sessionId={result.sessionId} onSaveAttempt={handleOpenSaveModal}
                     onRatingSubmit={handleRatingSubmit}
                   />
                 ))}
