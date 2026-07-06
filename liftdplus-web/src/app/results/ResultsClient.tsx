@@ -971,7 +971,35 @@ export default function ResultsClient({ detectedState }: { detectedState: string
 
   useEffect(() => {
     if (!onboarding) return
+
+    const cacheKey = `liftd_recs_${onboarding.goal}_${onboarding.experience_level}_${onboarding.state || 'none'}_${onboarding.has_medical_card ?? 'none'}_${onboarding.topic || 'none'}_${onboarding.learning_goal || 'none'}`
+
     async function fetch_recs() {
+      // Check session cache first — same inputs shouldn't trigger a new fetch/Claude call
+      try {
+        const cached = sessionStorage.getItem(cacheKey)
+        if (cached) {
+          const data = JSON.parse(cached)
+          setResult(data)
+          setError(null)
+          setLoading(false)
+          // Still log the visit even on a cache hit, so return-visit engagement isn't lost
+          fetch('/api/v0/recommendation-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              session_id: data.sessionId, goal: onboarding!.goal, experience_level: onboarding!.experience_level,
+              state_code: onboarding!.state || null, legal_status: data.legalStatus,
+              has_medical_card: onboarding!.has_medical_card,
+              product_ids: data.products.map((p: BrandProduct) => p.id), claude_summary: data.claudeSummary
+            })
+          })
+          return
+        }
+      } catch {
+        // sessionStorage read/parse failed (private browsing, corrupted value, etc.) — fall through to a live fetch
+      }
+
       setLoading(true)
       setError(null)
       try {
@@ -987,13 +1015,28 @@ export default function ResultsClient({ detectedState }: { detectedState: string
         const data = await res.json()
         setResult(data)
         trackEvent('results_viewed')
-        fetch('/api/v0/recommendation-session', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: data.sessionId, goal: onboarding!.goal, experience_level: onboarding!.experience_level,
+
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(data))
+        } catch {
+          // Storage quota or private-browsing restrictions — non-fatal, just skip caching
+        }
+
+        fetch('/api/v0/recommendation-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: data.sessionId, goal: onboarding!.goal, experience_level: onboarding!.experience_level,
             state_code: onboarding!.state || null, legal_status: data.legalStatus,
             has_medical_card: onboarding!.has_medical_card,
-            product_ids: data.products.map((p: BrandProduct) => p.id), claude_summary: data.claudeSummary }) })
-      } catch { setError('Something went wrong loading your guide. Please try refreshing.') }
-      finally { setLoading(false) }
+            product_ids: data.products.map((p: BrandProduct) => p.id), claude_summary: data.claudeSummary
+          })
+        })
+      } catch {
+        setError('Something went wrong loading your guide. Please try refreshing.')
+      } finally {
+        setLoading(false)
+      }
     }
     fetch_recs()
   }, [onboarding])
