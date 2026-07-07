@@ -85,6 +85,7 @@ export async function GET(req: NextRequest) {
       buy_url,
       onset_minutes_min,
       onset_minutes_max,
+      restricted_states,
       brands!inner(name)
     `)
       .eq('primary_goal_id', goal)
@@ -108,6 +109,11 @@ export async function GET(req: NextRequest) {
     // Idaho: zero THC only
     if (isIdaho) {
       query = query.or('thc_mg.is.null,thc_mg.eq.0')
+    }
+
+    // State-specific shipping restrictions (e.g. CA hemp-THC shipping ban, SB 378)
+    if (stateCode) {
+      query = query.not('restricted_states', 'cs', `{${stateCode}}`)
     }
 
     const { data: rawProducts, error: productsError } = await query
