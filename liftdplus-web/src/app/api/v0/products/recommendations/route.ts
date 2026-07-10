@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
       onset_minutes_min,
       onset_minutes_max,
       restricted_states,
+      dispensary_states,
       brands!inner(name)
     `)
       .eq('primary_goal_id', goal)
@@ -111,9 +112,17 @@ export async function GET(req: NextRequest) {
       query = query.or('thc_mg.is.null,thc_mg.eq.0')
     }
 
-    // State-specific shipping restrictions (e.g. CA hemp-THC shipping ban, SB 378)
+    // State-specific shipping restrictions only apply to products that actually ship —
+    // a dispensary-only product's restricted_states entry shouldn't exclude it from
+    // dispensary-path results (e.g. CA hemp-THC shipping ban, SB 378)
     if (stateCode) {
-      query = query.not('restricted_states', 'cs', `{${stateCode}}`)
+      query = query.or(`ships_nationally.eq.false,restricted_states.not.cs.{${stateCode}}`)
+    }
+
+    // Dispensary-only products must be confirmed available in this user's state —
+    // don't show a product's dispensary listing to a user in a state it isn't stocked in
+    if (showDispensary && stateCode) {
+      query = query.or(`ships_nationally.eq.true,dispensary_states.cs.{${stateCode}}`)
     }
 
     const { data: rawProducts, error: productsError } = await query
